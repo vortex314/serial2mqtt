@@ -1,0 +1,72 @@
+#include <EventBus.h>
+
+const char* hash2string(uint32_t hash) {
+	switch (hash) {
+	case 0:
+		return "type";
+	case H("data"):
+		return "data";
+	case H("error"):
+		return "error";
+	case H("HELLO"):
+		return "HELLO";
+	case H("id"):
+		return "id";
+	case H("message"):
+		return "message";
+	case H("mqtt.connected"):
+		return "mqtt.connected";
+	case H("mqtt.disconnected"):
+		return "mqtt.disconnected";
+	case H("mqtt.error"):
+		return "mqtt.error";
+	case H("mqtt.publish"):
+		return "mqtt.publish";
+	case H("mqtt.send"):
+		return "mqtt.send";
+	case H("mqtt.suback"):
+		return "mqtt.suback";
+	case H("mqtt.subscribe"):
+		return "mqtt.subscribe";
+	case H("ping"):
+		return "ping";
+	case H("pong"):
+		return "pong";
+	case H("qos"):
+		return "qos";
+	case H("retain"):
+		return "retain";
+	case H("retained"):
+		return "retained";
+	case H("SIG_TICK"):
+		return "SIG_TICK";
+	case H("slip.rxd"):
+		return "slip.rxd";
+	case H("SLIP_RXD"):
+		return "SLIP_RXD";
+	case H("sys.tick"):
+		return "sys.tick";
+	case H("tcp.err"):
+		return "tcp.err";
+	case H("TCP_ERR"):
+		return "TCP_ERR";
+	case H("tcp.rxd"):
+		return "tcp.rxd";
+	case H("TCP_RXD"):
+		return "TCP_RXD";
+	case H("topic"):
+		return "topic";
+	case H("type"):
+		return "type";
+	case H("usb.err"):
+		return "usb.err";
+	case H("USB_ERR"):
+		return "USB_ERR";
+	case H("usb.rxd"):
+		return "usb.rxd";
+	case H("USB_RXD"):
+		return "USB_RXD";
+	default:
+		return "UNDEFINED";
+	}
+}
