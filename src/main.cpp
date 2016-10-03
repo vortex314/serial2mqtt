@@ -1,5 +1,26 @@
 #include <iostream>
 
+/*
+ * DEVICE <-> Gateway
+ *
+ * -> mqtt.connect,host,port,will.topic,will.message,will.qos,will.retain,clientId,user,password
+ * <- mqtt.connack,error
+ *
+ * -> mqtt.publish,topic,message,qos,retain
+ * <- mqtt.pubcomp
+ *
+ * -> mqtt.subscribe
+ * <- mqtt.suback
+ *
+ * -> mqtt.unsubscribe
+ * <- mqtt.unsuback
+ *
+ * -> mqtt.pingreq
+ * <- mqtt.pingresp
+ *
+ * -> mqtt.disconnect
+ */
+
 using namespace std;
 #include <stdio.h>
 #include <string.h>
@@ -143,43 +164,6 @@ void poller(int usbFd,int tcpFd,uint64_t sleepTill)
 
 /*_______________________________________________________________________________
 
-UsbConnection  role :
-    - establish usb connection ( repeat on failure with intermediary sleep )
-    - wait for usb disconnection -> disconnect tcp
-________________________________________________________________________________*/
-
-class UsbConnection : public Actor
-{
-private:
-    uint64_t wakeTime;
-    Usb* _usb;
-public:
-
-    UsbConnection ( Usb* usb ) :Actor("UsbConnection")
-    {
-        _usb = usb;
-    }
-
-    void onEvent ( Header hdr )
-    {
-        PT_BEGIN (  );
-        while(true)
-        {
-            while ( usb.connect() != E_OK )
-            {
-                wakeTime=Sys::millis()+5000;
-                PT_YIELD_UNTIL ( wakeTime < Sys::millis()) ;
-            }
-
-            PT_YIELD_UNTIL (  hdr.is(_usb->id(),DISCONNECT,usb.fd(),0) );
-        }
-        PT_END (  );
-    }
-
-};
-
-/*_______________________________________________________________________________
-
 loadOptions  role :
     - parse commandline otions
     h : host of mqtt server
@@ -229,6 +213,7 @@ void loadOptions(int argc,char* argv[])
             return ;
         default:
             abort ();
+            break;
         }
 }
 
@@ -388,7 +373,7 @@ int main(int argc, char *argv[] )
     eb.subscribe(H("ping"),onStm32Ping);
 
 
-    UsbConnection usbConnection(&usb);
+//    UsbConnection usbConnection(&usb);
     Actor::initAll();
     while(1)
     {
@@ -397,109 +382,4 @@ int main(int argc, char *argv[] )
     }
 
 }
-
-
-/*
-    MqttIn mqttIn(new Bytes(256));
-    MqttOut mqttOut(256);
-    //_______________________________________________________________________________
-//
- //   Gateway role :
-//        - takes usb/tcp input message and send to tcp/usb
-//        - if connection request from usb , check if tcp is already open and send dummy connect_ok
-//        - msg.data points to a parsed MqttIn structure
-//        - if usb messages ( other then connect ) are received when tcp is not connected, they are discarded
-//        - if connect is received and tcp is not yet connected, make a connection on tcp
-//    ________________________________________________________________________________
-
-    class Gateway : public Actor
-    {
-    private:
-        MqttIn* _mqttIn;
-        Usb* _usb;
-        Tcp* _tcp;
-    public:
-
-        Gateway ( Usb* usb,Tcp* tcp )
-        {
-            _usb = usb;
-            _tcp = tcp;
-            restart();
-        }
-
-        bool dispatch(Msg& msg)
-        {
-            PT_BEGIN (  );
-            while(true)
-            {
-                PT_YIELD_UNTIL( msg.is(_tcp,SIG_RXD) || msg.is(_usb,SIG_RXD) );
-                if ( msg.is(_tcp,SIG_RXD))
-                {
-                    MqttIn* mqttIn = (MqttIn*)msg.data;
-                    Str str(256);
-                    str << "MQTT TCP->USB:";
-                    mqttIn->toString(str);
-                    logger.info()<< str;
-                    logger.flush();
-                    usb.send(*mqttIn->getBytes());
-                }
-                else if ( msg.is(_usb,SIG_RXD))
-                {
-                    MqttIn* mqttIn = (MqttIn*)msg.data;
-                    Str str(256);
-                    str << "MQTT USB->TCP:";
-                    mqttIn->toString(str);
-                    logger.info()<< str;
-                    logger.flush();
-
-                    if ( _tcp->isConnected() )
-                    {
-                        if ( mqttIn->type() == MQTT_MSG_CONNECT ) // simulate a reply
-                        {
-                            MqttOut m(10);
-                            m.ConnAck(0);
-                            //                           uint8_t CONNACK[]={0x20,0x02,0x00,0x00};
-                            logger.info()<< "CONNACK virtual,already tcp connected";
-                            logger.flush();
-                            usb.send(m);
-                        }
-                        else
-                        {
-                            tcp.send(*mqttIn->getBytes());
-                        }
-                    }
-                    else
-                    {
-                        if ( mqttIn->type() == MQTT_MSG_CONNECT )
-                        {
-                            tcp.connect();
-                            tcp.send(*mqttIn->getBytes());
-                        }
-                        else
-                        {
-                            logger.info()<< "dropped packet, not connected.";
-                            logger.flush();
-                            usb.disconnect();
-                        }
-                    }
-                }
-            }
-            PT_END (  );
-        }
-    };*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

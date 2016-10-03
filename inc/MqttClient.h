@@ -21,6 +21,15 @@ private:
     static int disc_finished ;
     static int subscribed ;
     static int finished ;
+    static Str connection;
+    static Str clientId;
+    static Str user;
+    static Str password;
+    static Str willTopic;
+    static Str willMessage;
+    static int willQos;
+    static bool willRetain;
+
 public:
 
     static void onConnectionLost(void *context, char *cause);
