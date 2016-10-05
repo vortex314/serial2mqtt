@@ -59,8 +59,10 @@ struct {
 	uint32_t baudrate;
 	const char* device;
 	LogManager::LogLevel logLevel;
+
 } context = { "limero.ddns.net", 1883, 115200, "/dev/ttyACM0",
-		LogManager::LOG_DEBUG };
+		LogManager::LOG_DEBUG};
+Cbor mqttConfig(200);
 
 Usb usb("/dev/ttyACM0");
 Tcp tcp("localhost", 1883);
@@ -167,10 +169,10 @@ void loadOptions(int argc, char* argv[]) {
 	while ((c = getopt(argc, argv, "h:p:d:b:l:")) != -1)
 		switch (c) {
 		case 'h':
-			context.host = optarg;
+			mqttConfig.addKeyValue(H("host"),optarg);
 			break;
 		case 'p':
-			context.port = atoi(optarg);
+			mqttConfig.addKeyValue(H("host"),atoi(optarg));
 			break;
 		case 'd':
 			context.device = optarg;
@@ -247,16 +249,6 @@ void onUsbRxd(Cbor& cbor) {
 
 extern void logCbor(Cbor&);
 
-void onStm32Ping(Cbor& cbor) {
-	Str str("true");
-	Str topic("stm32/system/alive");
-	MqttClient::publish(topic, str);
-}
-
-void onMqttConnected(Cbor& cbor) {
-	Str topic("put/stm32/#");
-	MqttClient::subscribe(topic, 1);
-}
 
 int main(int argc, char *argv[]) {
 
@@ -266,11 +258,7 @@ int main(int argc, char *argv[]) {
 	if (context.logLevel <= LogManager::LOG_DEBUG) {
 		eb.debug(true);
 	};
-	Str topic("stm32/system/alive"), value("false");
-	Str connection(100);
-	connection.append("tcp://").append(context.host).append(":").append(
-			context.port); //limero.ddns.net:1883"
-	MqttClient::connect(connection, topic, value, 1);
+	Mqtt.loadConfig(mqttConfig);
 
 	interceptAllSignals();
 
@@ -282,50 +270,26 @@ int main(int argc, char *argv[]) {
 	LOGF(" usb.open() : %d %s", erc, strerror(erc));
 
 	eb.subscribe(H("usb.rxd"), [](Cbor& cbor) {
+		LOGF(" usb.rxd execute ");
 		Bytes data(1000);
-		if (cbor.gotoKey(H("data"))) {
-			if (cbor.get(data)) {
-//           LOGF(" data length : %d ",data.length());
+		if (cbor.getKeyValue(H("data"),data)) {
 			data.offset(0);
 			while (data.hasData()) {
 				slip.onRecv(data.read());
 			}
-		} else LOGF(" no data ");
-	} else LOGF(" no key data ");});
-
-	eb.subscribe(H("mqtt.publish"),
-			[](Cbor& cbor) {
-				Str topic(100);
-				Bytes message(100);
-				if ( cbor.getKeyValue(H("topic"),topic) && cbor.getKeyValue(H("message"),message)) {
-					int qos = 0;
-					bool retain = false;
-					cbor.getKeyValue(H("qos"), qos);
-					cbor.getKeyValue(H("retain"), retain);
-					MqttClient::publish(topic, message, qos, retain);
-				} else LOGF(" bad mqtt.publish command ");
-			});
-
-	eb.subscribe(H("mqtt.subscribe"), [](Cbor& cbor) {
-		Str topic(100);
-		if (cbor.getKeyValue(H("topic"), topic)) {
-			int qos = 0;
-			cbor.getKeyValue(H("qos"), qos);
-			MqttClient::subscribe(topic, qos);
-		} else LOGF(" bad mqtt.subscribe command ");
+		} else LOGF(" no usb data ");
 	});
 
+
 	eb.subscribe(0, [](Cbor& cbor) { // all events
-				int cmd;
-				if ( cbor.getKeyValue(0,cmd) ) {
-					if ( cmd==H("mqtt.connack") || cmd==H("mqtt.suback")|| cmd==H("mqtt.published")|| cmd==H("mqtt.connected")) {
-						slip.send(cbor);
-					}
-				}
+				MqttClient::router(cbor); // look for "mqtt.*" messages
 			});
 
-//    UsbConnection usbConnection(&usb);
-//	Actor::initAll();
+	eb.subscribe(H("link.echo"),[](Cbor& cbor){ // reply back on link echo messages
+		slip.send(cbor);
+	});
+
+
 	eb.initAll();
 	while (1) {
 		poller(usb.fd(), tcp.fd(), 1000);

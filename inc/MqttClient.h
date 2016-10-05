@@ -16,38 +16,43 @@
 class MqttClient
 {
 private:
-    static MQTTAsync_token deliveredtoken;
-    static MQTTAsync client;
-    static int disc_finished ;
-    static int subscribed ;
-    static int finished ;
-    static Str connection;
-    static Str clientId;
-    static Str user;
-    static Str password;
-    static Str willTopic;
-    static Str willMessage;
-    static int willQos;
-    static bool willRetain;
+     MQTTAsync_token _deliveredtoken;
+     MQTTAsync _client;
+     Str _host;
+     uint16_t _port;
+     Str _clientId;
+     Str _user;
+     Str _password;
+     Str _willTopic;
+     Str _willMessage;
+     int _willQos;
+     bool _willRetain;
+     uint32_t _keepAlive;
+     int _cleanSession;
 
 public:
+     	static void router(Cbor& cbor);
 
-    static void onConnectionLost(void *context, char *cause);
-    static int onMessage(void *context, char *topicName, int topicLen, MQTTAsync_message *message);
-    static void onDisconnect(void* context, MQTTAsync_successData* response);
-    static void onSubscribe(void* context, MQTTAsync_successData* response);
-    static void onSubscribeFailure(void* context, MQTTAsync_failureData* response);
-    static void onConnectFailure(void* context, MQTTAsync_failureData* response);
-    static void onConnect(void* context, MQTTAsync_successData* response);
-    static Erc connect(Str& connection,Str& willTopic,Str& willMessage,int willQos);
-    static Erc disconnect();
-    static void onSend(void* context, MQTTAsync_successData* response);
-    static Erc publish(Str& topic,Bytes& message,int qos=0,bool retain=false);
-    static Erc subscribe(Str& topic,int qos=0);
+    MqttClient();
+    ~MqttClient();
+    void init();
+     static void onConnectionLost(void *context, char *cause);
+     static int onMessage(void *context, char *topicName, int topicLen, MQTTAsync_message *message);
+     static void onDisconnect(void* context, MQTTAsync_successData* response);
+     static void onSubscribe(void* context, MQTTAsync_successData* response);
+     static void onSubscribeFailure(void* context, MQTTAsync_failureData* response);
+     static void onConnectFailure(void* context, MQTTAsync_failureData* response);
+     static void onConnect(void* context, MQTTAsync_successData* response);
+     static void onSend(void* context, MQTTAsync_successData* response);
+     void connect(Cbor& cbor);
+     void loadConfig(Cbor& cbor);
+     void disconnect(Cbor& cbor);
+     void publish(Cbor& cbor);
+     void subscribe(Cbor& cbor);
 
 };
 
-
+extern MqttClient Mqtt;
 
 
 #endif // MQTTCLIENT_H

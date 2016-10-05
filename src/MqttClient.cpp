@@ -1,38 +1,110 @@
 #include "MqttClient.h"
 #include "MQTTAsync.h"
+#include <Cbor.h>
+#include <EventBus.h>
 
-#define ADDRESS     "tcp://limero.ddns.net:1883"
-#define CLIENTID    "ExampleClientSub"
-#define TOPIC       "stm32/alive"
-#define PAYLOAD     "true"
-#define QOS         1
-#define TIMEOUT     10000L
+#define HOST "test.mosquitto.org"
 
-MQTTAsync MqttClient::client;
-int MqttClient::disc_finished = 0;
-int MqttClient::subscribed = 0;
-int MqttClient::finished = 0;
-int MqttClient::deliveredtoken = 0;
-Str MqttClient::connection(30);
-Str MqttClient::clientId;
-Str MqttClient::user(30);
-Str MqttClient::password(30);
-Str MqttClient::willTopic(40);
-Str MqttClient::willMessage(40);
-int MqttClient::willQos = 0;
-bool MqttClient::willRetain = false;
+MqttClient Mqtt;
+
+void MqttClient::router(Cbor& cbor) {
+	uint32_t cmd;
+	if (cbor.getKeyValue((uint16_t)0, cmd)) {
+		if (cmd == H("mqtt.connect"))
+			Mqtt.connect(cbor);
+		else if (cmd == H("mqtt.subscribe"))
+			Mqtt.subscribe(cbor);
+		else if (cmd == H("mqtt.publish"))
+			Mqtt.publish(cbor);
+		else if (cmd == H("mqtt.disconnect"))
+			Mqtt.disconnect(cbor);
+	}
+}
+
+MqttClient::MqttClient() :
+		_host(40), _port(1883), _clientId(30), _user(20), _password(20), _willTopic(
+				30), _willMessage(30), _willQos(0), _willRetain(false), _keepAlive(
+				20), _cleanSession(1) {
+}
+
+MqttClient::~MqttClient() {
+
+}
+
+void MqttClient::init() {
+	_host = HOST;
+	_clientId = CLIENTID;
+	_user = "";
+	_password = "";
+	_willTopic = _clientId;
+	_willTopic += "/system/alive";
+	_willMessage = "true";
+}
+
+void MqttClient::loadConfig(Cbor& cbor) {
+	cbor.getKeyValue(H("host"), _host);
+	cbor.getKeyValue(H("port"), _port);
+	cbor.getKeyValue(H("client_id"), _clientId);
+	cbor.getKeyValue(H("user"), _user);
+	cbor.getKeyValue(H("password"), _password);
+	cbor.getKeyValue(H("keep_alive"), _keepAlive);
+	cbor.getKeyValue(H("clean_session"), _cleanSession);
+	cbor.getKeyValue(H("will_topic"), _willTopic);
+	cbor.getKeyValue(H("will_message"), _willMessage);
+	cbor.getKeyValue(H("will_qos"), _willQos);
+	cbor.getKeyValue(H("will_retain"), _willRetain);
+}
+
+void MqttClient::connect(Cbor& cbor) {
+	loadConfig(cbor);
+
+	MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
+	MQTTAsync_willOptions will_opts = MQTTAsync_willOptions_initializer;
+//        MQTTAsync_message pubmsg = MQTTAsync_message_initializer;
+//        MQTTAsync_token token;
+	int rc = 0;
+
+	Str connection(30);
+	connection = "tcp://";
+	connection.append(_host).append(':').append(_port);
+	MQTTAsync_create(&_client, connection.c_str(), _clientId.c_str(),
+			MQTTCLIENT_PERSISTENCE_NONE, NULL);
+
+	MQTTAsync_setCallbacks(_client, NULL, onConnectionLost, onMessage, NULL);
+
+	conn_opts.keepAliveInterval = _keepAlive;
+	conn_opts.cleansession = 1;
+	conn_opts.onSuccess = onConnect;
+	conn_opts.onFailure = onConnectFailure;
+	conn_opts.context = _client;
+	will_opts.message = _willMessage.c_str();
+	will_opts.topicName = _willTopic.c_str();
+	will_opts.qos = _willQos;
+	will_opts.retained = _willRetain;
+	conn_opts.will = &will_opts;
+	if ((rc = MQTTAsync_connect(_client, &conn_opts)) != MQTTASYNC_SUCCESS) {
+		LOGF("Failed to start connect, return code %d", rc);
+		Cbor resp(20);
+		resp.addKeyValue(H("error_detail"), rc).addKeyValue(H("error"), EINVAL);
+		eb.publish(H("mqtt.connack"), resp);
+	}
+}
 
 void MqttClient::onConnectionLost(void *context, char *cause) {
 	MQTTAsync client = (MQTTAsync) context;
 	MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
 	int rc;
+	Cbor resp(20);
+	resp.addKeyValue(H("error_message"), cause).addKeyValue(H("error"), EINVAL);
+	eb.publish(H("mqtt.connack"), resp);
 	LOGF("Connection lost, cause : %s ", cause);
-	LOGF("Reconnecting...");
-	conn_opts.keepAliveInterval = 20;
-	conn_opts.cleansession = 1;
+	conn_opts.keepAliveInterval = Mqtt._keepAlive;
+	conn_opts.cleansession = Mqtt._cleanSession;
 	if ((rc = MQTTAsync_connect(client, &conn_opts)) != MQTTASYNC_SUCCESS) {
 		LOGF("Failed to start connect, return code %d", rc);
-		finished = 1;
+		resp.clear();
+		resp.addKeyValue(H("error_detail"), rc).addKeyValue(H("error"), EINVAL);
+		eb.publish(H("mqtt.connack"), resp);
 	}
 }
 
@@ -43,7 +115,7 @@ int MqttClient::onMessage(void *context, char *topicName, int topicLen,
 	cbor.addKeyValue(H("topic"), topicName).addKeyValue(H("message"), bytes).addKeyValue(
 			H("qos"), message->qos).addKeyValue(H("retained"),
 			message->retained);
-	eb.publish(H("mqtt.publish"), cbor);
+	eb.publish(H("mqtt.published"), cbor);
 	MQTTAsync_freeMessage(&message);
 	MQTTAsync_free(topicName);
 	return 1;
@@ -51,86 +123,50 @@ int MqttClient::onMessage(void *context, char *topicName, int topicLen,
 
 void MqttClient::onDisconnect(void* context, MQTTAsync_successData* response) {
 	LOGF("Successful disconnection");
-	disc_finished = 1;
-	eb.publish((uint16_t) H("mqtt.disconnected"));
+	eb.publish((uint16_t) H("mqtt.disconnack"));
 }
 
 void MqttClient::onSubscribe(void* context, MQTTAsync_successData* response) {
 	LOGF("Subscribe succeeded");
-	subscribed = 1;
 	eb.publish(H("mqtt.suback"));
 }
 
 void MqttClient::onSubscribeFailure(void* context,
 		MQTTAsync_failureData* response) {
 	LOGF("Subscribe failed, rc %d", response ? response->code : 0);
-	finished = 1;
 	Cbor cbor(100);
 	cbor.addKeyValue(H("error"), response ? response->code : 0);
-	eb.publish(H("mqtt.error"));
+	eb.publish(H("mqtt.suback"), cbor);
 }
 
 void MqttClient::onConnectFailure(void* context,
 		MQTTAsync_failureData* response) {
 	LOGF("Connect failed, rc %d", response ? response->code : 0);
-	finished = 1;
 	Cbor cbor(100);
-	cbor.addKeyValue(H("error"), response ? response->code : 0);
-	eb.publish(H("mqtt.disconnected"), cbor);
+	cbor.addKeyValue(H("error_detail"), response ? response->code : 0);
+	cbor.addKeyValue(H("error"), ECONNABORTED);
+	eb.publish(H("mqtt.connack"), cbor);
 }
 
 void MqttClient::onConnect(void* context, MQTTAsync_successData* response) {
 	LOGF("Successful connection");
-	eb.publish(H("mqtt.connected"));
+	eb.publish(H("mqtt.connack"));
 }
 
-Erc MqttClient::connect(Str& connection, Str& willTopic, Str& willMessage,
-		int willQos) {
-	MqttClient::connection = connection;
-	MqttClient::willTopic = willTopic;
-	MqttClient::willMessage = willMessage;
-	MqttClient::willQos = willQos;
-	MqttClient::clientId = CLIENTID;
-	MqttClient::user = "";
-	MqttClient::password = "";
-
-	MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
-	MQTTAsync_willOptions will_opts = MQTTAsync_willOptions_initializer;
-//        MQTTAsync_message pubmsg = MQTTAsync_message_initializer;
-//        MQTTAsync_token token;
-	int rc = 0;
-
-	MQTTAsync_create(&client, connection.c_str(), CLIENTID,
-			MQTTCLIENT_PERSISTENCE_NONE, NULL);
-
-	MQTTAsync_setCallbacks(client, NULL, onConnectionLost, onMessage, NULL);
-
-	conn_opts.keepAliveInterval = 20;
-	conn_opts.cleansession = 1;
-	conn_opts.onSuccess = onConnect;
-	conn_opts.onFailure = onConnectFailure;
-	conn_opts.context = client;
-	will_opts.message = willMessage.c_str();
-	will_opts.topicName = willTopic.c_str();
-	will_opts.qos = willQos;
-	will_opts.retained = 0;
-	conn_opts.will = &will_opts;
-	if ((rc = MQTTAsync_connect(client, &conn_opts)) != MQTTASYNC_SUCCESS) {
-		LOGF("Failed to start connect, return code %d", rc);
-	}
-	return rc;
-}
-
-Erc MqttClient::disconnect() {
+void MqttClient::disconnect(Cbor& cbor) {
 	MQTTAsync_disconnectOptions disc_opts =
 			MQTTAsync_disconnectOptions_initializer;
 	disc_opts.onSuccess = onDisconnect;
 	int rc = 0;
-	if ((rc = MQTTAsync_disconnect(client, &disc_opts)) != MQTTASYNC_SUCCESS) {
+	if ((rc = MQTTAsync_disconnect(Mqtt._client, &disc_opts)) != MQTTASYNC_SUCCESS) {
 		LOGF("Failed to start disconnect, return code %d", rc);
+		Cbor resp(20);
+		resp.addKeyValue(H("error_message"), "disconnect fail").addKeyValue(
+				H("error"), ENOTCONN);
+		eb.publish(H("mqtt.connack"), resp);
+
 	}
-	MQTTAsync_destroy(&client);
-	return rc;
+	MQTTAsync_destroy(&Mqtt._client);
 }
 
 void MqttClient::onSend(void* context, MQTTAsync_successData* response) {
@@ -138,41 +174,55 @@ void MqttClient::onSend(void* context, MQTTAsync_successData* response) {
 	eb.publish(H("mqtt.send"));
 }
 
-Erc MqttClient::publish(Str& topic, Bytes& message, int qos, bool retain) {
+void MqttClient::publish(Cbor& cbor) {
 	MQTTAsync_responseOptions opts = MQTTAsync_responseOptions_initializer;
 	MQTTAsync_message pubmsg = MQTTAsync_message_initializer;
+	Str topic(60);
+	Bytes message(1024);
+	int qos = 0;
+	bool retain;
+	cbor.getKeyValue(H("topic"), topic);
+	cbor.getKeyValue(H("message"), message);
+	cbor.getKeyValue(H("qos"), qos);
+	cbor.getKeyValue(H("retain"), retain);
+
 	int rc = E_OK;
 	opts.onSuccess = MqttClient::onSend;
-	opts.context = client;
+	opts.context = _client;
 
 	pubmsg.payload = message.data();
 	pubmsg.payloadlen = message.length();
 	pubmsg.qos = qos;
 	pubmsg.retained = retain;
-	deliveredtoken = 0;
 
-	if ((rc = MQTTAsync_sendMessage(client, topic.c_str(), &pubmsg, &opts))
+	if ((rc = MQTTAsync_sendMessage(Mqtt._client, topic.c_str(), &pubmsg, &opts))
 			!= MQTTASYNC_SUCCESS) {
 		printf("Failed to start sendMessage, return code %d", rc);
+		Cbor resp(20);
+		resp.addKeyValue(H("error_detail"), rc).addKeyValue(H("error"), EAGAIN);
+		eb.publish(H("mqtt.connack"), resp);
 	}
-	return rc;
 }
 
-Erc MqttClient::subscribe(Str& topic, int qos) {
+void MqttClient::subscribe(Cbor& cbor) {
+	Str topic(60);
+	int qos = 0;
+	cbor.getKeyValue(H("topic"), topic);
+	cbor.getKeyValue(H("qos"), qos);
 	MQTTAsync_responseOptions opts = MQTTAsync_responseOptions_initializer;
 	LOGF("Subscribing to topic %s for client %s using QoS%d",
 			topic.c_str(), CLIENTID, qos);
 	opts.onSuccess = onSubscribe;
 	opts.onFailure = onSubscribeFailure;
-	opts.context = client;
-
-	deliveredtoken = 0;
+	opts.context = Mqtt._client;
 	int rc = E_OK;
 
-	if ((rc = MQTTAsync_subscribe(client, topic.c_str(), qos, &opts))
+	if ((rc = MQTTAsync_subscribe(Mqtt._client, topic.c_str(), qos, &opts))
 			!= MQTTASYNC_SUCCESS) {
 		LOGF("Failed to start subscribe, return code %d", rc);
+		Cbor resp(20);
+		resp.addKeyValue(H("error_detail"), rc).addKeyValue(H("error"), EAGAIN);
+		eb.publish(H("mqtt.connack"), resp);
 	}
-	return rc;
 }
 
