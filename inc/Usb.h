@@ -22,7 +22,7 @@ public:
     void setDevice(const char* device) ;
     void setBaudrate(uint32_t baud);
     void logStats();
-    void onEvent(Header);
+    void onEvent(Cbor& cbor);
     int fd();
     Erc open();
     Erc close();

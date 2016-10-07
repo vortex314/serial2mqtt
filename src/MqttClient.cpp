@@ -37,7 +37,7 @@ void MqttClient::init() {
 	_user = "";
 	_password = "";
 	_willTopic = _clientId;
-	_willTopic += "/system/alive";
+	_willTopic.append("/system/alive");
 	_willMessage = "true";
 }
 

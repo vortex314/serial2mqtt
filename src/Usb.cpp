@@ -193,7 +193,7 @@ bool Usb::hasData()
     return count;
 }
 
-void Usb::onEvent(Header hdr)
+void Usb::onEvent(Cbor& cbor)
 {
     /*
         uint8_t b;

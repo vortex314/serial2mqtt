@@ -61,7 +61,7 @@ struct {
 	LogManager::LogLevel logLevel;
 
 } context = { "limero.ddns.net", 1883, 115200, "/dev/ttyACM0",
-		LogManager::LOG_DEBUG};
+		LogManager::LOG_DEBUG };
 Cbor mqttConfig(200);
 
 Usb usb("/dev/ttyACM0");
@@ -169,10 +169,10 @@ void loadOptions(int argc, char* argv[]) {
 	while ((c = getopt(argc, argv, "h:p:d:b:l:")) != -1)
 		switch (c) {
 		case 'h':
-			mqttConfig.addKeyValue(H("host"),optarg);
+			mqttConfig.addKeyValue(H("host"), optarg);
 			break;
 		case 'p':
-			mqttConfig.addKeyValue(H("host"),atoi(optarg));
+			mqttConfig.addKeyValue(H("host"), atoi(optarg));
 			break;
 		case 'd':
 			context.device = optarg;
@@ -249,7 +249,6 @@ void onUsbRxd(Cbor& cbor) {
 
 extern void logCbor(Cbor&);
 
-
 int main(int argc, char *argv[]) {
 
 	LOGF("Start %s version : %s %s", argv[0], __DATE__, __TIME__);
@@ -280,15 +279,19 @@ int main(int argc, char *argv[]) {
 		} else LOGF(" no usb data ");
 	});
 
-
-	eb.subscribe(0, [](Cbor& cbor) { // all events
-				MqttClient::router(cbor); // look for "mqtt.*" messages
-			});
-
-	eb.subscribe(H("link.echo"),[](Cbor& cbor){ // reply back on link echo messages
-		slip.send(cbor);
+	eb.subscribe(H("link.ping"), [](Cbor& cbor) {
+		Cbor msg(10);
+		msg.addKeyValue(0,H("link.pong"));
+		slip.send(msg);
 	});
 
+	eb.subscribe(0, [](Cbor& cbor) { // all events
+				MqttClient::router(cbor);// look for "mqtt.*" messages
+			});
+
+	eb.subscribe(H("link.echo"), [](Cbor& cbor) { // reply back on link echo messages
+				slip.send(cbor);
+			});
 
 	eb.initAll();
 	while (1) {
