@@ -19,7 +19,6 @@ public:
     void setHost(const char* host);
     void setPort(uint16_t port);
     ~Tcp();
-    void onEvent(Cbor& cbor);
 
     Erc connect();
     Erc disconnect();

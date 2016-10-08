@@ -64,7 +64,7 @@ struct {
 		LogManager::LOG_DEBUG };
 Cbor mqttConfig(200);
 
-Usb usb("/dev/ttyACM0");
+Usb usb("/dev/ttyACM1");
 Tcp tcp("localhost", 1883);
 
 //_______________________________________________________________________________________
@@ -249,6 +249,34 @@ void onUsbRxd(Cbor& cbor) {
 
 extern void logCbor(Cbor&);
 
+class Tracer: public Actor {
+public:
+	Tracer() :
+			Actor("Tracer") {
+	}
+	void setup() {
+		timeout(1000);
+//		eb.subscribe(H("timeout"), this, (MethodHandler) &Tracer::onEvent); // default subscribed to timeouts
+	}
+	void onEvent(Cbor& msg) {
+		uint16_t event;
+		msg.getKeyValue(0, event);
+		Str str(100);
+		Cbor cbor(100);
+		PT_BEGIN()
+		;
+		while (true) {
+			eb.publish(H("link.pong"));
+			timeout(1000);
+			PT_YIELD_UNTIL(event == H("timeout"));
+
+		}
+	PT_END()
+}
+};
+
+Tracer tracer;
+
 int main(int argc, char *argv[]) {
 
 	LOGF("Start %s version : %s %s", argv[0], __DATE__, __TIME__);
@@ -268,32 +296,39 @@ int main(int argc, char *argv[]) {
 	Erc erc = usb.open();
 	LOGF(" usb.open() : %d %s", erc, strerror(erc));
 
-	eb.subscribe(H("usb.rxd"), [](Cbor& cbor) {
-		LOGF(" usb.rxd execute ");
-		Bytes data(1000);
-		if (cbor.getKeyValue(H("data"),data)) {
-			data.offset(0);
-			while (data.hasData()) {
-				slip.onRecv(data.read());
-			}
-		} else LOGF(" no usb data ");
-	});
+	tracer.setup();
 
-	eb.subscribe(H("link.ping"), [](Cbor& cbor) {
-		Cbor msg(10);
-		msg.addKeyValue(0,H("link.pong"));
-		slip.send(msg);
-	});
+	eb.subscribe(H("usb.rxd"), [](Cbor& cbor) { // send usb data to slip processing
+//				LOGF(" usb.rxd execute ");
+				Bytes data(1000);
+				if (cbor.getKeyValue(H("data"),data)) {
+					data.offset(0);
+					while (data.hasData()) {
+						slip.onRecv(data.read());
+					}
+				} else LOGF(" no usb data ");
+			});
+
+	eb.subscribe(H("link.ping"), [](Cbor& cbor) { // echo server
+				eb.publish(H("link.pong"));
+			});
+
+	eb.subscribe(0, [](Cbor& cbor) { // route events to gateway
+				uint16_t cmd;
+				if ( cbor.getKeyValue(0,cmd) ) {
+					if ( cmd==H("mqtt.connack") || cmd==H("mqtt.suback")|| cmd==H("mqtt.puback") || cmd==H("mqtt.published")|| cmd==H("link.pong")) {
+						slip.send(cbor);
+						LOGF("send");
+					}
+				}
+			});
 
 	eb.subscribe(0, [](Cbor& cbor) { // all events
 				MqttClient::router(cbor);// look for "mqtt.*" messages
 			});
 
-	eb.subscribe(H("link.echo"), [](Cbor& cbor) { // reply back on link echo messages
-				slip.send(cbor);
-			});
 
-	eb.initAll();
+	Actor::setupAll();
 	while (1) {
 		poller(usb.fd(), tcp.fd(), 1000);
 		eb.eventLoop();

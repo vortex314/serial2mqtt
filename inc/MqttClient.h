@@ -29,6 +29,8 @@ private:
      bool _willRetain;
      uint32_t _keepAlive;
      int _cleanSession;
+     bool _connected;
+     uint16_t _msgid;
 
 public:
      	static void router(Cbor& cbor);
@@ -43,7 +45,8 @@ public:
      static void onSubscribeFailure(void* context, MQTTAsync_failureData* response);
      static void onConnectFailure(void* context, MQTTAsync_failureData* response);
      static void onConnect(void* context, MQTTAsync_successData* response);
-     static void onSend(void* context, MQTTAsync_successData* response);
+     static void onPublishSuccess(void* context, MQTTAsync_successData* response);
+     static void onPublishFailure(void* context, MQTTAsync_failureData* response);
      void connect(Cbor& cbor);
      void loadConfig(Cbor& cbor);
      void disconnect(Cbor& cbor);

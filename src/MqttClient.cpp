@@ -9,7 +9,7 @@ MqttClient Mqtt;
 
 void MqttClient::router(Cbor& cbor) {
 	uint32_t cmd;
-	if (cbor.getKeyValue((uint16_t)0, cmd)) {
+	if (cbor.getKeyValue((uint16_t) 0, cmd)) {
 		if (cmd == H("mqtt.connect"))
 			Mqtt.connect(cbor);
 		else if (cmd == H("mqtt.subscribe"))
@@ -24,7 +24,7 @@ void MqttClient::router(Cbor& cbor) {
 MqttClient::MqttClient() :
 		_host(40), _port(1883), _clientId(30), _user(20), _password(20), _willTopic(
 				30), _willMessage(30), _willQos(0), _willRetain(false), _keepAlive(
-				20), _cleanSession(1) {
+				20), _cleanSession(1), _connected(false),_msgid(0) {
 }
 
 MqttClient::~MqttClient() {
@@ -56,7 +56,13 @@ void MqttClient::loadConfig(Cbor& cbor) {
 }
 
 void MqttClient::connect(Cbor& cbor) {
+	init();
 	loadConfig(cbor);
+
+	if (_connected) {
+		eb.publish(H("mqtt.connack"));
+		return;
+	}
 
 	MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
 	MQTTAsync_willOptions will_opts = MQTTAsync_willOptions_initializer;
@@ -85,27 +91,38 @@ void MqttClient::connect(Cbor& cbor) {
 	if ((rc = MQTTAsync_connect(_client, &conn_opts)) != MQTTASYNC_SUCCESS) {
 		LOGF("Failed to start connect, return code %d", rc);
 		Cbor resp(20);
-		resp.addKeyValue(H("error_detail"), rc).addKeyValue(H("error"), EINVAL);
+		resp.addKeyValue(H("error_detail"), rc);
+		resp.addKeyValue(H("error"), (uint32_t) EINVAL);
 		eb.publish(H("mqtt.connack"), resp);
 	}
 }
 
+void MqttClient::onConnect(void* context, MQTTAsync_successData* response) {
+	Mqtt._connected = true;
+	LOGF("Successful connection");
+	eb.publish(H("mqtt.connack"));
+}
+
 void MqttClient::onConnectionLost(void *context, char *cause) {
-	MQTTAsync client = (MQTTAsync) context;
-	MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
-	int rc;
+	Mqtt._connected = false;
 	Cbor resp(20);
-	resp.addKeyValue(H("error_message"), cause).addKeyValue(H("error"), EINVAL);
+	resp.addKeyValue(H("error_message"),
+			cause == 0 ? " unknown cause " : cause);
+	resp.addKeyValue(H("error"), (uint32_t) EINVAL);
 	eb.publish(H("mqtt.connack"), resp);
-	LOGF("Connection lost, cause : %s ", cause);
-	conn_opts.keepAliveInterval = Mqtt._keepAlive;
-	conn_opts.cleansession = Mqtt._cleanSession;
-	if ((rc = MQTTAsync_connect(client, &conn_opts)) != MQTTASYNC_SUCCESS) {
-		LOGF("Failed to start connect, return code %d", rc);
-		resp.clear();
-		resp.addKeyValue(H("error_detail"), rc).addKeyValue(H("error"), EINVAL);
-		eb.publish(H("mqtt.connack"), resp);
-	}
+	LOGF("Connection lost, cause : %s ", cause==0 ? " unknown cause " : cause);
+	Cbor cbor(1);
+//	Mqtt.connect(cbor); // connect with default values , previously loaded
+}
+
+void MqttClient::onConnectFailure(void* context,
+		MQTTAsync_failureData* response) {
+	Mqtt._connected = false;
+	LOGF("Connect failed, rc %d", response ? response->code : 0);
+	Cbor cbor(100);
+	cbor.addKeyValue(H("error_detail"), response ? response->code : 0);
+	cbor.addKeyValue(H("error"), ECONNABORTED);
+	eb.publish(H("mqtt.connack"), cbor);
 }
 
 int MqttClient::onMessage(void *context, char *topicName, int topicLen,
@@ -126,55 +143,29 @@ void MqttClient::onDisconnect(void* context, MQTTAsync_successData* response) {
 	eb.publish((uint16_t) H("mqtt.disconnack"));
 }
 
-void MqttClient::onSubscribe(void* context, MQTTAsync_successData* response) {
-	LOGF("Subscribe succeeded");
-	eb.publish(H("mqtt.suback"));
-}
-
-void MqttClient::onSubscribeFailure(void* context,
-		MQTTAsync_failureData* response) {
-	LOGF("Subscribe failed, rc %d", response ? response->code : 0);
-	Cbor cbor(100);
-	cbor.addKeyValue(H("error"), response ? response->code : 0);
-	eb.publish(H("mqtt.suback"), cbor);
-}
-
-void MqttClient::onConnectFailure(void* context,
-		MQTTAsync_failureData* response) {
-	LOGF("Connect failed, rc %d", response ? response->code : 0);
-	Cbor cbor(100);
-	cbor.addKeyValue(H("error_detail"), response ? response->code : 0);
-	cbor.addKeyValue(H("error"), ECONNABORTED);
-	eb.publish(H("mqtt.connack"), cbor);
-}
-
-void MqttClient::onConnect(void* context, MQTTAsync_successData* response) {
-	LOGF("Successful connection");
-	eb.publish(H("mqtt.connack"));
-}
-
 void MqttClient::disconnect(Cbor& cbor) {
 	MQTTAsync_disconnectOptions disc_opts =
 			MQTTAsync_disconnectOptions_initializer;
 	disc_opts.onSuccess = onDisconnect;
 	int rc = 0;
-	if ((rc = MQTTAsync_disconnect(Mqtt._client, &disc_opts)) != MQTTASYNC_SUCCESS) {
+	if ((rc = MQTTAsync_disconnect(Mqtt._client, &disc_opts))
+			!= MQTTASYNC_SUCCESS) {
 		LOGF("Failed to start disconnect, return code %d", rc);
 		Cbor resp(20);
-		resp.addKeyValue(H("error_message"), "disconnect fail").addKeyValue(
-				H("error"), ENOTCONN);
-		eb.publish(H("mqtt.connack"), resp);
+		resp.addKeyValue(H("error_message"), "disconnect fail");
+		resp.addKeyValue(H("error"), ENOTCONN);
+		eb.publish(H("mqtt.disconnack"), resp);
 
 	}
 	MQTTAsync_destroy(&Mqtt._client);
 }
 
-void MqttClient::onSend(void* context, MQTTAsync_successData* response) {
-	LOGF("Message with token value %d delivery confirmed", response->token);
-	eb.publish(H("mqtt.send"));
-}
-
 void MqttClient::publish(Cbor& cbor) {
+	if (!_connected) {
+		Cbor resp(20);
+		resp.addKeyValue(H("error"), ENOTCONN);
+		eb.publish(H("mqtt.puback"), resp);
+	}
 	MQTTAsync_responseOptions opts = MQTTAsync_responseOptions_initializer;
 	MQTTAsync_message pubmsg = MQTTAsync_message_initializer;
 	Str topic(60);
@@ -187,24 +178,49 @@ void MqttClient::publish(Cbor& cbor) {
 	cbor.getKeyValue(H("retain"), retain);
 
 	int rc = E_OK;
-	opts.onSuccess = MqttClient::onSend;
+	opts.onSuccess = MqttClient::onPublishSuccess;
+	opts.onFailure = MqttClient::onPublishFailure;
 	opts.context = _client;
 
 	pubmsg.payload = message.data();
 	pubmsg.payloadlen = message.length();
-	pubmsg.qos = qos;
+	pubmsg.qos = 1;
 	pubmsg.retained = retain;
+	pubmsg.msgid = _msgid++;
 
 	if ((rc = MQTTAsync_sendMessage(Mqtt._client, topic.c_str(), &pubmsg, &opts))
 			!= MQTTASYNC_SUCCESS) {
-		printf("Failed to start sendMessage, return code %d", rc);
+		LOGF("Failed to start sendMessage, return code %d", rc);
 		Cbor resp(20);
-		resp.addKeyValue(H("error_detail"), rc).addKeyValue(H("error"), EAGAIN);
-		eb.publish(H("mqtt.connack"), resp);
+		resp.addKeyValue(H("error_detail"), rc);
+		resp.addKeyValue(H("error"), (uint32_t) EAGAIN);
+		eb.publish(H("mqtt.puback"), resp);
 	}
 }
 
+void MqttClient::onPublishSuccess(void* context,
+		MQTTAsync_successData* response) {
+	LOGF("Message with token value %d delivery confirmed", response->token);
+	eb.publish(H("mqtt.puback"));
+}
+
+void MqttClient::onPublishFailure(void* context,
+		MQTTAsync_failureData* response) {
+	LOGF("Publish failed, rc %d", response ? response->code : 0);
+	Cbor cbor(100);
+
+	cbor.addKeyValue(H("error"), response ? response->code : 0);
+	cbor.addKeyValue(H("error_msg"),
+			response->message ? "no detail" : response->message);
+	eb.publish(H("mqtt.puback"), cbor);
+}
+
 void MqttClient::subscribe(Cbor& cbor) {
+	if (!_connected) {
+		Cbor resp(20);
+		resp.addKeyValue(H("error"), ENOTCONN);
+		eb.publish(H("mqtt.puback"), resp);
+	}
 	Str topic(60);
 	int qos = 0;
 	cbor.getKeyValue(H("topic"), topic);
@@ -221,8 +237,22 @@ void MqttClient::subscribe(Cbor& cbor) {
 			!= MQTTASYNC_SUCCESS) {
 		LOGF("Failed to start subscribe, return code %d", rc);
 		Cbor resp(20);
-		resp.addKeyValue(H("error_detail"), rc).addKeyValue(H("error"), EAGAIN);
-		eb.publish(H("mqtt.connack"), resp);
+		resp.addKeyValue(H("error_detail"), rc);
+		resp.addKeyValue(H("error"), (uint32_t) EAGAIN);
+		eb.publish(H("mqtt.suback"), resp);
 	}
+}
+
+void MqttClient::onSubscribe(void* context, MQTTAsync_successData* response) {
+	LOGF("Subscribe succeeded");
+	eb.publish(H("mqtt.suback"));
+}
+
+void MqttClient::onSubscribeFailure(void* context,
+		MQTTAsync_failureData* response) {
+	LOGF("Subscribe failed, rc %d", response ? response->code : 0);
+	Cbor cbor(100);
+	cbor.addKeyValue(H("error"), response ? response->code : 0);
+	eb.publish(H("mqtt.suback"), cbor);
 }
 
