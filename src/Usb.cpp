@@ -78,6 +78,11 @@ uint32_t baudSymbol(uint32_t value)
 
 void Usb::flush()
 {
+	Bytes bytes(1024);
+	while ( _txd.hasData()) {
+		bytes.write(_txd.read());
+	}
+	send(bytes);
 }
 
 Erc Usb::open()
@@ -154,7 +159,7 @@ Erc Usb::send(Bytes& bytes)
         buffer[i++]=read();
     }
 
-    uint32_t count = ::write(_fd,buffer,i);
+    uint32_t count = ::write(_fd,bytes.data(),i);
     if ( count != i)
     {
         close();
