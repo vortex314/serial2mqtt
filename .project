@@ -3,6 +3,7 @@
 	<name>serial2mqtt</name>
 	<comment></comment>
 	<projects>
+		<project>Common</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

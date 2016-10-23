@@ -53,6 +53,8 @@ using namespace std;
 #include <SlipStream.h>
 #include <EventBus.h>
 
+EventBus eb(10240);
+
 struct {
 	const char* host;
 	uint16_t port;
@@ -266,8 +268,10 @@ public:
 		PT_BEGIN()
 		;
 		while (true) {
+			LOGF(" Tracer pong ");
 			eb.publish(H("link.pong"));
 			timeout(1000);
+			event=0;
 			PT_YIELD_UNTIL(event == H("timeout"));
 
 		}
@@ -277,9 +281,22 @@ public:
 
 Tracer tracer;
 
+void usb_connect() {
+	while (true) {
+		Erc erc = usb.open();
+		LOGF(" usb.open() : %d %s", erc, strerror(erc));
+
+		if (erc == 0)
+			break;
+		sleep(2);
+	}
+}
+
 int main(int argc, char *argv[]) {
 
 	LOGF("Start %s version : %s %s", argv[0], __DATE__, __TIME__);
+	LOGF(" H('timeout')=%d",H("timeout"));
+	static_assert(H("timeout")==45638," timout hash incorrect");
 
 	loadOptions(argc, argv);
 	if (context.logLevel <= LogManager::LOG_DEBUG) {
@@ -293,8 +310,7 @@ int main(int argc, char *argv[]) {
 	usb.setBaudrate(context.baudrate);
 	tcp.setHost(context.host);
 	tcp.setPort(context.port);
-	Erc erc = usb.open();
-	LOGF(" usb.open() : %d %s", erc, strerror(erc));
+	usb_connect();
 
 	tracer.setup();
 
@@ -310,7 +326,12 @@ int main(int argc, char *argv[]) {
 			});
 
 	eb.subscribe(H("link.ping"), [](Cbor& cbor) { // echo server
+		LOGF(" received link.ping ");
 				eb.publish(H("link.pong"));
+			});
+
+	eb.subscribe(H("usb.closed"), [](Cbor& cbor) { // echo server
+				usb_connect();
 			});
 
 	eb.subscribe(0, [](Cbor& cbor) { // route events to gateway
@@ -326,7 +347,6 @@ int main(int argc, char *argv[]) {
 	eb.subscribe(0, [](Cbor& cbor) { // all events
 				MqttClient::router(cbor);// look for "mqtt.*" messages
 			});
-
 
 	Actor::setupAll();
 	while (1) {

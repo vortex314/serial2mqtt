@@ -200,7 +200,7 @@ void MqttClient::publish(Cbor& cbor) {
 
 void MqttClient::onPublishSuccess(void* context,
 		MQTTAsync_successData* response) {
-	LOGF("Message with token value %d delivery confirmed", response->token);
+//	LOGF("Message with token value %d delivery confirmed", response->token);
 	eb.publish(H("mqtt.puback"));
 }
 
