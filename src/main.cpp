@@ -53,7 +53,7 @@ using namespace std;
 #include <SlipStream.h>
 #include <EventBus.h>
 
-EventBus eb(10240);
+EventBus eb(2048);
 
 struct {
 	const char* host;
@@ -233,7 +233,7 @@ void interceptAllSignals() {
 	signal(SIGTERM, SignalHandler);
 }
 
-SlipStream slip(256, usb);
+SlipStream slip(1024, usb);
 #include "MqttClient.h"
 
 void onUsbRxd(Cbor& cbor) {
@@ -271,7 +271,7 @@ public:
 			LOGF(" Tracer pong ");
 			eb.publish(H("link.pong"));
 			timeout(1000);
-			event=0;
+			event = 0;
 			PT_YIELD_UNTIL(event == H("timeout"));
 
 		}
@@ -281,27 +281,60 @@ public:
 
 Tracer tracer;
 
-void usb_connect() {
-	while (true) {
-		Erc erc = usb.open();
-		LOGF(" usb.open() : %d %s", erc, strerror(erc));
-
-		if (erc == 0)
-			break;
-		sleep(2);
+class UsbConnector: public Actor {
+public:
+	UsbConnector() :
+			Actor("UsbConnector") {
 	}
+	void setup() {
+		timeout(1000);
+//		eb.subscribe(H("timeout"), this, (MethodHandler) &Tracer::onEvent); // default subscribed to timeouts
+	}
+	void onEvent(Cbor& msg) {
+		uint16_t event;
+		msg.getKeyValue(0, event);
+		Str str(100);
+		Cbor cbor(100);
+		Erc erc;
+		PT_BEGIN()
+		;
+		CONNECTING: {
+			while (true) {
+				erc = usb.open();
+				LOGF(" usb.open() : %d %s", erc, strerror(erc));
+				if (erc == 0) {
+					eb.publish(H("usb.open"));
+					goto CONNECTED;
+				}
+				timeout(2000);
+				PT_YIELD_UNTIL(event=H("timeout"));
+
+			};
+			CONNECTED: {
+				PT_YIELD_UNTIL(event == H("usb.closed"));
+				goto CONNECTING;
+			}
+		}
+	PT_END()
 }
+};
+
+UsbConnector usbConnector;
+
+
+extern void logCbor(Cbor& cbor);
 
 int main(int argc, char *argv[]) {
 
 	LOGF("Start %s version : %s %s", argv[0], __DATE__, __TIME__);
-	LOGF(" H('timeout')=%d",H("timeout"));
+	LOGF(" H('timeout')=%d", H("timeout"));
 	static_assert(H("timeout")==45638," timout hash incorrect");
 
 	loadOptions(argc, argv);
 	if (context.logLevel <= LogManager::LOG_DEBUG) {
-		eb.debug(true);
+//		eb.debug(true);
 	};
+
 	Mqtt.loadConfig(mqttConfig);
 
 	interceptAllSignals();
@@ -310,7 +343,12 @@ int main(int argc, char *argv[]) {
 	usb.setBaudrate(context.baudrate);
 	tcp.setHost(context.host);
 	tcp.setPort(context.port);
-	usb_connect();
+	usbConnector.setup();
+//	usb_connect();
+
+	eb.subscribe(0, [](Cbor& cbor) {
+		logCbor(cbor);
+	});
 
 	tracer.setup();
 
@@ -326,13 +364,9 @@ int main(int argc, char *argv[]) {
 			});
 
 	eb.subscribe(H("link.ping"), [](Cbor& cbor) { // echo server
-		LOGF(" received link.ping ");
 				eb.publish(H("link.pong"));
 			});
 
-	eb.subscribe(H("usb.closed"), [](Cbor& cbor) { // echo server
-				usb_connect();
-			});
 
 	eb.subscribe(0, [](Cbor& cbor) { // route events to gateway
 				uint16_t cmd;
@@ -348,7 +382,8 @@ int main(int argc, char *argv[]) {
 				MqttClient::router(cbor);// look for "mqtt.*" messages
 			});
 
-	Actor::setupAll();
+//	Actor::setupAll();
+	eb.publish(H("usb.closed"));
 	while (1) {
 		poller(usb.fd(), tcp.fd(), 1000);
 		eb.eventLoop();

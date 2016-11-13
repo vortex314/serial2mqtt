@@ -38,6 +38,7 @@ case H("timeout") : return "timeout";
 case H("topic") : return "topic";
 case H("usb.closed") : return "usb.closed";
 case H("usb.err") : return "usb.err";
+case H("usb.open") : return "usb.open";
 case H("usb.rxd") : return "usb.rxd";
 case H("user") : return "user";
 case H("will_message") : return "will_message";
