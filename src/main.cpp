@@ -53,7 +53,7 @@ using namespace std;
 #include <SlipStream.h>
 #include <EventBus.h>
 
-EventBus eb(2048);
+EventBus eb(10240);
 
 struct {
 	const char* host;
@@ -75,7 +75,7 @@ Tcp tcp("localhost", 1883);
 //_______________________________________________________________________________________
 
 void poller(int usbFd, int tcpFd, uint64_t sleepTill) {
-	Cbor cbor(100);
+	Cbor cbor(1024);
 	Bytes bytes(1024);
 	uint8_t buffer[1024];
 	fd_set rfds;
@@ -124,22 +124,27 @@ void poller(int usbFd, int tcpFd, uint64_t sleepTill) {
 			sleep(1);
 		} else if (retval > 0) // one of the fd was set
 				{
-			if (FD_ISSET(usbFd,&rfds)) {
+			if (FD_ISSET(usbFd, &rfds)) {
 				int size = ::read(usbFd, buffer, sizeof(buffer));
 				if (size >= 0) {
+					LOGF(" rxd USB : %d ", size);
+					Str str(size * 3);
+					for (int i = 0; i < size; i++)
+						str.appendHex(buffer[i]);
+					fprintf(stdout, "%s\n", str.c_str());
 					for (int i = 0; i < size; i++)
 						bytes.write(buffer[i]);
 					cbor.addKey(H("data")).add(bytes);
 					eb.publish(H("usb.rxd"), cbor);
 				}
 			}
-			if (FD_ISSET(tcpFd,&rfds)) {
+			if (FD_ISSET(tcpFd, &rfds)) {
 				eb.publish(H("tcp.rxd"));
 			}
-			if (FD_ISSET(usbFd,&efds)) {
+			if (FD_ISSET(usbFd, &efds)) {
 				eb.publish(H("usb.err"));
 			}
-			if (FD_ISSET(tcpFd,&efds)) {
+			if (FD_ISSET(tcpFd, &efds)) {
 				eb.publish(H("tcp.err"));
 			}
 		} else {
@@ -307,7 +312,7 @@ public:
 					goto CONNECTED;
 				}
 				timeout(2000);
-				PT_YIELD_UNTIL(event=H("timeout"));
+				PT_YIELD_UNTIL(event = H("timeout"));
 
 			};
 			CONNECTED: {
@@ -320,7 +325,6 @@ public:
 };
 
 UsbConnector usbConnector;
-
 
 extern void logCbor(Cbor& cbor);
 
@@ -366,7 +370,6 @@ int main(int argc, char *argv[]) {
 	eb.subscribe(H("link.ping"), [](Cbor& cbor) { // echo server
 				eb.publish(H("link.pong"));
 			});
-
 
 	eb.subscribe(0, [](Cbor& cbor) { // route events to gateway
 				uint16_t cmd;
