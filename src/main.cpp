@@ -131,7 +131,8 @@ void poller(int usbFd, int tcpFd, uint64_t sleepTill) {
 					Str str(size * 3);
 					for (int i = 0; i < size; i++)
 						str.appendHex(buffer[i]);
-					fprintf(stdout, "%s\n", str.c_str());
+					LOGF("%s",str.c_str());
+//					fprintf(stdout, "%s\n", str.c_str());
 					for (int i = 0; i < size; i++)
 						bytes.write(buffer[i]);
 					cbor.addKey(H("data")).add(bytes);
