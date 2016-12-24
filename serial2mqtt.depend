@@ -1,0 +1,191 @@
+# depslib dependency file v1.0
+1482540769 source:/home/lieven/linux/serial2mqtt/main.cpp
+	<iostream>
+
+1482537296 source:/home/lieven/linux/serial2mqtt/src/keys.cpp
+	<EventBus.h>
+
+1482537304 /home/lieven/linux/Common/inc/EventBus.h
+	<Actor.h>
+	<CborQueue.h>
+
+1482537304 /home/lieven/linux/Common/inc/Actor.h
+	<stdint.h>
+	<Sys.h>
+	<Cbor.h>
+
+1482539525 /home/lieven/linux/Common/inc/Sys.h
+	"stdint.h"
+	"errno.h"
+	<Erc.h>
+	<Arduino.h>
+	<Log.h>
+	<Log.h>
+	"mem.h"
+
+1482537304 /home/lieven/linux/Common/inc/Erc.h
+	<stdint.h>
+	<errno.h>
+
+1482537304 /home/lieven/linux/Common/inc/Log.h
+	<stdint.h>
+	<stdarg.h>
+	<Sys.h>
+
+1482537304 /home/lieven/linux/Common/inc/Cbor.h
+	"Bytes.h"
+	"Str.h"
+	"errno.h"
+	<stdarg.h>
+	"Sys.h"
+
+1482537304 /home/lieven/linux/Common/inc/Bytes.h
+	<stdint.h>
+	"Erc.h"
+	"Sys.h"
+	<assert.h>
+
+1482537304 /home/lieven/linux/Common/inc/Str.h
+	"Bytes.h"
+	"Erc.h"
+
+1482537304 /home/lieven/linux/Common/inc/CborQueue.h
+	"Erc.h"
+	"Cbor.h"
+	<BipBuffer.h>
+
+1482537304 /home/lieven/linux/Common/inc/BipBuffer.h
+	<stdint.h>
+	<string.h>
+	"Sys.h"
+
+1482537296 source:/home/lieven/linux/serial2mqtt/src/main.cpp
+	<iostream>
+	<stdio.h>
+	<string.h>
+	<unistd.h>
+	<fcntl.h>
+	<errno.h>
+	<termios.h>
+	<stdint.h>
+	<string.h>
+	<cstdlib>
+	"Str.h"
+	<time.h>
+	<stdio.h>
+	<sys/time.h>
+	<sys/types.h>
+	<unistd.h>
+	"Tcp.h"
+	"Usb.h"
+	<time.h>
+	<Actor.h>
+	<Log.h>
+	<CborQueue.h>
+	<SlipStream.h>
+	<EventBus.h>
+	"Tcp.h"
+	"Log.h"
+	<signal.h>
+	<execinfo.h>
+	"MqttClient.h"
+
+1482537296 /home/lieven/linux/serial2mqtt/inc/Tcp.h
+	"Bytes.h"
+	"Actor.h"
+	"BufferedByteStream.h"
+
+1482537304 /home/lieven/linux/Common/inc/BufferedByteStream.h
+	<Bytes.h>
+	<ByteStream.h>
+	<CircBuf.h>
+
+1482537304 /home/lieven/linux/Common/inc/ByteStream.h
+	<Bytes.h>
+
+1482537304 /home/lieven/linux/Common/inc/CircBuf.h
+	<stdint.h>
+	<errno.h>
+	<Sys.h>
+
+1482537296 /home/lieven/linux/serial2mqtt/inc/Usb.h
+	"Actor.h"
+	"BufferedByteStream.h"
+
+1482537304 /home/lieven/linux/Common/inc/SlipStream.h
+	<stdint.h>
+	<Bytes.h>
+	<ByteStream.h>
+	<Actor.h>
+
+1482537296 /home/lieven/linux/serial2mqtt/inc/MqttClient.h
+	"MQTTAsync.h"
+	<Cbor.h>
+	<EventBus.h>
+
+1482537938 /home/lieven/linux/paho/src/MQTTAsync.h
+	<stdio.h>
+	"MQTTClientPersistence.h"
+	"stdio.h"
+	"stdlib.h"
+	"string.h"
+	"MQTTAsync.h"
+	"stdio.h"
+	"stdlib.h"
+	"string.h"
+	"MQTTAsync.h"
+
+1482537938 /home/lieven/linux/paho/src/MQTTClientPersistence.h
+
+1482537296 source:/home/lieven/linux/serial2mqtt/src/MqttClient.cpp
+	"MqttClient.h"
+	"MQTTAsync.h"
+	<Cbor.h>
+	<EventBus.h>
+
+1482537296 source:/home/lieven/linux/serial2mqtt/src/Sys.cpp
+	"Sys.h"
+	<malloc.h>
+	<unistd.h>
+	<string.h>
+	<time.h>
+
+1482537296 source:/home/lieven/linux/serial2mqtt/src/Tcp.cpp
+	"Tcp.h"
+	<sys/types.h>
+	<sys/socket.h>
+	<netinet/in.h>
+	<netdb.h>
+	<unistd.h>
+	<strings.h>
+	<errno.h>
+	<string.h>
+	<iostream>
+	<signal.h>
+	"Logger.h"
+	<cstdio>
+	<sys/ioctl.h>
+
+1482537304 /home/lieven/linux/Common/inc/Logger.h
+	<time.h>
+	<Str.h>
+	<errno.h>
+	<string.h>
+	<stdarg.h>
+
+1482537296 source:/home/lieven/linux/serial2mqtt/src/Usb.cpp
+	"Usb.h"
+	<stdio.h>
+	<string.h>
+	<unistd.h>
+	<fcntl.h>
+	<errno.h>
+	<cstring>
+	<termios.h>
+	<stdio.h>
+	<stdlib.h>
+	<linux/serial.h>
+	<sys/ioctl.h>
+	<EventBus.h>
+	<sys/ioctl.h>
+

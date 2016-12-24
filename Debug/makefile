@@ -50,7 +50,7 @@ dependents:
 serial2mqtt: $(OBJS) $(USER_OBJS) /home/lieven/linux/Common/Debug/libCommon.a
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	g++ -L"/home/lieven/linux/Common/Debug" -L"/home/lieven/linux/paho/lib" -Wl,-rpath,../paho/lib -o "serial2mqtt" $(OBJS) $(USER_OBJS) $(LIBS)
+	g++ -L"/home/lieven/linux/Common/Debug" -L"/home/lieven/linux/paho/build/output" -Wl,-rpath,../paho/lib -o "serial2mqtt" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
