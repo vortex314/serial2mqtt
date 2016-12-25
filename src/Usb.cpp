@@ -110,7 +110,7 @@ Erc Usb::close() {
 	_isComplete = false;
 	::close(_fd);
 	_fd = 0;
-	eb.publish(H("usb.closed"));
+	eb.publish(H("usb"),H("closed"));
 	return E_OK;
 }
 

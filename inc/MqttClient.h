@@ -31,6 +31,7 @@ private:
      int _cleanSession;
      bool _connected;
      uint16_t _msgid;
+     uint16_t _lastSrc;
 
 public:
      	static void router(Cbor& cbor);
