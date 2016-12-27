@@ -289,6 +289,30 @@ void onSerialRxd(Cbor& cbor)
 
 extern void logCbor(Cbor&);
 
+class Echo: public Actor
+{
+public:
+    Echo() :
+        Actor("Echo")
+    {
+    }
+    void setup()
+    {
+        eb.onRequest(H("Echo")).subscribe(this);
+    }
+    void onEvent(Cbor& msg)
+    {
+        Cbor& repl = eb.reply();
+        uint32_t value;
+        if ( msg.getKeyValue(H("uint32_t"),value)) {
+            repl.addKeyValue(H("uint32_t"),value);
+        }
+        eb.send();
+    }
+};
+
+Echo echo;
+
 class Tracer: public Actor
 {
 public:
@@ -392,6 +416,7 @@ int main(int argc, char *argv[])
     tcp.setHost(context.host);
     tcp.setPort(context.port);
     serialConnector.setup();
+    echo.setup();
 //	serial_connect();
 
     eb.onAny().subscribe([](Cbor& cbor)
@@ -425,7 +450,7 @@ int main(int argc, char *argv[])
 // OUTGOING MQTT
     eb.onAny().subscribe( [](Cbor& cbor)   // route events to gateway
     {
-        if ( eb.isReply(H("mqtt"),0) || eb.isEvent(H("mqtt"),0) || eb.isRequest(H("link"),0))
+        if ( eb.isReply(H("mqtt"),0) || eb.isEvent(H("mqtt"),0) || eb.isRequest(H("link"),0) || eb.isReply(H("echo"),0))
         {
             slip.send(cbor);
             LOGF("send");
