@@ -43,7 +43,7 @@ using namespace std;
 //#include "Thread.h"
 // #include "Sequence.h"
 #include "Tcp.h"
-#include "Usb.h"
+#include "Serial.h"
 #include <time.h>
 #include <Actor.h>
 #define TIMER_TICK 1000
@@ -68,15 +68,15 @@ struct
             };
 Cbor mqttConfig(200);
 
-Usb usb("/dev/ttyACM1");
+Serial serial("/dev/ttyACM1");
 Tcp tcp("localhost", 1883);
 
 //_______________________________________________________________________________________
 //
-// simulates RTOS generating events into queue : Timer::TICK,Usb::RXD,Usb::CONNECTED,...
+// simulates RTOS generating events into queue : Timer::TICK,Serial::RXD,Serial::CONNECTED,...
 //_______________________________________________________________________________________
 
-void poller(int usbFd, int tcpFd, uint64_t sleepTill)
+void poller(int serialFd, int tcpFd, uint64_t sleepTill)
 {
     Cbor cbor(1024);
     Bytes bytes(1024);
@@ -88,24 +88,24 @@ void poller(int usbFd, int tcpFd, uint64_t sleepTill)
     int retval;
     uint64_t start = Sys::millis();
 //    uint64_t delta=1000;
-    if (usbFd == 0 && tcpFd == 0)
+    if (serialFd == 0 && tcpFd == 0)
     {
         sleep(1);
-        eb.publish(H("sys"),H("tick"));
+//        eb.publish(H("sys"),H("tick"));
     }
     else
     {
 
-        // Watch usbFd and tcpFd  to see when it has input.
+        // Watch serialFd and tcpFd  to see when it has input.
         FD_ZERO(&rfds);
         FD_ZERO(&wfds);
         FD_ZERO(&efds);
-        if (usbFd)
-            FD_SET(usbFd, &rfds);
+        if (serialFd)
+            FD_SET(serialFd, &rfds);
         if (tcpFd)
             FD_SET(tcpFd, &rfds);
-        if (usbFd)
-            FD_SET(usbFd, &efds);
+        if (serialFd)
+            FD_SET(serialFd, &efds);
         if (tcpFd)
             FD_SET(tcpFd, &efds);
 
@@ -119,7 +119,7 @@ void poller(int usbFd, int tcpFd, uint64_t sleepTill)
         tv.tv_sec = delta / 1000;
         tv.tv_usec = (delta * 1000) % 1000000;
 
-        int maxFd = usbFd < tcpFd ? tcpFd : usbFd;
+        int maxFd = serialFd < tcpFd ? tcpFd : serialFd;
         maxFd += 1;
 
         start = Sys::millis();
@@ -133,12 +133,12 @@ void poller(int usbFd, int tcpFd, uint64_t sleepTill)
         }
         else if (retval > 0)   // one of the fd was set
         {
-            if (FD_ISSET(usbFd, &rfds))
+            if (FD_ISSET(serialFd, &rfds))
             {
-                int size = ::read(usbFd, buffer, sizeof(buffer));
-                if (size >= 0)
+                int size = ::read(serialFd, buffer, sizeof(buffer));
+                if (size > 0)
                 {
-                    LOGF(" rxd USB : %d ", size);
+                    LOGF(" rxd Serial : %d ", size);
                     Str str(size * 3);
                     for (int i = 0; i < size; i++)
                         str.appendHex(buffer[i]);
@@ -146,17 +146,22 @@ void poller(int usbFd, int tcpFd, uint64_t sleepTill)
 //					fprintf(stdout, "%s\n", str.c_str());
                     for (int i = 0; i < size; i++)
                         bytes.write(buffer[i]);
-                    eb.event(H("usb"),H("rxd")).addKeyValue(H("data"),bytes);
+                    eb.event(H("serial"),H("rxd")).addKeyValue(H("data"),bytes);
                     eb.send();
+                }
+                else
+                {
+                    eb.publish(H("serial"),H("err"));
+                    serial.close();
                 }
             }
             if (FD_ISSET(tcpFd, &rfds))
             {
                 eb.publish(H("tcp"),H("rxd"));
             }
-            if (FD_ISSET(usbFd, &efds))
+            if (FD_ISSET(serialFd, &efds))
             {
-                eb.publish(H("usb"),H("err"));
+                eb.publish(H("serial"),H("err"));
             }
             if (FD_ISSET(tcpFd, &efds))
             {
@@ -166,7 +171,7 @@ void poller(int usbFd, int tcpFd, uint64_t sleepTill)
         else
         {
             //TODO publish TIMER_TICK
-            eb.publish(H("sys"),H("tick"));
+ //           eb.publish(H("sys"),H("tick"));
         }
     }
     uint64_t waitTime = Sys::millis() - start;
@@ -183,7 +188,7 @@ void poller(int usbFd, int tcpFd, uint64_t sleepTill)
  h : host of mqtt server
  p : port
  d : the serial device "/dev/ttyACM*"
- b : the baudrate set ( only usefull for a usb2serial box or a real serial port )
+ b : the baudrate set ( only usefull for a serial2serial box or a real serial port )
  ________________________________________________________________________________*/
 
 #include "Tcp.h"
@@ -260,10 +265,10 @@ void interceptAllSignals()
     signal(SIGTERM, SignalHandler);
 }
 
-SlipStream slip(1024, usb);
+SlipStream slip(1024, serial);
 #include "MqttClient.h"
 
-void onUsbRxd(Cbor& cbor)
+void onSerialRxd(Cbor& cbor)
 {
     Bytes data(1000);
     if (cbor.gotoKey(H("data")))
@@ -296,21 +301,23 @@ public:
         timeout(1000);
 //		eb.subscribe(H("timeout"), this, (MethodHandler) &Tracer::onEvent); // default subscribed to timeouts
         eb.filter(EB_DST,H("Tracer")).subscribe(this);
+        eb.onEvent(H("link"),H("pong")).subscribe(this);
     }
     void onEvent(Cbor& msg)
     {
-    #define COUNT 100000
-    static uint32_t cnt=0;
-    static uint32_t start;
+#define COUNT 100000
+        static uint32_t cnt=0;
+        static uint32_t start;
         PT_BEGIN()
         ;
         while (true)
         {
-            if ( cnt%COUNT ==0) {
+            if ( cnt%COUNT ==0)
+            {
                 LOGF(" request-reply %d msg/sec ",(COUNT*1000)/(Sys::millis()-start));
                 start=Sys::millis();
             }
-            eb.request(H("link"),H("ping"),H("Tracer"));
+            eb.request(H("link"),H("pong"),H("Tracer"));
             eb.send();
             cnt++;
             timeout(1000);
@@ -322,45 +329,40 @@ public:
 
 Tracer tracer;
 
-class UsbConnector: public Actor
+class SerialConnector: public Actor
 {
 public:
-    UsbConnector() :
-        Actor("UsbConnector")
+    SerialConnector() :
+        Actor("SerialConnector")
     {
     }
     void setup()
     {
         timeout(1000);
+        eb.onEvent(H("serial"),0).subscribe(this);
 //		eb.subscribe(H("timeout"), this, (MethodHandler) &Tracer::onEvent); // default subscribed to timeouts
     }
     void onEvent(Cbor& msg)
     {
-        uint16_t event;
-        msg.getKeyValue(EB_EVENT, event);
-        Str str(100);
-        Cbor cbor(100);
-        Erc erc;
         PT_BEGIN()
         ;
 CONNECTING:
         {
             while (true)
             {
-                erc = usb.open();
-                LOGF(" usb.open() : %d %s", erc, strerror(erc));
+                timeout(2000);
+                PT_YIELD_UNTIL(eb.isEvent(H("sys"),H("timeout")));
+                Erc erc = serial.open();
+                LOGF(" serial.open()= %d : %s", erc, strerror(erc));
                 if (erc == 0)
                 {
-                    eb.publish(H("usb"),H("opened"));
+                    eb.publish(H("serial"),H("opened"));
                     goto CONNECTED;
                 }
-                timeout(2000);
-                PT_YIELD_UNTIL(event = H("timeout"));
-
             };
 CONNECTED:
             {
-                PT_YIELD_UNTIL(eb.isEvent(H("usb"),H("closed")));
+                PT_YIELD_UNTIL(eb.isEvent(H("serial"),H("closed")) );
                 goto CONNECTING;
             }
         }
@@ -368,7 +370,7 @@ CONNECTED:
     }
 };
 
-UsbConnector usbConnector;
+SerialConnector serialConnector;
 
 extern void logCbor(Cbor& cbor);
 
@@ -376,36 +378,32 @@ int main(int argc, char *argv[])
 {
 
     LOGF("Start %s version : %s %s", argv[0], __DATE__, __TIME__);
-    LOGF(" H('timeout')=%d", H("timeout"));
+    LOGF(" H('sys') : %d   H('timeout')=%d", H("sys"),H("timeout"));
     static_assert(H("timeout")==45638," timout hash incorrect");
 
     loadOptions(argc, argv);
-    if (context.logLevel <= LogManager::LOG_DEBUG)
-    {
-//		eb.debug(true);
-    };
 
     Mqtt.loadConfig(mqttConfig);
 
     interceptAllSignals();
 
-    usb.setDevice(context.device);
-    usb.setBaudrate(context.baudrate);
+    serial.setDevice(context.device);
+    serial.setBaudrate(context.baudrate);
     tcp.setHost(context.host);
     tcp.setPort(context.port);
-    usbConnector.setup();
-//	usb_connect();
+    serialConnector.setup();
+//	serial_connect();
 
     eb.onAny().subscribe([](Cbor& cbor)
     {
- //       logCbor(cbor);
+        logCbor(cbor);
     });
 
     tracer.setup();
 
-    eb.onEvent(H("usb"),H("rxd")).subscribe( [](Cbor& cbor)   // send usb data to slip processing
+    eb.onEvent(H("serial"),H("rxd")).subscribe( [](Cbor& cbor)   // send serial data to slip processing
     {
-//				LOGF(" usb.rxd execute ");
+//				LOGF(" serial.rxd execute ");
         Bytes data(1000);
         if (cbor.getKeyValue(H("data"),data))
         {
@@ -415,7 +413,7 @@ int main(int argc, char *argv[])
                 slip.onRecv(data.read());
             }
         }
-        else LOGF(" no usb data ");
+        else LOGF(" no serial data ");
     });
 
     eb.onRequest(H("link")).subscribe(  [](Cbor& cbor)   // echo server
@@ -424,26 +422,26 @@ int main(int argc, char *argv[])
         eb.send();
 
     });
-
+// OUTGOING MQTT
     eb.onAny().subscribe( [](Cbor& cbor)   // route events to gateway
     {
-        if ( eb.isReply(H("mqtt"),0) || eb.isEvent(H("mqtt"),0))
+        if ( eb.isReply(H("mqtt"),0) || eb.isEvent(H("mqtt"),0) || eb.isRequest(H("link"),0))
         {
             slip.send(cbor);
             LOGF("send");
         }
     });
-
+// INCOMING MQTT
     eb.onRequest(H("mqtt")).subscribe([](Cbor& cbor)   // all events
     {
         MqttClient::router(cbor);// look for "mqtt.*" messages
     });
 
 //	Actor::setupAll();
-    eb.publish(H("usb"),H("closed"));
+    eb.publish(H("serial"),H("closed"));
     while (1)
     {
-        poller(usb.fd(), tcp.fd(), 1000);
+        poller(serial.fd(), tcp.fd(), 1000);
         eb.eventLoop();
     }
 

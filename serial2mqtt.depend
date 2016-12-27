@@ -2,10 +2,10 @@
 1482540769 source:/home/lieven/linux/serial2mqtt/main.cpp
 	<iostream>
 
-1482666178 source:/home/lieven/linux/serial2mqtt/src/keys.cpp
+1482748363 source:/home/lieven/linux/serial2mqtt/src/keys.cpp
 	<EventBus.h>
 
-1482667356 /home/lieven/linux/Common/inc/EventBus.h
+1482795012 /home/lieven/linux/Common/inc/EventBus.h
 	<Actor.h>
 	<CborQueue.h>
 
@@ -59,7 +59,7 @@
 	<string.h>
 	"Sys.h"
 
-1482706514 source:/home/lieven/linux/serial2mqtt/src/main.cpp
+1482795647 source:/home/lieven/linux/serial2mqtt/src/main.cpp
 	<iostream>
 	<stdio.h>
 	<string.h>
@@ -77,7 +77,7 @@
 	<sys/types.h>
 	<unistd.h>
 	"Tcp.h"
-	"Usb.h"
+	"Serial.h"
 	<time.h>
 	<Actor.h>
 	<Log.h>
@@ -188,4 +188,24 @@
 	<sys/ioctl.h>
 	<EventBus.h>
 	<sys/ioctl.h>
+
+1482796729 source:/home/lieven/linux/serial2mqtt/src/Serial.cpp
+	"Serial.h"
+	<stdio.h>
+	<string.h>
+	<unistd.h>
+	<fcntl.h>
+	<errno.h>
+	<cstring>
+	<termios.h>
+	<stdio.h>
+	<stdlib.h>
+	<linux/serial.h>
+	<sys/ioctl.h>
+	<EventBus.h>
+	<sys/ioctl.h>
+
+1482796606 /home/lieven/linux/serial2mqtt/inc/Serial.h
+	"Actor.h"
+	"BufferedByteStream.h"
 

@@ -13,8 +13,10 @@
 				<Option compiler="gcc" />
 				<Option parameters="-d /dev/rfcomm2" />
 				<Compiler>
+					<Add option="-O2" />
 					<Add option="-std=c++11" />
 					<Add option="-g" />
+					<Add option="-D__linux__" />
 					<Add directory="../Common/inc" />
 					<Add directory="inc" />
 					<Add directory="../paho/src" />
@@ -46,14 +48,14 @@
 		</Compiler>
 		<Unit filename="inc/Hash.h" />
 		<Unit filename="inc/MqttClient.h" />
+		<Unit filename="inc/Serial.h" />
 		<Unit filename="inc/Tcp.h" />
-		<Unit filename="inc/Usb.h" />
 		<Unit filename="inc/hash_func.h" />
 		<Unit filename="inc/keys.h" />
 		<Unit filename="src/MqttClient.cpp" />
+		<Unit filename="src/Serial.cpp" />
 		<Unit filename="src/Sys.cpp" />
 		<Unit filename="src/Tcp.cpp" />
-		<Unit filename="src/Usb.cpp" />
 		<Unit filename="src/keys.cpp" />
 		<Unit filename="src/main.cpp" />
 		<Extensions>
