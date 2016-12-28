@@ -13,7 +13,7 @@
 #define QOS         1
 #define TIMEOUT     10000L
 
-class MqttClient
+class MqttClient : public Actor
 {
 private:
      MQTTAsync_token _deliveredtoken;
@@ -32,13 +32,14 @@ private:
      bool _connected;
      uint16_t _msgid;
      uint16_t _lastSrc;
+     int _fd[2];   // pipe fd to wakeup in select
 
 public:
-     	static void router(Cbor& cbor);
+     	void router(Cbor& cbor);
 
     MqttClient();
     ~MqttClient();
-    void init();
+    void setup();
      static void onConnectionLost(void *context, char *cause);
      static int onMessage(void *context, char *topicName, int topicLen, MQTTAsync_message *message);
      static void onDisconnect(void* context, MQTTAsync_successData* response);
@@ -53,6 +54,9 @@ public:
      void disconnect(Cbor& cbor);
      void publish(Cbor& cbor);
      void subscribe(Cbor& cbor);
+
+     int fd();
+     void wakeup();
 
 };
 

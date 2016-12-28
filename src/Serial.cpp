@@ -142,6 +142,7 @@ Erc Serial::send(Bytes& bytes)
         return E_AGAIN;
     }
     uint32_t count = ::write(_fd, bytes.data(), bytes.length());
+    ::fsync(_fd);
     if (count != bytes.length() )
     {
         eb.event(H("serial"),H("err")).addKeyValue(H("error"),errno).addKeyValue(H("error_msg"),strerror(errno));

@@ -90,11 +90,25 @@ void poller(int serialFd, int tcpFd, uint64_t sleepTill)
 //    uint64_t delta=1000;
     if (serialFd == 0 && tcpFd == 0)
     {
-        sleep(1);
+        usleep(1000);
 //        eb.publish(H("sys"),H("tick"));
     }
     else
     {
+
+        // Wait up to 1000 msec.
+        uint64_t delta = 1000;
+        if (sleepTill > Sys::millis())
+        {
+            delta = sleepTill - Sys::millis();
+        }
+        tv.tv_sec = delta / 1000;
+        tv.tv_usec = (delta * 1000) % 1000000;
+//        LOGF( " delta = %d ",delta);
+        if ( delta == 0 )
+        {
+            LOGF(" weird !");
+        }
 
         // Watch serialFd and tcpFd  to see when it has input.
         FD_ZERO(&rfds);
@@ -108,23 +122,18 @@ void poller(int serialFd, int tcpFd, uint64_t sleepTill)
             FD_SET(serialFd, &efds);
         if (tcpFd)
             FD_SET(tcpFd, &efds);
-
-        // Wait up to 1000 msec.
-        uint64_t delta = 1000;
-        if (sleepTill > Sys::millis())
-        {
-            delta = sleepTill - Sys::millis();
-        }
-
-        tv.tv_sec = delta / 1000;
-        tv.tv_usec = (delta * 1000) % 1000000;
-
         int maxFd = serialFd < tcpFd ? tcpFd : serialFd;
         maxFd += 1;
 
         start = Sys::millis();
 
         retval = select(maxFd, &rfds, NULL, &efds, &tv);
+
+        uint64_t waitTime = Sys::millis() - start;
+        if ( waitTime==0)
+        {
+            LOGF(" waited %ld/%ld msec.",waitTime,delta);
+        }
 
         if (retval < 0)
         {
@@ -138,12 +147,13 @@ void poller(int serialFd, int tcpFd, uint64_t sleepTill)
                 int size = ::read(serialFd, buffer, sizeof(buffer));
                 if (size > 0)
                 {
-                    LOGF(" rxd Serial : %d ", size);
+//                   LOGF(" rxd Serial : %d ", size);
                     Str str(size * 3);
                     for (int i = 0; i < size; i++)
                         str.appendHex(buffer[i]);
-                    LOGF("%s",str.c_str());
+//                    LOGF("%s",str.c_str());
 //					fprintf(stdout, "%s\n", str.c_str());
+                    TRACE(" rxd [%d] : %s", size,str.c_str());
                     for (int i = 0; i < size; i++)
                         bytes.write(buffer[i]);
                     eb.event(H("serial"),H("rxd")).addKeyValue(H("data"),bytes);
@@ -151,16 +161,21 @@ void poller(int serialFd, int tcpFd, uint64_t sleepTill)
                 }
                 else
                 {
+                    LOGF("serial read error : %s (%d)", strerror(errno), errno);
                     eb.publish(H("serial"),H("err"));
                     serial.close();
                 }
             }
             if (FD_ISSET(tcpFd, &rfds))
             {
-                eb.publish(H("tcp"),H("rxd"));
+                ::read(tcpFd, buffer, sizeof(buffer)); // empty event pipe
+                LOGF(" wakeup ");
+                // just return
+                // eb.publish(H("tcp"),H("rxd"));
             }
             if (FD_ISSET(serialFd, &efds))
             {
+                LOGF("serial  error : %s (%d)", strerror(errno), errno);
                 eb.publish(H("serial"),H("err"));
             }
             if (FD_ISSET(tcpFd, &efds))
@@ -170,14 +185,12 @@ void poller(int serialFd, int tcpFd, uint64_t sleepTill)
         }
         else
         {
+            DEBUG(" timeout %llu",Sys::millis());
             //TODO publish TIMER_TICK
- //           eb.publish(H("sys"),H("tick"));
+//           eb.publish(H("sys"),H("tick"));
         }
-    }
-    uint64_t waitTime = Sys::millis() - start;
-    if (waitTime > 1)
-    {
-//        LOGF(" waited %d/%d msec.",waitTime,delta);
+
+
     }
 }
 
@@ -216,13 +229,13 @@ void loadOptions(int argc, char* argv[])
             if (strcmp(optarg, "DEBUG") == 0)
                 context.logLevel = LogManager::LOG_DEBUG;
             if (strcmp(optarg, "INFO") == 0)
-                context.logLevel = LogManager::INFO;
+                context.logLevel = LogManager::LOG_INFO;
             if (strcmp(optarg, "WARN") == 0)
-                context.logLevel = LogManager::WARN;
+                context.logLevel = LogManager::LOG_WARN;
             if (strcmp(optarg, "ERROR") == 0)
-                context.logLevel = LogManager::ERROR;
+                context.logLevel = LogManager::LOG_ERROR;
             if (strcmp(optarg, "FATAL") == 0)
-                context.logLevel = LogManager::FATAL;
+                context.logLevel = LogManager::LOG_FATAL;
             break;
         case '?':
             if (optopt == 'c')
@@ -268,91 +281,89 @@ void interceptAllSignals()
 SlipStream slip(1024, serial);
 #include "MqttClient.h"
 
-void onSerialRxd(Cbor& cbor)
+extern void logCbor(Cbor&);
+//_______________________________________________________________________________________________________________
+//
+class Echo: public Actor
 {
-    Bytes data(1000);
-    if (cbor.gotoKey(H("data")))
+    uint32_t _counter;
+public:
+    Echo() :
+        Actor("Echo")
     {
-        if (cbor.get(data))
+        _counter++;
+    }
+    void setup()
+    {
+        eb.onRequest(H("Echo")).subscribe(this);
+    }
+#define CNT 100
+    void onEvent(Cbor& msg)
+    {
+        static uint32_t start;
+        if ( _counter%CNT ==0)
         {
-//           LOGF(" data length : %d ",data.length());
+            LOGF(" request-reply %d msg/sec",(CNT*1000)/(Sys::millis()-start));
+            start=Sys::millis();
+        }
+
+        Cbor& repl = eb.reply();
+        uint32_t value;
+        if ( msg.getKeyValue(H("uint32_t"),value))
+        {
+            repl.addKeyValue(H("uint32_t"),value);
+        }
+        eb.send();
+        _counter++;
+    }
+};
+
+Echo echo;
+//_______________________________________________________________________________________________________________
+//
+//_______________________________________________________________________________________________________________
+//
+class Router: public Actor
+{
+    uint32_t _counter;
+public:
+    Router() :
+        Actor("Router")
+    {
+        _counter++;
+    }
+    void setup()
+    {
+        eb.onSrc(H("mqtt")).subscribe(this);
+        eb.onRequest(H("link")).subscribe(this);
+        eb.onReply(0,H("ping")).subscribe(this);
+        eb.onEvent(H("serial"),H("rxd")).subscribe( this,(MethodHandler)&Router::onSerialData);   // send serial data to slip processing
+    }
+
+    void onEvent(Cbor& msg)
+    {
+        LOGF(" >>>>>>>>>>>>>>>>>>>> ");
+        slip.send(msg);
+    }
+
+    void onSerialData(Cbor& msg)
+    {
+        Bytes data(1000);
+        if (msg.getKeyValue(H("data"),data))
+        {
             data.offset(0);
             while (data.hasData())
             {
                 slip.onRecv(data.read());
             }
         }
-        else LOGF(" no data ");
-    }
-    else LOGF(" no key data ");
-}
-
-extern void logCbor(Cbor&);
-
-class Echo: public Actor
-{
-public:
-    Echo() :
-        Actor("Echo")
-    {
-    }
-    void setup()
-    {
-        eb.onRequest(H("Echo")).subscribe(this);
-    }
-    void onEvent(Cbor& msg)
-    {
-        Cbor& repl = eb.reply();
-        uint32_t value;
-        if ( msg.getKeyValue(H("uint32_t"),value)) {
-            repl.addKeyValue(H("uint32_t"),value);
-        }
-        eb.send();
-    }
+        else LOGF(" no serial data ");
+    };
 };
 
-Echo echo;
-
-class Tracer: public Actor
-{
-public:
-    Tracer() :
-        Actor("Tracer")
-    {
-    }
-    void setup()
-    {
-        timeout(1000);
-//		eb.subscribe(H("timeout"), this, (MethodHandler) &Tracer::onEvent); // default subscribed to timeouts
-        eb.filter(EB_DST,H("Tracer")).subscribe(this);
-        eb.onEvent(H("link"),H("pong")).subscribe(this);
-    }
-    void onEvent(Cbor& msg)
-    {
-#define COUNT 100000
-        static uint32_t cnt=0;
-        static uint32_t start;
-        PT_BEGIN()
-        ;
-        while (true)
-        {
-            if ( cnt%COUNT ==0)
-            {
-                LOGF(" request-reply %d msg/sec ",(COUNT*1000)/(Sys::millis()-start));
-                start=Sys::millis();
-            }
-            eb.request(H("link"),H("pong"),H("Tracer"));
-            eb.send();
-            cnt++;
-            timeout(1000);
-            PT_YIELD_UNTIL( eb.isReply(H("link"),H("ping")) || eb.isEvent(H("sys"),H("timeout")));
-        }
-        PT_END()
-    }
-};
-
-Tracer tracer;
-
+Router router;
+//_______________________________________________________________________________________________________________
+//
 class SerialConnector: public Actor
 {
 public:
@@ -395,8 +406,12 @@ CONNECTED:
 };
 
 SerialConnector serialConnector;
+//_______________________________________________________________________________________________________________
+//
+uint16_t tester=H("Tester");
+uint16_t uin=H("uint32_t");
 
-extern void logCbor(Cbor& cbor);
+MqttClient Mqtt;
 
 int main(int argc, char *argv[])
 {
@@ -404,6 +419,8 @@ int main(int argc, char *argv[])
     LOGF("Start %s version : %s %s", argv[0], __DATE__, __TIME__);
     LOGF(" H('sys') : %d   H('timeout')=%d", H("sys"),H("timeout"));
     static_assert(H("timeout")==45638," timout hash incorrect");
+
+    Log.level(LogManager::LOG_INFO);
 
     loadOptions(argc, argv);
 
@@ -415,58 +432,23 @@ int main(int argc, char *argv[])
     serial.setBaudrate(context.baudrate);
     tcp.setHost(context.host);
     tcp.setPort(context.port);
+
+    router.setup();
     serialConnector.setup();
     echo.setup();
-//	serial_connect();
+    Mqtt.setup();
+
 
     eb.onAny().subscribe([](Cbor& cbor)
     {
         logCbor(cbor);
     });
 
-    tracer.setup();
-
-    eb.onEvent(H("serial"),H("rxd")).subscribe( [](Cbor& cbor)   // send serial data to slip processing
-    {
-//				LOGF(" serial.rxd execute ");
-        Bytes data(1000);
-        if (cbor.getKeyValue(H("data"),data))
-        {
-            data.offset(0);
-            while (data.hasData())
-            {
-                slip.onRecv(data.read());
-            }
-        }
-        else LOGF(" no serial data ");
-    });
-
-    eb.onRequest(H("link")).subscribe(  [](Cbor& cbor)   // echo server
-    {
-        eb.reply();
-        eb.send();
-
-    });
-// OUTGOING MQTT
-    eb.onAny().subscribe( [](Cbor& cbor)   // route events to gateway
-    {
-        if ( eb.isReply(H("mqtt"),0) || eb.isEvent(H("mqtt"),0) || eb.isRequest(H("link"),0) || eb.isReply(H("echo"),0))
-        {
-            slip.send(cbor);
-            LOGF("send");
-        }
-    });
-// INCOMING MQTT
-    eb.onRequest(H("mqtt")).subscribe([](Cbor& cbor)   // all events
-    {
-        MqttClient::router(cbor);// look for "mqtt.*" messages
-    });
-
 //	Actor::setupAll();
     eb.publish(H("serial"),H("closed"));
     while (1)
     {
-        poller(serial.fd(), tcp.fd(), 1000);
+        poller(serial.fd(), Mqtt.fd(), Actor::lowestTimeout());
         eb.eventLoop();
     }
 
