@@ -104,10 +104,10 @@ void poller(int serialFd, int tcpFd, uint64_t sleepTill)
         }
         tv.tv_sec = delta / 1000;
         tv.tv_usec = (delta * 1000) % 1000000;
-//        LOGF( " delta = %d ",delta);
+//        DEBUG( " delta = %d ",delta);
         if ( delta == 0 )
         {
-            LOGF(" weird !");
+            WARN(" weird !");
         }
 
         // Watch serialFd and tcpFd  to see when it has input.
@@ -132,12 +132,12 @@ void poller(int serialFd, int tcpFd, uint64_t sleepTill)
         uint64_t waitTime = Sys::millis() - start;
         if ( waitTime==0)
         {
-            LOGF(" waited %ld/%ld msec.",waitTime,delta);
+            DEBUG(" waited %ld/%ld msec.",waitTime,delta);
         }
 
         if (retval < 0)
         {
-            LOGF(" select() : %d %s", retval, strerror(retval));
+            WARN(" select() : %d %s", retval, strerror(retval));
             sleep(1);
         }
         else if (retval > 0)   // one of the fd was set
@@ -151,7 +151,7 @@ void poller(int serialFd, int tcpFd, uint64_t sleepTill)
                     Str str(size * 3);
                     for (int i = 0; i < size; i++)
                         str.appendHex(buffer[i]);
-//                    LOGF("%s",str.c_str());
+//                    DEBUG("%s",str.c_str());
 //					fprintf(stdout, "%s\n", str.c_str());
                     TRACE(" rxd [%d] : %s", size,str.c_str());
                     for (int i = 0; i < size; i++)
@@ -161,7 +161,7 @@ void poller(int serialFd, int tcpFd, uint64_t sleepTill)
                 }
                 else
                 {
-                    LOGF("serial read error : %s (%d)", strerror(errno), errno);
+                    WARN("serial read error : %s (%d)", strerror(errno), errno);
                     eb.publish(H("serial"),H("err"));
                     serial.close();
                 }
@@ -169,13 +169,13 @@ void poller(int serialFd, int tcpFd, uint64_t sleepTill)
             if (FD_ISSET(tcpFd, &rfds))
             {
                 ::read(tcpFd, buffer, sizeof(buffer)); // empty event pipe
-                LOGF(" wakeup ");
+                DEBUG(" wakeup ");
                 // just return
                 // eb.publish(H("tcp"),H("rxd"));
             }
             if (FD_ISSET(serialFd, &efds))
             {
-                LOGF("serial  error : %s (%d)", strerror(errno), errno);
+                WARN("serial  error : %s (%d)", strerror(errno), errno);
                 eb.publish(H("serial"),H("err"));
             }
             if (FD_ISSET(tcpFd, &efds))
@@ -303,7 +303,7 @@ public:
         static uint32_t start;
         if ( _counter%CNT ==0)
         {
-            LOGF(" request-reply %d msg/sec",(CNT*1000)/(Sys::millis()-start));
+            INFO(" request-reply %d msg/sec",(CNT*1000)/(Sys::millis()-start));
             start=Sys::millis();
         }
 
@@ -342,7 +342,7 @@ public:
 
     void onEvent(Cbor& msg)
     {
-        LOGF(" >>>>>>>>>>>>>>>>>>>> ");
+        DEBUG(" >>>>>>>>>>>>>>>>>>>> SLIP-TXD");
         slip.send(msg);
     }
 
@@ -357,7 +357,7 @@ public:
                 slip.onRecv(data.read());
             }
         }
-        else LOGF(" no serial data ");
+        else WARN(" no serial data ");
     };
 };
 
@@ -388,7 +388,7 @@ CONNECTING:
                 timeout(2000);
                 PT_YIELD_UNTIL(eb.isEvent(H("sys"),H("timeout")));
                 Erc erc = serial.open();
-                LOGF(" serial.open()= %d : %s", erc, strerror(erc));
+                INFO(" serial.open()= %d : %s", erc, strerror(erc));
                 if (erc == 0)
                 {
                     eb.publish(H("serial"),H("opened"));
@@ -416,8 +416,8 @@ MqttClient Mqtt;
 int main(int argc, char *argv[])
 {
 
-    LOGF("Start %s version : %s %s", argv[0], __DATE__, __TIME__);
-    LOGF(" H('sys') : %d   H('timeout')=%d", H("sys"),H("timeout"));
+    INFO("Start %s version : %s %s", argv[0], __DATE__, __TIME__);
+    DEBUG(" H('sys') : %d   H('timeout')=%d", H("sys"),H("timeout"));
     static_assert(H("timeout")==45638," timout hash incorrect");
 
     Log.level(LogManager::LOG_INFO);
@@ -441,7 +441,7 @@ int main(int argc, char *argv[])
 
     eb.onAny().subscribe([](Cbor& cbor)
     {
-        logCbor(cbor);
+      if ( Log.level() <= LogManager::LOG_DEBUG)  logCbor(cbor);
     });
 
 //	Actor::setupAll();
