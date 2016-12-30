@@ -35,7 +35,7 @@ private:
      int _fd[2];   // pipe fd to wakeup in select
 
 public:
-     	void router(Cbor& cbor);
+     	void onEvent(Cbor& cbor);
 
     MqttClient();
     ~MqttClient();

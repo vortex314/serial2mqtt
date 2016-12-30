@@ -42,7 +42,6 @@ using namespace std;
 #include <unistd.h>
 //#include "Thread.h"
 // #include "Sequence.h"
-#include "Tcp.h"
 #include "Serial.h"
 #include <time.h>
 #include <Actor.h>
@@ -69,7 +68,7 @@ struct
 Cbor mqttConfig(200);
 
 Serial serial("/dev/ttyACM1");
-Tcp tcp("localhost", 1883);
+
 
 //_______________________________________________________________________________________
 //
@@ -97,18 +96,18 @@ void poller(int serialFd, int tcpFd, uint64_t sleepTill)
     {
 
         // Wait up to 1000 msec.
-        uint64_t delta = 1000;
+        uint64_t delta = 5000;
         if (sleepTill > Sys::millis())
         {
             delta = sleepTill - Sys::millis();
         }
+        else
+        {
+            DEBUG(" now : %llu  next timeout : %llu  ",Sys::millis(),sleepTill);
+            delta=0;
+        }
         tv.tv_sec = delta / 1000;
         tv.tv_usec = (delta * 1000) % 1000000;
-//        DEBUG( " delta = %d ",delta);
-        if ( delta == 0 )
-        {
-            WARN(" weird !");
-        }
 
         // Watch serialFd and tcpFd  to see when it has input.
         FD_ZERO(&rfds);
@@ -162,7 +161,8 @@ void poller(int serialFd, int tcpFd, uint64_t sleepTill)
                 else
                 {
                     WARN("serial read error : %s (%d)", strerror(errno), errno);
-                    eb.publish(H("serial"),H("err"));
+                    eb.event(H("serial"),H("err")).addKeyValue(H("error"),errno).addKeyValue(H("error_msg"),strerror(errno));
+                    eb.send();
                     serial.close();
                 }
             }
@@ -176,11 +176,13 @@ void poller(int serialFd, int tcpFd, uint64_t sleepTill)
             if (FD_ISSET(serialFd, &efds))
             {
                 WARN("serial  error : %s (%d)", strerror(errno), errno);
-                eb.publish(H("serial"),H("err"));
+                eb.event(H("serial"),H("err")).addKeyValue(H("error"),errno).addKeyValue(H("error_msg"),strerror(errno));
+                eb.send();
             }
             if (FD_ISSET(tcpFd, &efds))
             {
-                eb.publish(H("tcp"),H("err"));
+                eb.event(H("tcp"),H("err")).addKeyValue(H("error"),errno).addKeyValue(H("error_msg"),strerror(errno));
+                eb.send();
             }
         }
         else
@@ -278,7 +280,7 @@ void interceptAllSignals()
     signal(SIGTERM, SignalHandler);
 }
 
-SlipStream slip(1024, serial);
+
 #include "MqttClient.h"
 
 extern void logCbor(Cbor&);
@@ -295,7 +297,7 @@ public:
     }
     void setup()
     {
-        eb.onRequest(H("Echo")).subscribe(this);
+
     }
 #define CNT 100
     void onEvent(Cbor& msg)
@@ -321,97 +323,50 @@ public:
 Echo echo;
 //_______________________________________________________________________________________________________________
 //
-//_______________________________________________________________________________________________________________
-//
-class Router: public Actor
+class Sonar: public Actor
 {
     uint32_t _counter;
 public:
-    Router() :
-        Actor("Router")
+    Sonar() :
+        Actor("Sonar")
     {
         _counter++;
     }
+
     void setup()
     {
-        eb.onSrc(H("mqtt")).subscribe(this);
-        eb.onRequest(H("link")).subscribe(this);
-        eb.onReply(0,H("ping")).subscribe(this);
-        eb.onEvent(H("serial"),H("rxd")).subscribe( this,(MethodHandler)&Router::onSerialData);   // send serial data to slip processing
+        timeout(2000);
     }
 
     void onEvent(Cbor& msg)
     {
-        DEBUG(" >>>>>>>>>>>>>>>>>>>> SLIP-TXD");
-        slip.send(msg);
+        timeout(2000);
+        eb.reply(H("Sonar"),H("ping"),H("Echo"));
+        eb.send();
     }
-
-    void onSerialData(Cbor& msg)
-    {
-        Bytes data(1000);
-        if (msg.getKeyValue(H("data"),data))
-        {
-            data.offset(0);
-            while (data.hasData())
-            {
-                slip.onRecv(data.read());
-            }
-        }
-        else WARN(" no serial data ");
-    };
 };
 
-Router router;
+Sonar sonar;
 //_______________________________________________________________________________________________________________
 //
-class SerialConnector: public Actor
-{
-public:
-    SerialConnector() :
-        Actor("SerialConnector")
-    {
-    }
-    void setup()
-    {
-        timeout(1000);
-        eb.onEvent(H("serial"),0).subscribe(this);
-//		eb.subscribe(H("timeout"), this, (MethodHandler) &Tracer::onEvent); // default subscribed to timeouts
-    }
-    void onEvent(Cbor& msg)
-    {
-        PT_BEGIN()
-        ;
-CONNECTING:
-        {
-            while (true)
-            {
-                timeout(2000);
-                PT_YIELD_UNTIL(eb.isEvent(H("sys"),H("timeout")));
-                Erc erc = serial.open();
-                INFO(" serial.open()= %d : %s", erc, strerror(erc));
-                if (erc == 0)
-                {
-                    eb.publish(H("serial"),H("opened"));
-                    goto CONNECTED;
-                }
-            };
-CONNECTED:
-            {
-                PT_YIELD_UNTIL(eb.isEvent(H("serial"),H("closed")) );
-                goto CONNECTING;
-            }
-        }
-        PT_END()
-    }
-};
 
-SerialConnector serialConnector;
+//_______________________________________________________________________________________________________________
+//
+
 //_______________________________________________________________________________________________________________
 //
 uint16_t tester=H("Tester");
 uint16_t uin=H("uint32_t");
 
+
+SlipStream slip(1024, serial);
+
 MqttClient Mqtt;
+
+void slipSend(Cbor& cbor)
+{
+    slip.send(cbor);
+}
 
 int main(int argc, char *argv[])
 {
@@ -420,32 +375,45 @@ int main(int argc, char *argv[])
     DEBUG(" H('sys') : %d   H('timeout')=%d", H("sys"),H("timeout"));
     static_assert(H("timeout")==45638," timout hash incorrect");
 
-    Log.level(LogManager::LOG_INFO);
-
     loadOptions(argc, argv);
-
+    Log.level(context.logLevel);
     Mqtt.loadConfig(mqttConfig);
-
     interceptAllSignals();
 
     serial.setDevice(context.device);
     serial.setBaudrate(context.baudrate);
-    tcp.setHost(context.host);
-    tcp.setPort(context.port);
+    serial.id(H("serial"));
+    serial.setup();
 
-    router.setup();
-    serialConnector.setup();
-    echo.setup();
-    Mqtt.setup();
+    slip.src(serial.id());
+    slip.id(H("slip"));
+    slip.setup();
+
+    eb.onEvent(slip.id(),H("rxd")).subscribe([](Cbor& msg)     // put SLIP messages on EB
+    {
+        Cbor data(0);
+        if ( msg.mapKeyValue(H("data"),data))
+        {
+            eb.publish(data);
+        }
+    });
+    eb.onSrc(H("mqtt")).subscribe(slipSend);    // put some EB messages on SLIP
+    eb.onRequest(H("link")).subscribe(slipSend);
+    eb.onReply(0,H("ping")).subscribe(slipSend);
+
+    eb.onRequest(H("Echo")).subscribe(&echo);      // Echo service
+    Mqtt.setup();                                   // MQTT service
+    eb.onRequest(H("mqtt")).subscribe(&Mqtt);
+
+    sonar.setup();                                  // push some downstream for test purpose
 
 
     eb.onAny().subscribe([](Cbor& cbor)
     {
-      if ( Log.level() <= LogManager::LOG_DEBUG)  logCbor(cbor);
+        if ( Log.level() <= LogManager::LOG_DEBUG)  logCbor(cbor);
     });
 
-//	Actor::setupAll();
-    eb.publish(H("serial"),H("closed"));
+
     while (1)
     {
         poller(serial.fd(), Mqtt.fd(), Actor::lowestTimeout());

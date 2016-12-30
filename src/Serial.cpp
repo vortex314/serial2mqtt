@@ -42,6 +42,43 @@ Serial::Serial(const char* device) :
     _isOpen=false;
 }
 
+
+
+void Serial::setup()
+{
+    timeout(1000);
+    eb.onEvent(H("serial"),0).subscribe(this);
+//		eb.subscribe(H("timeout"), this, (MethodHandler) &Tracer::onEvent); // default subscribed to timeouts
+}
+void Serial::onEvent(Cbor& msg)
+{
+    PT_BEGIN()
+    ;
+CONNECTING:
+    {
+        while (true)
+        {
+            timeout(2000);
+            PT_YIELD_UNTIL(eb.isEvent(H("sys"),H("timeout")));
+            Erc erc = open();
+            INFO(" serial.open()= %d : %s", erc, strerror(erc));
+            if (erc == 0)
+            {
+                eb.publish(H("serial"),H("opened"));
+                goto CONNECTED;
+            }
+        };
+CONNECTED:
+        {
+        timeout(UINT_LEAST32_MAX);
+            PT_YIELD_UNTIL(eb.isEvent(H("serial"),H("closed")) );
+            goto CONNECTING;
+        }
+    }
+    PT_END()
+}
+
+
 void Serial::setDevice(const char* device)
 {
     _device = device;
@@ -181,9 +218,6 @@ bool Serial::hasData()
     return count == 0 ? false : true;
 }
 
-void Serial::onEvent(Cbor& cbor)
-{
-}
 
 int Serial::fd()
 {

@@ -38,6 +38,8 @@ case H("retain") : return "retain";
 case H("retained") : return "retained";
 case H("rxd") : return "rxd";
 case H("serial") : return "serial";
+case H("slip") : return "slip";
+case H("Sonar") : return "Sonar";
 case H("subscribe") : return "subscribe";
 case H("sys") : return "sys";
 case H("tcp") : return "tcp";

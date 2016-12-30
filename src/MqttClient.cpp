@@ -12,7 +12,7 @@
 MqttClient* mqtt;
 
 
-void MqttClient::router(Cbor& cbor)
+void MqttClient::onEvent(Cbor& cbor)
 {
     uint32_t cmd;
     if (cbor.getKeyValue(EB_REQUEST, cmd))
@@ -64,7 +64,6 @@ void MqttClient::setup()
     _willTopic = _clientId;
     _willTopic.append("/system/alive");
     _willMessage = "true";
-    eb.onRequest(H("mqtt")).subscribe(this,(MethodHandler)&MqttClient::router);
     if (pipe(_fd) < 0)        LOGF("Failed to create pipe: %s (%d)", strerror(errno), errno);
 
     if (fcntl(_fd[0], F_SETFL, O_NONBLOCK) < 0)
