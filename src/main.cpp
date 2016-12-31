@@ -51,6 +51,7 @@ using namespace std;
 #include <CborQueue.h>
 #include <SlipStream.h>
 #include <EventBus.h>
+#include <MqttGtw.h>
 
 EventBus eb(10240,1024);
 
@@ -136,8 +137,7 @@ void poller(int serialFd, int tcpFd, uint64_t sleepTill)
 
         if (retval < 0)
         {
-            WARN(" select() : %d %s", retval, strerror(retval));
-            sleep(1);
+            WARN(" select() : error : %s (%d)", strerror(errno), errno);
         }
         else if (retval > 0)   // one of the fd was set
         {
@@ -267,6 +267,8 @@ void SignalHandler(int signal_number)
     // print out all the frames to stderr
     fprintf(stderr, "Error: signal %d:%s \n", signal_number,
             strsignal(signal_number));
+    fprintf(stderr, "Error: errno %d:%s \n", errno,
+            strerror(errno));
     backtrace_symbols_fd(array, size, STDERR_FILENO);
     exit(1);
 }
@@ -305,8 +307,9 @@ public:
         static uint32_t start;
         if ( _counter%CNT ==0)
         {
-            INFO(" request-reply %d msg/sec",(CNT*1000)/(Sys::millis()-start));
+            INFO(" request-reply %d msg/sec",(_counter*1000)/(Sys::millis()-start));
             start=Sys::millis();
+            _counter=0;
         }
 
         Cbor& repl = eb.reply();
@@ -321,6 +324,45 @@ public:
 };
 
 Echo echo;
+//_______________________________________________________________________________________________________________
+//
+class Logger: public Actor
+{
+
+public:
+    Logger() :
+        Actor("Logger")
+    {
+    }
+    void setup()
+    {
+
+    }
+#define CNT 100
+    void onEvent(Cbor& msg)
+    {
+        Str host(20);
+        uint64_t time;
+        Str object(20);
+        Str method(20);
+        Str line(100);
+        host="<host>";
+        time=0;
+        object="<object>";
+        method="<method>";
+        line="-";
+        msg.getKeyValue(H("time"),time);
+        msg.getKeyValue(H("host"),host);
+        msg.getKeyValue(H("object"),object);
+        msg.getKeyValue(H("method"),method);
+        msg.getKeyValue(H("line"),line);
+        fprintf(stderr,"%s \n",line.c_str());
+//        fprintf(stderr,"%llu | %s | %s:%s %s \n",time,host.c_str(),object.c_str(),method.c_str(),line.c_str());
+
+    }
+};
+
+Logger logger;
 //_______________________________________________________________________________________________________________
 //
 class Sonar: public Actor
@@ -362,6 +404,7 @@ uint16_t uin=H("uint32_t");
 SlipStream slip(1024, serial);
 
 MqttClient Mqtt;
+MqttGtw mqttGtw;
 
 void slipSend(Cbor& cbor)
 {
@@ -378,6 +421,7 @@ int main(int argc, char *argv[])
     loadOptions(argc, argv);
     Log.level(context.logLevel);
     Mqtt.loadConfig(mqttConfig);
+    mqttGtw.loadConfig(mqttConfig);
     interceptAllSignals();
 
     serial.setDevice(context.device);
@@ -389,12 +433,18 @@ int main(int argc, char *argv[])
     slip.id(H("slip"));
     slip.setup();
 
+    Mqtt.setup();
+    mqttGtw.setup();
+    eb.onEvent(0,EB_REGISTER).subscribe(&mqttGtw,(MethodHandler)&MqttGtw::onActorRegister);
+
     eb.onEvent(slip.id(),H("rxd")).subscribe([](Cbor& msg)     // put SLIP messages on EB
     {
         Cbor data(0);
         if ( msg.mapKeyValue(H("data"),data))
         {
             eb.publish(data);
+
+
         }
     });
     eb.onSrc(H("mqtt")).subscribe(slipSend);    // put some EB messages on SLIP
@@ -402,8 +452,8 @@ int main(int argc, char *argv[])
     eb.onReply(0,H("ping")).subscribe(slipSend);
 
     eb.onRequest(H("Echo")).subscribe(&echo);      // Echo service
-    Mqtt.setup();                                   // MQTT service
     eb.onRequest(H("mqtt")).subscribe(&Mqtt);
+    eb.onRequest(H("Logger")).subscribe(&logger);
 
     sonar.setup();                                  // push some downstream for test purpose
 

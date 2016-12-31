@@ -11,7 +11,7 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="-d /dev/rfcomm0 -l DEBUG" />
+				<Option parameters="-d /dev/rfcomm1 -l DEBUG" />
 				<Compiler>
 					<Add option="-std=c++11" />
 					<Add option="-g" />
@@ -27,6 +27,9 @@
 					<Add library="../Common/bin/Debug/libCommon.a" />
 					<Add directory="../paho/build/output" />
 				</Linker>
+				<ExtraCommands>
+					<Add before="./keys.sh" />
+				</ExtraCommands>
 			</Target>
 			<Target title="Release">
 				<Option output="bin/Release/serial2mqtt" prefix_auto="1" extension_auto="1" />
@@ -35,6 +38,7 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-O2" />
+					<Add directory="inc" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -47,11 +51,16 @@
 		</Compiler>
 		<Unit filename="inc/Hash.h" />
 		<Unit filename="inc/MqttClient.h" />
+		<Unit filename="inc/MqttGtw">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="inc/MqttGtw.h" />
 		<Unit filename="inc/Serial.h" />
 		<Unit filename="inc/Tcp.h" />
 		<Unit filename="inc/hash_func.h" />
 		<Unit filename="inc/keys.h" />
 		<Unit filename="src/MqttClient.cpp" />
+		<Unit filename="src/MqttGtw.cpp" />
 		<Unit filename="src/Serial.cpp" />
 		<Unit filename="src/Sys.cpp" />
 		<Unit filename="src/Tcp.cpp" />

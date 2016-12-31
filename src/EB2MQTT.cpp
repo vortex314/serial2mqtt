@@ -9,7 +9,7 @@
 
 #define HOST "test.mosquitto.org"
 
-//MqttClient* mqtt;
+MqttClient* mqtt;
 
 
 void MqttClient::onEvent(Cbor& cbor)
@@ -26,6 +26,32 @@ void MqttClient::onEvent(Cbor& cbor)
             publish(cbor);
         else if (cmd == H("disconnect"))
             disconnect(cbor);
+    } else if ( timeout() ) {
+        PT_BEGIN()
+    ;
+CONNECTING:
+    {
+        while (true)
+        {
+            timeout(2000);
+            PT_YIELD_UNTIL(timeout()));
+            Erc erc = open();
+            INFO(" mqtt.open()= %d : %s", erc, strerror(erc));
+            if (erc == 0)
+            {
+                eb.publish(H("serial"),H("opened"));
+                goto CONNECTED;
+            }
+        };
+CONNECTED:
+        {
+        timeout(UINT_LEAST32_MAX);
+            PT_YIELD_UNTIL(eb.isEvent(H("serial"),H("closed")) );
+            goto CONNECTING;
+        }
+    }
+    PT_END()
+
     }
 }
 
@@ -68,6 +94,7 @@ void MqttClient::setup()
 
     if (fcntl(_fd[0], F_SETFL, O_NONBLOCK) < 0)
         LOGF("Failed to set pipe non-blocking mode: %s (%d)", strerror(errno), errno);
+        timeout(2000);
 }
 
 
@@ -242,7 +269,7 @@ void MqttClient::disconnect(Cbor& cbor)
     disc_opts.onSuccess = onDisconnect;
     disc_opts.context=this;
     int rc = 0;
-    if ((rc = MQTTAsync_disconnect(_client, &disc_opts))
+    if ((rc = MQTTAsync_disconnect(Mqtt._client, &disc_opts))
             != MQTTASYNC_SUCCESS)
     {
         LOGF("Failed to start disconnect, return code %d", rc);
@@ -258,7 +285,7 @@ void MqttClient::onDisconnect(void* context, MQTTAsync_successData* response)
     mq->_connected = false;
 
     INFO("Successful disconnection");
-    eb.reply(mq->_lastSrc,H("mqtt"),H("disconnect")).addKeyValue(EB_ERROR, E_OK);
+    eb.reply(Mqtt._lastSrc,H("mqtt"),H("disconnect")).addKeyValue(EB_ERROR, E_OK);
     eb.send();
     mq->wakeup();
 }
@@ -293,7 +320,7 @@ void MqttClient::publish(Cbor& cbor)
         pubmsg.retained = retain;
         pubmsg.msgid = _msgid++;
 
-        if ((rc = MQTTAsync_sendMessage(_client, topic.c_str(), &pubmsg, &opts))
+        if ((rc = MQTTAsync_sendMessage(Mqtt._client, topic.c_str(), &pubmsg, &opts))
                 != MQTTASYNC_SUCCESS)
         {
             LOGF("Failed MQTTAsync_sendMessage() =  %d", rc);
@@ -338,9 +365,9 @@ void MqttClient::subscribe(Cbor& cbor)
 {
     if (!_connected)
     {
-        eb.reply(_lastSrc,H("subscribe"),H("mqtt")).addKeyValue(H("error"), (uint32_t) ENOTCONN);
-        eb.send();
-
+        Cbor resp(20);
+        resp.addKeyValue(H("error"), ENOTCONN);
+        eb.publish(H("mqtt.puback"), resp);
     }
     Str topic(60);
     int qos = 0;
@@ -351,10 +378,10 @@ void MqttClient::subscribe(Cbor& cbor)
          topic.c_str(), CLIENTID, qos);
     opts.onSuccess = onSubscribe;
     opts.onFailure = onSubscribeFailure;
-    opts.context = _client;
+    opts.context = Mqtt._client;
     int rc = E_OK;
 
-    if ((rc = MQTTAsync_subscribe(_client, topic.c_str(), qos, &opts))
+    if ((rc = MQTTAsync_subscribe(Mqtt._client, topic.c_str(), qos, &opts))
             != MQTTASYNC_SUCCESS)
     {
         LOGF("Failed to start subscribe, return code %d", rc);
@@ -367,7 +394,7 @@ void MqttClient::onSubscribe(void* context, MQTTAsync_successData* response)
 {
     MqttClient* mq = (MqttClient*)context;
     INFO("Subscribe succeeded");
-    eb.reply(mq->_lastSrc,H("subscribe"),H("mqtt")).addKeyValue(H("error"), (uint32_t) E_OK);
+    eb.reply(Mqtt._lastSrc,H("subscribe"),H("mqtt")).addKeyValue(H("error"), (uint32_t) E_OK);
     eb.send();
     mq->wakeup();
 }

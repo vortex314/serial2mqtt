@@ -1,4 +1,4 @@
-#include "MqttClient.h"
+#include "MqttGtw.h"
 #include "MQTTAsync.h"
 #include <Cbor.h>
 #include <EventBus.h>
@@ -9,40 +9,59 @@
 
 #define HOST "test.mosquitto.org"
 
-//MqttClient* mqtt;
 
 
-void MqttClient::onEvent(Cbor& cbor)
+void MqttGtw::onEvent(Cbor& msg)
 {
-    uint32_t cmd;
-    if (cbor.getKeyValue(EB_REQUEST, cmd))
+    Cbor cbor(0);
+    uint32_t error;
+    PT_BEGIN()
+    ;
+CONNECTING:
     {
-        cbor.getKeyValue(EB_SRC,_lastSrc);
-        if (cmd == H("connect"))
+        while (true)
+        {
+            timeout(2000);
+            PT_YIELD_UNTIL(timeout());
+
             connect(cbor);
-        else if (cmd == H("subscribe"))
-            subscribe(cbor);
-        else if (cmd == H("publish"))
-            publish(cbor);
-        else if (cmd == H("disconnect"))
-            disconnect(cbor);
+            PT_YIELD_UNTIL(eb.isReply(id(),H("connect")));
+            if ( msg.getKeyValue(EB_ERROR,error) && error==0)
+            {
+                goto CONNECTED;
+            }
+        };
+    };
+CONNECTED:
+    {
+
+        timeout(UINT_LEAST32_MAX);
+        PT_YIELD_UNTIL(eb.isEvent(id(),H("closed")) );
+        goto CONNECTING;
     }
+
+PT_END()
 }
 
-MqttClient::MqttClient() : Actor("MqttClient"),
+void MqttGtw::onActorRegister(Cbor& cbor)
+{
+
+}
+
+MqttGtw::MqttGtw() : Actor("MqttGtw"),
     _host(40), _port(1883), _clientId(30), _user(20), _password(20), _willTopic(
         30), _willMessage(30), _willQos(0), _willRetain(false), _keepAlive(
             20), _cleanSession(1), _connected(false),_msgid(0)
 {
 }
 
-MqttClient::~MqttClient()
+MqttGtw::~MqttGtw()
 {
     ::close(_fd[0]);
     ::close(_fd[1]);
 }
 
-void MqttClient::wakeup()
+void MqttGtw::wakeup()
 {
     if ( write(_fd[1],"W",1) < 1 )
     {
@@ -50,12 +69,12 @@ void MqttClient::wakeup()
     }
 }
 
-int MqttClient::fd()
+int MqttGtw::fd()
 {
     return _fd[0];
 }
 
-void MqttClient::setup()
+void MqttGtw::setup()
 {
     _host = HOST;
     _clientId = CLIENTID;
@@ -71,7 +90,7 @@ void MqttClient::setup()
 }
 
 
-void MqttClient::loadConfig(Cbor& cbor)
+void MqttGtw::loadConfig(Cbor& cbor)
 {
     cbor.getKeyValue(H("host"), _host);
     cbor.getKeyValue(H("port"), _port);
@@ -86,13 +105,13 @@ void MqttClient::loadConfig(Cbor& cbor)
     cbor.getKeyValue(H("will_retain"), _willRetain);
 }
 
-void MqttClient::connect(Cbor& cbor)
+void MqttGtw::connect(Cbor& cbor)
 {
     loadConfig(cbor);
 
     if (_connected)
     {
-        eb.reply(_lastSrc,H("connect"),H("mqtt")).addKeyValue(EB_ERROR,E_OK);
+        eb.reply(_lastSrc,H("connect"),id()).addKeyValue(EB_ERROR,E_OK);
         eb.send();
         return;
     }
@@ -124,39 +143,39 @@ void MqttClient::connect(Cbor& cbor)
     if ((rc = MQTTAsync_connect(_client, &conn_opts)) != MQTTASYNC_SUCCESS)
     {
         LOGF("Failed to start connect, return code %d", rc);
-        eb.reply(_lastSrc,H("connect"),H("mqtt")).addKeyValue(H("error"), (uint32_t) EINVAL).addKeyValue(H("error_detail"), rc);
+        eb.reply(_lastSrc,H("connect"),id()).addKeyValue(H("error"), (uint32_t) EINVAL).addKeyValue(H("error_detail"), rc);
         eb.send();
     }
 }
 
-void MqttClient::onConnect(void* context, MQTTAsync_successData* response)
+void MqttGtw::onConnect(void* context, MQTTAsync_successData* response)
 {
-    MqttClient* mq = (MqttClient*)context;
+    MqttGtw* mq = (MqttGtw*)context;
     mq->_connected = true;
     INFO("Successful connection");
-    eb.reply(mq->_lastSrc,H("connect"),H("mqtt")).addKeyValue(EB_ERROR, (uint32_t) E_OK);
+    eb.reply(mq->_lastSrc,H("connect"),mq->id()).addKeyValue(EB_ERROR, (uint32_t) E_OK);
     eb.send();
     mq->wakeup();
 }
 
 
-void MqttClient::onConnectFailure(void* context,
-                                  MQTTAsync_failureData* response)
+void MqttGtw::onConnectFailure(void* context,
+                               MQTTAsync_failureData* response)
 {
-    MqttClient* mq = (MqttClient*)context;
+    MqttGtw* mq = (MqttGtw*)context;
     mq->_connected = false;
     WARN("Connect failed, rc %d", response ? response->code : 0);
-    eb.reply(mq->_lastSrc,H("mqtt"),H("connect")).addKeyValue(H("error_detail"), response ? response->code : 0).addKeyValue(EB_ERROR, ECONNABORTED);
+    eb.reply(mq->_lastSrc,mq->id(),H("connect")).addKeyValue(H("error_detail"), response ? response->code : 0).addKeyValue(EB_ERROR, ECONNABORTED);
     eb.send();
     mq->wakeup();
 }
 
-void MqttClient::onConnectionLost(void *context, char *cause)
+void MqttGtw::onConnectionLost(void *context, char *cause)
 {
-    MqttClient* mq = (MqttClient*)context;
+    MqttGtw* mq = (MqttGtw*)context;
     WARN("Connection lost, cause : %s ", cause==0 ? " unknown cause " : cause);
     mq->_connected = false;
-    eb.event(H("mqtt"),H("disconnected"))
+    eb.event(mq->id(),H("disconnected"))
     .addKeyValue(H("error_detail"),
                  cause == 0 ? " unknown cause " : cause)
     .addKeyValue(EB_ERROR, (uint32_t) EINVAL);
@@ -189,37 +208,37 @@ void topic2eb(Str& topic,uint16_t& obj,uint16_t& type,uint16_t& op)
 }*/
 
 
-int MqttClient::onMessage(void *context, char *topicName, int topicLen,
-                          MQTTAsync_message *message)
+int MqttGtw::onMessage(void *context, char *topicName, int topicLen,
+                       MQTTAsync_message *message)
 {
-    MqttClient* mq = (MqttClient*)context;
+    MqttGtw* mq = (MqttGtw*)context;
     Cbor msg((uint8_t*) message->payload, message->payloadlen);
     Str topic((uint8_t*)topicName,topicLen);
-/*    uint16_t obj,uint16_t type,uint16_t op;
-    topic2eb(topic,obj,type,op);
-    Cbor m(1000);
-    if ( type==EB_REQUEST)
-    {
-        m.addKeyValue(EB_DST,obj);
-        m.addKeyValue(EB_REQUEST,op);
-        m.append(msg);
-        eb.publish(m);
-    }
-    else if (type==EB_EVENT )
-    {
-        m.addKeyValue(EB_SRC,obj);
-        m.addKeyValue(EB_EVENT,op);
-        m.append(msg);
-        eb.publish(m);
-    }
-    else if (type==EB_REPLY )
-    {
-        m.addKeyValue(EB_SRC,obj);
-        m.addKeyValue(EB_REPLY,op);
-        m.append(msg);
-        eb.publish(m);
-    }*/
-    eb.event(H("mqtt"),H("published")).addKeyValue(H("topic"), topicName).addKeyValue(H("message"), msg).addKeyValue(
+    /*    uint16_t obj,uint16_t type,uint16_t op;
+        topic2eb(topic,obj,type,op);
+        Cbor m(1000);
+        if ( type==EB_REQUEST)
+        {
+            m.addKeyValue(EB_DST,obj);
+            m.addKeyValue(EB_REQUEST,op);
+            m.append(msg);
+            eb.publish(m);
+        }
+        else if (type==EB_EVENT )
+        {
+            m.addKeyValue(EB_SRC,obj);
+            m.addKeyValue(EB_EVENT,op);
+            m.append(msg);
+            eb.publish(m);
+        }
+        else if (type==EB_REPLY )
+        {
+            m.addKeyValue(EB_SRC,obj);
+            m.addKeyValue(EB_REPLY,op);
+            m.append(msg);
+            eb.publish(m);
+        }*/
+    eb.event(mq->id(),H("published")).addKeyValue(H("topic"), topicName).addKeyValue(H("message"), msg).addKeyValue(
         H("qos"), message->qos).addKeyValue(H("retained"),
                                             message->retained);
 
@@ -232,7 +251,7 @@ int MqttClient::onMessage(void *context, char *topicName, int topicLen,
 
 
 
-void MqttClient::disconnect(Cbor& cbor)
+void MqttGtw::disconnect(Cbor& cbor)
 {
     _connected = false;
     INFO("disconnect()");
@@ -246,24 +265,24 @@ void MqttClient::disconnect(Cbor& cbor)
             != MQTTASYNC_SUCCESS)
     {
         LOGF("Failed to start disconnect, return code %d", rc);
-        eb.reply(_lastSrc,H("disconnect"),H("mqtt")).addKeyValue(H("error_detail"), "disconnect fail").addKeyValue(H("error"), ENOTCONN);
+        eb.reply(_lastSrc,H("disconnect"),id()).addKeyValue(H("error_detail"), "disconnect fail").addKeyValue(H("error"), ENOTCONN);
         eb.send();
     }
     MQTTAsync_destroy(&_client);
 }
 
-void MqttClient::onDisconnect(void* context, MQTTAsync_successData* response)
+void MqttGtw::onDisconnect(void* context, MQTTAsync_successData* response)
 {
-    MqttClient* mq = (MqttClient*)context;
+    MqttGtw* mq = (MqttGtw*)context;
     mq->_connected = false;
 
     INFO("Successful disconnection");
-    eb.reply(mq->_lastSrc,H("mqtt"),H("disconnect")).addKeyValue(EB_ERROR, E_OK);
+    eb.reply(mq->_lastSrc,mq->id(),H("disconnect")).addKeyValue(EB_ERROR, E_OK);
     eb.send();
     mq->wakeup();
 }
 
-void MqttClient::publish(Cbor& cbor)
+void MqttGtw::publish(Cbor& cbor)
 {
     if (false)
     {
@@ -283,8 +302,8 @@ void MqttClient::publish(Cbor& cbor)
         cbor.getKeyValue(H("retain"), retain);
 
         int rc = E_OK;
-        opts.onSuccess = MqttClient::onPublishSuccess;
-        opts.onFailure = MqttClient::onPublishFailure;
+        opts.onSuccess = MqttGtw::onPublishSuccess;
+        opts.onFailure = MqttGtw::onPublishFailure;
         opts.context = this;
 
         pubmsg.payload = message.data();
@@ -309,24 +328,24 @@ void MqttClient::publish(Cbor& cbor)
     }
 }
 
-void MqttClient::onPublishSuccess(void* context,
-                                  MQTTAsync_successData* response)
+void MqttGtw::onPublishSuccess(void* context,
+                               MQTTAsync_successData* response)
 {
-    MqttClient* mq = (MqttClient*)context;
+    MqttGtw* mq = (MqttGtw*)context;
 
 //	LOGF("Message with token value %d delivery confirmed", response->token);
-    eb.reply(mq->_lastSrc,H("publish"),H("mqtt")).addKeyValue(H("error"),E_OK);
+    eb.reply(mq->_lastSrc,H("publish"),mq->id()).addKeyValue(H("error"),E_OK);
     eb.send();
     mq->wakeup();
 }
 
-void MqttClient::onPublishFailure(void* context,
-                                  MQTTAsync_failureData* response)
+void MqttGtw::onPublishFailure(void* context,
+                               MQTTAsync_failureData* response)
 {
-    MqttClient* mq = (MqttClient*)context;
+    MqttGtw* mq = (MqttGtw*)context;
     WARN("Publish failed, rc %d", response ? response->code : 0);
 
-    eb.reply(mq->_lastSrc,H("publish"),H("mqtt"))
+    eb.reply(mq->_lastSrc,H("publish"),mq->id())
     .addKeyValue(H("error"), response ? response->code : 0)
     .addKeyValue(H("error_detail"),
                  response->message ? "no detail" : response->message);
@@ -334,13 +353,13 @@ void MqttClient::onPublishFailure(void* context,
     mq->wakeup();
 }
 
-void MqttClient::subscribe(Cbor& cbor)
+void MqttGtw::subscribe(Cbor& cbor)
 {
     if (!_connected)
     {
-        eb.reply(_lastSrc,H("subscribe"),H("mqtt")).addKeyValue(H("error"), (uint32_t) ENOTCONN);
-        eb.send();
-
+        Cbor resp(20);
+        resp.addKeyValue(H("error"), ENOTCONN);
+        eb.publish(H("mqtt.puback"), resp);
     }
     Str topic(60);
     int qos = 0;
@@ -358,26 +377,26 @@ void MqttClient::subscribe(Cbor& cbor)
             != MQTTASYNC_SUCCESS)
     {
         LOGF("Failed to start subscribe, return code %d", rc);
-        eb.reply(_lastSrc,H("subscribe"),H("mqtt")).addKeyValue(H("error"), (uint32_t) EAGAIN).addKeyValue(H("error_detail"), rc);;
+        eb.reply(_lastSrc,H("subscribe"),id()).addKeyValue(H("error"), (uint32_t) EAGAIN).addKeyValue(H("error_detail"), rc);;
         eb.send();
     }
 }
 
-void MqttClient::onSubscribe(void* context, MQTTAsync_successData* response)
+void MqttGtw::onSubscribe(void* context, MQTTAsync_successData* response)
 {
-    MqttClient* mq = (MqttClient*)context;
+    MqttGtw* mq = (MqttGtw*)context;
     INFO("Subscribe succeeded");
-    eb.reply(mq->_lastSrc,H("subscribe"),H("mqtt")).addKeyValue(H("error"), (uint32_t) E_OK);
+    eb.reply(mq->_lastSrc,H("subscribe"),mq->id()).addKeyValue(H("error"), (uint32_t) E_OK);
     eb.send();
     mq->wakeup();
 }
 
-void MqttClient::onSubscribeFailure(void* context,
-                                    MQTTAsync_failureData* response)
+void MqttGtw::onSubscribeFailure(void* context,
+                                 MQTTAsync_failureData* response)
 {
-    MqttClient* mq = (MqttClient*)context;
+    MqttGtw* mq = (MqttGtw*)context;
     WARN("Subscribe failed, rc %d", response ? response->code : 0);
-    eb.reply(mq->_lastSrc,H("subscribe"),H("mqtt")).addKeyValue(H("error"), response ? response->code : 0);
+    eb.reply(mq->_lastSrc,H("subscribe"),mq->id()).addKeyValue(H("error"), response ? response->code : 0);
     eb.send();
     mq->wakeup();
 }
