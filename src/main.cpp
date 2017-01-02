@@ -278,6 +278,67 @@ extern void logCbor(Cbor&);
 extern char* hash2string(uint32_t h);
 //_______________________________________________________________________________________________________________
 //
+class Id {
+    char* _name;
+    uint16_t _id;
+    static Id* _first;
+    Id* _next;
+public:
+    Id(const char* name,uint16_t id) {
+        _name = (char*)malloc(strlen(name));
+        strcpy(_name,name);
+        _id=id;
+        _next=0;
+        if (first() == 0) {
+            setFirst(this);
+        } else {
+            last()->setNext(this);
+        }
+    }
+    Id* last() {
+        Id* cursor = first();
+        while (cursor->_next) {
+            cursor = cursor->next();
+        }
+        return cursor;
+    }
+
+    static Id* first() {
+        return Id::_first;
+    }
+    Id* next() {
+        return _next;
+    }
+    void setNext(Id* a) {
+        _next = a;
+    }
+    static void setFirst(Id* f) {
+        _first = f;
+    }
+
+    static char* findById(uint16_t h) {
+        char *ptr=0;
+        ptr=hash2string(h);
+        if ( ptr ) return ptr;
+        if ( first()==0) return 0;
+        for (Id* cur=first(); cur; cur=cur->next()) {
+            if ( cur->_id == h ) return cur->_name;
+        }
+        return 0;
+    }
+
+};
+/*
+  if ( isRequest(actor->id(),H("status"))) {
+        eb.reply()
+        .addKeyValue(H("state"),actor->_state)
+        .addKeyValue(H("timeout"),actor->_timeout)
+        .addKeyValue(H("id"),actor->_id)
+        .addKeyValue(H("line"),actor->_ptLine);
+        */
+Id* Id::_first=0;
+//_______________________________________________________________________________________________________________
+//
 class Router : public Actor {
     Str _topic;
     Json _message;
@@ -293,13 +354,14 @@ public:
     }
     void setup() {
         timeout(2000);
+        eb.onDst(id()).subscribe(this);
     }
 #define CNT 100
     bool addHeader(Json& json, Cbor& cbor, uint16_t key) {
         uint16_t v;
         if(cbor.getKeyValue(key, v)) {
             json.addKey(hash2string(key));
-            json.add(hash2string(v));
+            json.add(Id::findById(v));
             return true;
         }
         return false;
@@ -310,7 +372,9 @@ public:
         if(cbor.getKeyValue(key, v)) {
             if(topic.length())
                 topic.append('/');
-            topic.append(hash2string(v));
+            char* nm = Id::findById(v);
+            if ( nm )topic.append(nm);
+            else topic.append(v);
             return true;
         }
         return false;
@@ -331,8 +395,9 @@ public:
         }
         if(field.length() == 0)
             return 0;
-        assert(h(field)==H(field.c_str()));
-        return h(field);
+        uint16_t hsh=h(field);
+        if ( Id::findById(hsh)==0)  new Id(field.c_str(),hsh);
+        return hsh;
     }
 
     void jsonToCbor(Cbor& cbor, Json& json) {
@@ -398,7 +463,14 @@ public:
                 if(isHeaderField(key)) {
                     cbor.skipToken();
                 } else {
-                    json.addKey(hash2string(key));
+                    char* name=hash2string(key);
+                    if ( name)
+                        json.addKey(name);
+                    else {
+                        Str str(10);
+                        str.append(key);
+                        json.addKey(str.c_str());
+                    }
                     type = cbor.tokenToString(json);
                 }
             }
@@ -429,16 +501,16 @@ CONNECTED : {
                 eb.send();
                 timeout(1000);
                 PT_YIELD_UNTIL(eb.isReplyCorrect(H("mqtt"), H("subscribe")) || timeout());
-                            if(timeout())
-                        goto DISCONNECTED;
+                if(timeout())
+                    goto DISCONNECTED;
                 _topic = _name;
                 _topic += "/reply/#";
                 eb.request(H("mqtt"), H("subscribe"), H("Router")).addKeyValue(H("topic"), _topic);
                 eb.send();
                 timeout(1000);
                 PT_YIELD_UNTIL(eb.isReplyCorrect(H("mqtt"), H("subscribe")) || timeout());
-                             if(timeout())
-                        goto DISCONNECTED;
+                if(timeout())
+                    goto DISCONNECTED;
             }
             goto SLEEPING;
         }
@@ -525,23 +597,26 @@ public:
         _counter++;
     }
     void setup() {
+        eb.onDst(id()).subscribe(this);
     }
 #define CNT 100
     void onEvent(Cbor& msg) {
         static uint32_t start;
-        if(_counter % CNT == 0) {
-            INFO(" request-reply %d msg/sec", (_counter * 1000) / (Sys::millis() - start));
-            start = Sys::millis();
-            _counter = 0;
-        }
+        if ( eb.isRequest(id(),H("ping"))) {
+            if(_counter % CNT == 0) {
+                INFO(" request-reply %d msg/sec", (_counter * 1000) / (Sys::millis() - start));
+                start = Sys::millis();
+                _counter = 0;
+            }
 
-        Cbor& repl = eb.reply();
-        uint32_t value;
-        if(msg.getKeyValue(H("uint32_t"), value)) {
-            repl.addKeyValue(H("uint32_t"), value);
-        }
-        eb.send();
-        _counter++;
+            Cbor& repl = eb.reply();
+            uint32_t value;
+            if(msg.getKeyValue(H("nr"), value)) {
+                repl.addKeyValue(H("nr"), value);
+            }
+            eb.send();
+            _counter++;
+        } else eb.defaultHandler(this);
     }
 };
 
@@ -558,26 +633,42 @@ public:
     }
 #define CNT 100
     void onEvent(Cbor& msg) {
-        Str host(20);
-        uint64_t time;
-        Str object(20);
-        Str method(20);
-        Str line(100);
-        host = "<host>";
-        time = 0;
-        object = "<object>";
-        method = "<method>";
-        line = "-";
-        msg.getKeyValue(H("time"), time);
-        msg.getKeyValue(H("host"), host);
-        msg.getKeyValue(H("object"), object);
-        msg.getKeyValue(H("method"), method);
-        msg.getKeyValue(H("line"), line);
-        fprintf(stderr, "%s \n", line.c_str());
-        //        fprintf(stderr,"%llu | %s | %s:%s %s
-        //        \n",time,host.c_str(),object.c_str(),method.c_str(),line.c_str());
+        if(eb.isRequest(0,H("log"))) {
+            Str host(20);
+            uint64_t time;
+            Str object(20);
+            Str method(20);
+            Str line(100);
+            host = "<host>";
+            time = 0;
+            object = "<object>";
+            method = "<method>";
+            line = "-";
+            msg.getKeyValue(H("time"), time);
+            msg.getKeyValue(H("host"), host);
+            msg.getKeyValue(H("object"), object);
+            msg.getKeyValue(H("method"), method);
+            msg.getKeyValue(H("line"), line);
+            fprintf(stderr, "%s \n", line.c_str());
+            //        fprintf(stderr,"%llu | %s | %s:%s %s
+            //        \n",time,host.c_str(),object.c_str(),method.c_str(),line.c_str());
+        } else eb.defaultHandler(this);
     }
 };
+
+class Relay : public Actor {
+public:
+    Relay():Actor("Relay") {
+    }
+    void setup() {
+        eb.onDst(H("Relay")).subscribe(this);
+    }
+    void onEvent(Cbor& msg) {
+        eb.defaultHandler(this);
+    }
+};
+
+Relay relay;
 
 Logger logger;
 //_______________________________________________________________________________________________________________
@@ -607,9 +698,9 @@ PINGING : {
             while(true) {
                 timeout(2000);
                 PT_YIELD_UNTIL(timeout());
-                eb.request(H("Echo"), H("ping"), H("Sonar")).addKeyValue(H("nr"), _counter++);
-                eb.send();
-                PT_YIELD_UNTIL(timeout());
+//               eb.request(H("Echo"), H("ping"), H("Sonar")).addKeyValue(H("nr"), _counter++);
+//               eb.send();
+//               PT_YIELD_UNTIL(timeout());
             }
         }
 
@@ -618,8 +709,6 @@ PINGING : {
 };
 
 Sonar sonar;
-//_______________________________________________________________________________________________________________
-//
 
 //_______________________________________________________________________________________________________________
 //
@@ -671,11 +760,12 @@ int main(int argc, char* argv[]) {
 
 
     router.setup();
-    eb.onDst(H("Echo")).subscribe(&router, (MethodHandler)&Router::onPublish);
-    eb.onDst(H("Router")).subscribe(&router);
+    eb.onRemote().subscribe(&router, (MethodHandler)&Router::onPublish);
+
     eb.onEvent(H("mqtt"), H("published")).subscribe(&router, (MethodHandler)&Router::onPublished);
     eb.onEvent(H("mqtt"), H("disconnected")).subscribe(&router, (MethodHandler)&Router::onEvent);
 
+    echo.setup();
     //    eb.onRequest(H("Router"),H("subscribe")).subscribe(&router,(MethodHandler)&Router::onSubscribe);
 
     eb.onEvent(slip.id(), H("rxd")).subscribe([](Cbor& msg) { // put SLIP messages on EB
@@ -688,11 +778,11 @@ int main(int argc, char* argv[]) {
     eb.onRequest(H("link")).subscribe(slipSend);
     eb.onReply(0, H("ping")).subscribe(slipSend);
 
-    eb.onRequest(H("Echo")).subscribe(&echo); // Echo service
     eb.onRequest(H("mqtt")).subscribe(&mqttGtw);
     eb.onRequest(H("Logger")).subscribe(&logger);
 
     sonar.setup();
+    relay.setup();
     // push some downstream for test purpose
 
     eb.onAny().subscribe([](Cbor& cbor) {

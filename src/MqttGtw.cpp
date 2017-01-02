@@ -7,7 +7,7 @@
 #include <fcntl.h>
 #include <poll.h>
 
-extern int wakeupPipe[2];
+ int wakeupPipe[2];
 
 void MqttGtw::onEvent(Cbor& msg) {
     Cbor cbor(0);

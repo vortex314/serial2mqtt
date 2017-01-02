@@ -22,7 +22,8 @@ find . \( -name "*.cpp" -o -name "*.h" -o -name "*.c" \) -exec grep --no-filenam
 	| sed 's/\(.*\)/case H("\1") : return "\1";/' >> $KEYS_CPP
 cat >>$KEYS_CPP <<EOF
 default : {
-        number.clear();
+		return 0;
+		number.clear();
         number.append(hash);
         return number.c_str();
         }

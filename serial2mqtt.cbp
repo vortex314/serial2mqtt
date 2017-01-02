@@ -57,7 +57,6 @@
 		<Unit filename="inc/Tcp.h" />
 		<Unit filename="inc/hash_func.h" />
 		<Unit filename="inc/keys.h" />
-		<Unit filename="src/MqttClient.cpp" />
 		<Unit filename="src/MqttGtw.cpp" />
 		<Unit filename="src/Serial.cpp" />
 		<Unit filename="src/Sys.cpp" />
