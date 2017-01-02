@@ -5,6 +5,7 @@
 #include <Cbor.h>
 #include <EventBus.h>
 
+#define HOST     "limero.ddns.net"
 
 #define ADDRESS     "tcp://limero.ddns.net:1883"
 #define CLIENTID    "ExampleClientSub"
@@ -33,6 +34,7 @@ private:
     uint16_t _msgid;
     uint16_t _lastSrc;
     int _fd[2];   // pipe fd to wakeup in select
+    Str _prefix;
 
 public:
 
@@ -44,18 +46,20 @@ public:
 
     static void onConnectionLost(void *context, char *cause);
     static int onMessage(void *context, char *topicName, int topicLen, MQTTAsync_message *message);
+
+    void disconnect(Cbor& cbor);
     static void onDisconnect(void* context, MQTTAsync_successData* response);
-    static void onSubscribe(void* context, MQTTAsync_successData* response);
-    static void onSubscribeFailure(void* context, MQTTAsync_failureData* response);
+    void connect(Cbor& cbor);
     static void onConnectFailure(void* context, MQTTAsync_failureData* response);
-    static void onConnect(void* context, MQTTAsync_successData* response);
+    static void onConnectSuccess(void* context, MQTTAsync_successData* response);
+    void subscribe(Cbor& cbor);
+    static void onSubscribeSuccess(void* context, MQTTAsync_successData* response);
+    static void onSubscribeFailure(void* context, MQTTAsync_failureData* response);
+    void publish(Cbor& cbor);
     static void onPublishSuccess(void* context, MQTTAsync_successData* response);
     static void onPublishFailure(void* context, MQTTAsync_failureData* response);
-    void connect(Cbor& cbor);
     void loadConfig(Cbor& cbor);
-    void disconnect(Cbor& cbor);
-    void publish(Cbor& cbor);
-    void subscribe(Cbor& cbor);
+    void connected(Cbor& cbor);
 
     int fd();
     void wakeup();

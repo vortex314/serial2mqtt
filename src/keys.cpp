@@ -2,6 +2,7 @@
 
 const char* hash2string(uint32_t hash)
 {
+static Str number(20);
     switch(hash)
     {
 	case EB_DST :  return "dst";
@@ -13,6 +14,7 @@ case H("clean_session") : return "clean_session";
 case H("client_id") : return "client_id";
 case H("closed") : return "closed";
 case H("connect") : return "connect";
+case H("connected") : return "connected";
 case H("data") : return "data";
 case H("disconnect") : return "disconnect";
 case H("disconnected") : return "disconnected";
@@ -30,16 +32,20 @@ case H("message") : return "message";
 case H("method") : return "method";
 case H("mqtt") : return "mqtt";
 case H("mqtt.puback") : return "mqtt.puback";
+case H("name") : return "name";
+case H("nr") : return "nr";
 case H("object") : return "object";
 case H("opened") : return "opened";
 case H("password") : return "password";
 case H("ping") : return "ping";
 case H("port") : return "port";
+case H("prefix") : return "prefix";
 case H("publish") : return "publish";
 case H("published") : return "published";
 case H("qos") : return "qos";
 case H("retain") : return "retain";
 case H("retained") : return "retained";
+case H("Router") : return "Router";
 case H("rxd") : return "rxd";
 case H("serial") : return "serial";
 case H("slip") : return "slip";
@@ -58,7 +64,10 @@ case H("will_message") : return "will_message";
 case H("will_qos") : return "will_qos";
 case H("will_retain") : return "will_retain";
 case H("will_topic") : return "will_topic";
-default :
-        return "UNDEFINED";
+default : {
+        number.clear();
+        number.append(hash);
+        return number.c_str();
+        }
     }
 }

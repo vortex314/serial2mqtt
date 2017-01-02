@@ -11,7 +11,7 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="-d /dev/rfcomm1 -l DEBUG" />
+				<Option parameters="-d /dev/rfcomm0 -l DEBUG" />
 				<Compiler>
 					<Add option="-std=c++11" />
 					<Add option="-g" />
@@ -29,6 +29,7 @@
 				</Linker>
 				<ExtraCommands>
 					<Add before="./keys.sh" />
+					<Mode after="always" />
 				</ExtraCommands>
 			</Target>
 			<Target title="Release">
@@ -51,9 +52,6 @@
 		</Compiler>
 		<Unit filename="inc/Hash.h" />
 		<Unit filename="inc/MqttClient.h" />
-		<Unit filename="inc/MqttGtw">
-			<Option target="&lt;{~None~}&gt;" />
-		</Unit>
 		<Unit filename="inc/MqttGtw.h" />
 		<Unit filename="inc/Serial.h" />
 		<Unit filename="inc/Tcp.h" />

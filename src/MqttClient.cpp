@@ -10,6 +10,7 @@
 #define HOST "test.mosquitto.org"
 
 //MqttClient* mqtt;
+ int wakeupPipe[2];
 
 
 void MqttClient::onEvent(Cbor& cbor)
@@ -38,13 +39,13 @@ MqttClient::MqttClient() : Actor("MqttClient"),
 
 MqttClient::~MqttClient()
 {
-    ::close(_fd[0]);
-    ::close(_fd[1]);
+    ::close(wakeupPipe[0]);
+    ::close(wakeupPipe[1]);
 }
 
 void MqttClient::wakeup()
 {
-    if ( write(_fd[1],"W",1) < 1 )
+    if ( write(wakeupPipe[1],"W",1) < 1 )
     {
         LOGF("Failed to write pipe: %s (%d)", strerror(errno), errno);
     }
@@ -52,7 +53,7 @@ void MqttClient::wakeup()
 
 int MqttClient::fd()
 {
-    return _fd[0];
+    return wakeupPipe[0];
 }
 
 void MqttClient::setup()
@@ -64,9 +65,9 @@ void MqttClient::setup()
     _willTopic = _clientId;
     _willTopic.append("/system/alive");
     _willMessage = "true";
-    if (pipe(_fd) < 0)        LOGF("Failed to create pipe: %s (%d)", strerror(errno), errno);
+    if (pipe(wakeupPipe) < 0)        LOGF("Failed to create pipe: %s (%d)", strerror(errno), errno);
 
-    if (fcntl(_fd[0], F_SETFL, O_NONBLOCK) < 0)
+    if (fcntl(wakeupPipe[0], F_SETFL, O_NONBLOCK) < 0)
         LOGF("Failed to set pipe non-blocking mode: %s (%d)", strerror(errno), errno);
 }
 

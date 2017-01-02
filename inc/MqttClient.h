@@ -13,6 +13,8 @@
 #define QOS         1
 #define TIMEOUT     10000L
 
+extern int wakeupPipe[2];
+
 class MqttClient : public Actor
 {
 private:
@@ -32,7 +34,7 @@ private:
      bool _connected;
      uint16_t _msgid;
      uint16_t _lastSrc;
-     int _fd[2];   // pipe fd to wakeup in select
+        // pipe fd to wakeup in select
 
 public:
      	void onEvent(Cbor& cbor);
