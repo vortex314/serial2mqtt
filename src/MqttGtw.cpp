@@ -28,10 +28,13 @@ CONNECTING: {
         };
     };
 CONNECTED: {
-
-        timeout(UINT_LEAST32_MAX);
-        PT_YIELD_UNTIL(eb.isEvent(id(),H("closed") || eb.isEvent(id(),H("disconnected"))) );
+        while(true) {
+        timeout(5000);
+        PT_YIELD_UNTIL(eb.isEvent(id(),H("closed") || eb.isEvent(id(),H("disconnected"))) || timeout() );
+        if ( _connected==false) goto CONNECTING;
+        if ( timeout() ) continue;
         goto CONNECTING;
+        }
     }
 
     PT_END()
@@ -55,6 +58,7 @@ void MqttGtw::wakeup() {
     if ( write(wakeupPipe[1],"W",1) < 1 ) {
         LOGF("Failed to write pipe: %s (%d)", strerror(errno), errno);
     }
+    LOGF(" wakeup ");
 }
 
 int MqttGtw::fd() {
@@ -69,7 +73,7 @@ void MqttGtw::setup() {
     _prefix="limero";
     _willTopic = _prefix;
     _willTopic.append("/system/alive");
-    _willMessage = "true";
+    _willMessage = "false";
     _keepAlive=120;
     timeout(2000);
     if (pipe(wakeupPipe) < 0)        LOGF("Failed to create pipe: %s (%d)", strerror(errno), errno);

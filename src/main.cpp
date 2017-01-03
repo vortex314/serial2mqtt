@@ -95,6 +95,12 @@ void poller(int serialFd, int tcpFd, uint64_t sleepTill) {
             delta = sleepTill - Sys::millis();
         } else {
             DEBUG(" now : %llu  next timeout : %llu  ", Sys::millis(), sleepTill);
+            for (Actor* cursor=Actor::first();cursor;cursor=cursor->next()) {
+                if ( cursor->nextTimeout()==sleepTill ) {
+                    LOGF(" awaiting ACtor : %s",cursor->name());
+                    break;
+                }
+            }
             delta = 0;
         }
         tv.tv_sec = delta / 1000;
@@ -152,7 +158,7 @@ void poller(int serialFd, int tcpFd, uint64_t sleepTill) {
             }
             if(FD_ISSET(tcpFd, &rfds)) {
                 ::read(tcpFd, buffer, sizeof(buffer)); // empty event pipe
-                DEBUG(" wakeup ");
+ //               DEBUG(" wakeup ");
                 // just return
                 // eb.publish(H("tcp"),H("rxd"));
             }
