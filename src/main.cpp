@@ -549,6 +549,7 @@ IDLE : {
         PT_END();
     }
     void onPublish(Cbor& msg) {
+
         ebToMqtt(_topic, _message, msg);
         eb.request(H("mqtt"), H("publish"), H("Router"))
         .addKeyValue(H("topic"), _topic)
@@ -584,7 +585,7 @@ IDLE : {
     }
 };
 
-Router router;
+//Router router;
 
 //_______________________________________________________________________________________________________________
 //
@@ -759,11 +760,11 @@ int main(int argc, char* argv[]) {
     eb.onRequest(H("mqtt"), H("connected")).subscribe(&mqttGtw, (MethodHandler)&MqttGtw::connected);
 
 
-    router.setup();
-    eb.onRemote().subscribe(&router, (MethodHandler)&Router::onPublish);
+ //   router.setup();
+ //   eb.onRemote().subscribe(&router, (MethodHandler)&Router::onPublish);
 
-    eb.onEvent(H("mqtt"), H("published")).subscribe(&router, (MethodHandler)&Router::onPublished);
-    eb.onEvent(H("mqtt"), H("disconnected")).subscribe(&router, (MethodHandler)&Router::onEvent);
+//    eb.onEvent(H("mqtt"), H("published")).subscribe(&router, (MethodHandler)&Router::onPublished);
+//    eb.onEvent(H("mqtt"), H("disconnected")).subscribe(&router, (MethodHandler)&Router::onEvent);
 
     echo.setup();
     //    eb.onRequest(H("Router"),H("subscribe")).subscribe(&router,(MethodHandler)&Router::onSubscribe);
