@@ -6,7 +6,6 @@ cat >$KEYS_CPP <<EOF
 
 const char* hash2string(uint32_t hash)
 {
-static Str number(20);
     switch(hash)
     {
 	case EB_DST :  return "dst";
@@ -23,9 +22,6 @@ find . \( -name "*.cpp" -o -name "*.h" -o -name "*.c" \) -exec grep --no-filenam
 cat >>$KEYS_CPP <<EOF
 default : {
 		return 0;
-		number.clear();
-        number.append(hash);
-        return number.c_str();
         }
     }
 }

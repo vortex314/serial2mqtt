@@ -2,7 +2,6 @@
 
 const char* hash2string(uint32_t hash)
 {
-static Str number(20);
     switch(hash)
     {
 	case EB_DST :  return "dst";
@@ -10,6 +9,12 @@ static Str number(20);
     case EB_EVENT :  return "event";
     case EB_REQUEST :  return "request";
     case EB_REPLY :  return "reply";
+case H("Echo") : return "Echo";
+case H("Logger") : return "Logger";
+case H("Relay") : return "Relay";
+case H("Router") : return "Router";
+case H("Sonar") : return "Sonar";
+case H("Tester") : return "Tester";
 case H("clean_session") : return "clean_session";
 case H("client_id") : return "client_id";
 case H("closed") : return "closed";
@@ -18,7 +23,6 @@ case H("connected") : return "connected";
 case H("data") : return "data";
 case H("disconnect") : return "disconnect";
 case H("disconnected") : return "disconnected";
-case H("Echo") : return "Echo";
 case H("err") : return "err";
 case H("error") : return "error";
 case H("error_detail") : return "error_detail";
@@ -27,13 +31,10 @@ case H("host") : return "host";
 case H("id") : return "id";
 case H("keep_alive") : return "keep_alive";
 case H("line") : return "line";
-case H("link") : return "link";
 case H("log") : return "log";
-case H("Logger") : return "Logger";
 case H("message") : return "message";
 case H("method") : return "method";
 case H("mqtt") : return "mqtt";
-case H("mqtt.puback") : return "mqtt.puback";
 case H("name") : return "name";
 case H("nr") : return "nr";
 case H("object") : return "object";
@@ -45,20 +46,16 @@ case H("prefix") : return "prefix";
 case H("publish") : return "publish";
 case H("published") : return "published";
 case H("qos") : return "qos";
-case H("Relay") : return "Relay";
 case H("retain") : return "retain";
 case H("retained") : return "retained";
-case H("Router") : return "Router";
 case H("rxd") : return "rxd";
 case H("serial") : return "serial";
 case H("slip") : return "slip";
-case H("Sonar") : return "Sonar";
 case H("state") : return "state";
 case H("status") : return "status";
 case H("subscribe") : return "subscribe";
 case H("sys") : return "sys";
 case H("tcp") : return "tcp";
-case H("Tester") : return "Tester";
 case H("tick") : return "tick";
 case H("time") : return "time";
 case H("timeout") : return "timeout";
@@ -71,9 +68,6 @@ case H("will_retain") : return "will_retain";
 case H("will_topic") : return "will_topic";
 default : {
 		return 0;
-		number.clear();
-        number.append(hash);
-        return number.c_str();
         }
     }
 }

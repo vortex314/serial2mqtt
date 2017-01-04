@@ -236,7 +236,7 @@ int MqttGtw::onMessage(void *context, char *topicName, int topicLen,
     return 1;
 }
 
-void MqttGtw::connected(Cbor& cbor) {
+void MqttGtw::isConnected(Cbor& cbor) {
     cbor.getKeyValue(EB_SRC,_lastSrc);
     if ( _connected ) {
         eb.reply().addKeyValue(H("error"),0);

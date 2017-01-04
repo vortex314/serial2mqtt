@@ -39,6 +39,12 @@ Tcp::~Tcp()
 {
 }
 
+void Tcp::setup(){
+}
+
+void Tcp::init(){
+}
+
 bool Tcp::isConnected()
 {
     return _connected;

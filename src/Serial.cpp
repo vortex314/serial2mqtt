@@ -59,7 +59,7 @@ CONNECTING:
         while (true)
         {
             timeout(2000);
-            PT_YIELD_UNTIL(eb.isEvent(H("sys"),H("timeout")));
+            PT_YIELD_UNTIL(timeout());
             Erc erc = open();
             INFO(" serial.open()= %d : %s", erc, strerror(erc));
             if (erc == 0)
@@ -68,12 +68,12 @@ CONNECTING:
                 goto CONNECTED;
             }
         };
+    }
 CONNECTED:
-        {
+    {
         timeout(UINT_LEAST32_MAX);
-            PT_YIELD_UNTIL(eb.isEvent(H("serial"),H("closed")) );
-            goto CONNECTING;
-        }
+        PT_YIELD_UNTIL(eb.isEvent(H("serial"),H("closed")) );
+        goto CONNECTING;
     }
     PT_END()
 }

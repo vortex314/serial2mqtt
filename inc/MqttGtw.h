@@ -59,7 +59,7 @@ public:
     static void onPublishSuccess(void* context, MQTTAsync_successData* response);
     static void onPublishFailure(void* context, MQTTAsync_failureData* response);
     void loadConfig(Cbor& cbor);
-    void connected(Cbor& cbor);
+    void isConnected(Cbor& cbor);
 
     int fd();
     void wakeup();

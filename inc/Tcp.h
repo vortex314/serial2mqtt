@@ -34,6 +34,8 @@ public:
 
     void mqttRead(int32_t b);
     int fd();
+    void setup();
+    void init();
 };
 
 
