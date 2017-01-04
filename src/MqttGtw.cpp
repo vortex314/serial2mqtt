@@ -8,7 +8,7 @@
 #include <poll.h>
 
  int wakeupPipe[2];
-
+//--------------------------------------------------------------------------------------------------------
 void MqttGtw::onEvent(Cbor& msg) {
     Cbor cbor(0);
     uint32_t error;
@@ -39,32 +39,32 @@ CONNECTED: {
 
     PT_END()
 }
-
+//--------------------------------------------------------------------------------------------------------
 void MqttGtw::onActorRegister(Cbor& cbor) {
 
 }
-
+//--------------------------------------------------------------------------------------------------------
 MqttGtw::MqttGtw() : Actor("mqtt"),
     _host(40), _port(1883), _clientId(30), _user(20), _password(20), _willTopic(
         30), _willMessage(30), _willQos(0), _willRetain(false), _keepAlive(
             20), _cleanSession(1), _connected(false),_msgid(0),_prefix(20) {
 }
-
+//--------------------------------------------------------------------------------------------------------
 MqttGtw::~MqttGtw() {
 
 }
-
+//--------------------------------------------------------------------------------------------------------
 void MqttGtw::wakeup() {
     if ( write(wakeupPipe[1],"W",1) < 1 ) {
         LOGF("Failed to write pipe: %s (%d)", strerror(errno), errno);
     }
     LOGF(" wakeup ");
 }
-
+//--------------------------------------------------------------------------------------------------------
 int MqttGtw::fd() {
     return wakeupPipe[0];
 }
-
+//--------------------------------------------------------------------------------------------------------
 void MqttGtw::setup() {
     _host = HOST;
     _clientId = CLIENTID;
@@ -81,8 +81,7 @@ void MqttGtw::setup() {
     if (fcntl(wakeupPipe[0], F_SETFL, O_NONBLOCK) < 0)
         LOGF("Failed to set pipe non-blocking mode: %s (%d)", strerror(errno), errno);
 }
-
-
+//--------------------------------------------------------------------------------------------------------
 void MqttGtw::loadConfig(Cbor& cbor) {
     cbor.getKeyValue(H("host"), _host);
     cbor.getKeyValue(H("port"), _port);
@@ -97,7 +96,7 @@ void MqttGtw::loadConfig(Cbor& cbor) {
     cbor.getKeyValue(H("will_retain"), _willRetain);
     cbor.getKeyValue(H("prefix"),_prefix);
 }
-
+//--------------------------------------------------------------------------------------------------------
 void MqttGtw::connect(Cbor& cbor) {
     loadConfig(cbor);
     cbor.getKeyValue(EB_SRC,_lastSrc);
@@ -138,7 +137,7 @@ void MqttGtw::connect(Cbor& cbor) {
         eb.send();
     }
 }
-
+//--------------------------------------------------------------------------------------------------------
 void MqttGtw::onConnectSuccess(void* context, MQTTAsync_successData* response) {
     MqttGtw* mq = (MqttGtw*)context;
     mq->_connected = true;
@@ -147,8 +146,7 @@ void MqttGtw::onConnectSuccess(void* context, MQTTAsync_successData* response) {
     eb.send();
     mq->wakeup();
 }
-
-
+//--------------------------------------------------------------------------------------------------------
 void MqttGtw::onConnectFailure(void* context,
                                MQTTAsync_failureData* response) {
     MqttGtw* mq = (MqttGtw*)context;
@@ -158,7 +156,7 @@ void MqttGtw::onConnectFailure(void* context,
     eb.send();
     mq->wakeup();
 }
-
+//--------------------------------------------------------------------------------------------------------
 void MqttGtw::onConnectionLost(void *context, char *cause) {
     MqttGtw* mq = (MqttGtw*)context;
     WARN("Connection lost, cause : %s ", cause==0 ? " unknown cause " : cause);
@@ -172,70 +170,22 @@ void MqttGtw::onConnectionLost(void *context, char *cause) {
 
 }
 #include <string.h>
-/*
-void topic2eb(Str& topic,uint16_t& obj,uint16_t& type,uint16_t& op)
-{
-
-    char** tokens;
-
-    tokens = str_split(topic, '/');
-
-    if (tokens)
-    {
-        int i;
-        for (i = 0; *(tokens + i); i++)
-        {
-            if ( i==0) obj=H(*(tokens+i));
-            if ( i==1) type=H(*(tokens+i));
-            if ( i==2) type=H(*(tokens+i));
-            free(*(tokens + i));
-        }
-        free(tokens);
-    }
-
-}*/
-
-
+//--------------------------------------------------------------------------------------------------------
 int MqttGtw::onMessage(void *context, char *topicName, int topicLen,
                        MQTTAsync_message *message) {
     MqttGtw* mq = (MqttGtw*)context;
     Cbor msg((uint8_t*) message->payload, message->payloadlen);
     Str topic((uint8_t*)topicName,topicLen);
-    /*    uint16_t obj,uint16_t type,uint16_t op;
-        topic2eb(topic,obj,type,op);
-        Cbor m(1000);
-        if ( type==EB_REQUEST)
-        {
-            m.addKeyValue(EB_DST,obj);
-            m.addKeyValue(EB_REQUEST,op);
-            m.append(msg);
-            eb.publish(m);
-        }
-        else if (type==EB_EVENT )
-        {
-            m.addKeyValue(EB_SRC,obj);
-            m.addKeyValue(EB_EVENT,op);
-            m.append(msg);
-            eb.publish(m);
-        }
-        else if (type==EB_REPLY )
-        {
-            m.addKeyValue(EB_SRC,obj);
-            m.addKeyValue(EB_REPLY,op);
-            m.append(msg);
-            eb.publish(m);
-        }*/
     eb.event(mq->id(),H("published")).addKeyValue(H("topic"), topicName).addKeyValue(H("message"), msg).addKeyValue(
         H("qos"), message->qos).addKeyValue(H("retained"),
                                             message->retained);
-
     eb.send();
     MQTTAsync_freeMessage(&message);
     MQTTAsync_free(topicName);
     mq->wakeup();
     return 1;
 }
-
+//--------------------------------------------------------------------------------------------------------
 void MqttGtw::isConnected(Cbor& cbor) {
     cbor.getKeyValue(EB_SRC,_lastSrc);
     if ( _connected ) {
@@ -246,8 +196,7 @@ void MqttGtw::isConnected(Cbor& cbor) {
         eb.send();
     }
 }
-
-
+//--------------------------------------------------------------------------------------------------------
 void MqttGtw::disconnect(Cbor& cbor) {
     cbor.getKeyValue(EB_SRC,_lastSrc);
     _connected = false;
@@ -266,7 +215,7 @@ void MqttGtw::disconnect(Cbor& cbor) {
     }
     MQTTAsync_destroy(&_client);
 }
-
+//--------------------------------------------------------------------------------------------------------
 void MqttGtw::onDisconnect(void* context, MQTTAsync_successData* response) {
     MqttGtw* mq = (MqttGtw*)context;
     mq->_connected = false;
@@ -276,7 +225,7 @@ void MqttGtw::onDisconnect(void* context, MQTTAsync_successData* response) {
     eb.send();
     mq->wakeup();
 }
-
+//--------------------------------------------------------------------------------------------------------
 void MqttGtw::publish(Cbor& cbor) {
     cbor.getKeyValue(EB_SRC,_lastSrc);
     if (false) {
@@ -317,7 +266,7 @@ void MqttGtw::publish(Cbor& cbor) {
         eb.send();
     }
 }
-
+//--------------------------------------------------------------------------------------------------------
 void MqttGtw::onPublishSuccess(void* context,
                                MQTTAsync_successData* response) {
     MqttGtw* mq = (MqttGtw*)context;
@@ -327,7 +276,7 @@ void MqttGtw::onPublishSuccess(void* context,
     eb.send();
     mq->wakeup();
 }
-
+//--------------------------------------------------------------------------------------------------------
 void MqttGtw::onPublishFailure(void* context,
                                MQTTAsync_failureData* response) {
     MqttGtw* mq = (MqttGtw*)context;
@@ -340,7 +289,7 @@ void MqttGtw::onPublishFailure(void* context,
     eb.send();
     mq->wakeup();
 }
-
+//--------------------------------------------------------------------------------------------------------
 void MqttGtw::subscribe(Cbor& cbor) {
     cbor.getKeyValue(EB_SRC,_lastSrc);
     if (!_connected) {
@@ -366,7 +315,7 @@ void MqttGtw::subscribe(Cbor& cbor) {
         eb.send();
     }
 }
-
+//--------------------------------------------------------------------------------------------------------
 void MqttGtw::onSubscribeSuccess(void* context, MQTTAsync_successData* response) {
     MqttGtw* mq = (MqttGtw*)context;
     INFO("Subscribe succeeded");
@@ -374,7 +323,7 @@ void MqttGtw::onSubscribeSuccess(void* context, MQTTAsync_successData* response)
     eb.send();
     mq->wakeup();
 }
-
+//--------------------------------------------------------------------------------------------------------
 void MqttGtw::onSubscribeFailure(void* context,
                                  MQTTAsync_failureData* response) {
     MqttGtw* mq = (MqttGtw*)context;
@@ -383,4 +332,4 @@ void MqttGtw::onSubscribeFailure(void* context,
     eb.send();
     mq->wakeup();
 }
-
+//--------------------------------------------------------------------------------------------------------
