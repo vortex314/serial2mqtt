@@ -217,7 +217,6 @@ void poller(int serialFd, int tcpFd, uint64_t sleepTill)
  ________________________________________________________________________________*/
 
 #include "Log.h"
-#include "Tcp.h"
 
 void loadOptions(int argc, char* argv[])
 {
@@ -294,7 +293,6 @@ void interceptAllSignals()
 }
 
 #include "Json.h"
-#include "MqttClient.h"
 
 #define EB_ROUTE H("Router")
 
