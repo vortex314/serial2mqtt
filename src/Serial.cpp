@@ -1,4 +1,5 @@
 #include "Serial.h"
+#define __uid_t_defined
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -42,6 +43,14 @@ Serial::Serial(const char* device) :
     _isOpen=false;
 }
 
+
+Serial::~Serial(){
+	
+}
+
+void Serial::init(){
+	
+}
 
 
 void Serial::setup()

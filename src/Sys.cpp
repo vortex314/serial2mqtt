@@ -26,7 +26,9 @@ void Sys::delay(uint32_t time){
 usleep(time*1000);
 }
 
-
+const char* Sys::hostname(){
+	return _hostname;
+}
 
 
 

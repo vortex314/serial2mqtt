@@ -11,6 +11,7 @@ public:
 	const static int CONNECTED, DISCONNECTED, RXD, ERROR, MESSAGE, FREE;
 
 	Serial(const char* device);
+	~Serial();
 	Erc connect();
 	Erc disconnect();
 	Erc send(Bytes& bytes);
@@ -21,6 +22,7 @@ public:
 	void logStats();
 	void setup();
 	void onEvent(Cbor& cbor);
+	void init();
 	int fd();
 	Erc open();
 	Erc close();

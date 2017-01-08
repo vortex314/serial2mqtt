@@ -41,6 +41,7 @@ public:
     MqttGtw();
     virtual ~MqttGtw();
     void setup();
+	void init();
     void onEvent(Cbor& cbor);
     void onActorRegister(Cbor& cbor);
 

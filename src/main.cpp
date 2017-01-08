@@ -1,4 +1,4 @@
-#include <iostream>
+
 
 /*
  * DEVICE <-> Gateway
@@ -22,6 +22,8 @@
  */
 
 using namespace std;
+#define __uid_t_defined
+#include <iostream>
 #include <cstdlib>
 #include <errno.h>
 #include <fcntl.h>
@@ -54,6 +56,38 @@ using namespace std;
 #include <SlipStream.h>
 
 EventBus eb(10240, 1024);
+Uid uid(100);
+
+Str str(300);
+void logCbor(Cbor& cbor) {
+    cbor.offset(0);
+    uint32_t key;
+    str.clear();
+    Cbor::PackType ct;
+    cbor.offset(0);
+    while (cbor.hasData()) {
+        cbor.get(key);
+            if ( uid.label(key))
+                str.append('"').append(uid.label(key)).append("\":");
+            else
+                str.append('"').append(key).append("\":");
+        if (key == EB_DST || key == EB_SRC || key == EB_REQUEST || key==EB_REPLY || key==EB_EVENT ) {
+            cbor.get(key);
+            if ( uid.label(key))
+                str.append('"').append(uid.label(key)).append("\"");
+            else
+                str.append('"').append(key).append("\"");
+
+        } else {
+            ct = cbor.tokenToString(str);
+            if (ct == Cbor::P_BREAK || ct == Cbor::P_ERROR)
+                break;
+        }
+        if (cbor.hasData())
+            str << ",";
+    };
+    LOGF("%s", str.c_str());
+}
 
 struct
 {
@@ -397,6 +431,9 @@ public:
     void setup()
     {
     }
+	void init(){
+		
+	}
 #define CNT 100
     void onEvent(Cbor& msg)
     {
@@ -435,6 +472,9 @@ public:
     {
         eb.onDst(H("Relay")).subscribe(this);
     }
+	void init(){
+		
+	}
     void onEvent(Cbor& msg)
     {
         eb.defaultHandler(this,msg);
@@ -461,6 +501,9 @@ public:
     {
         timeout(2000);
     }
+	void init(){
+		
+	}
 
     void onEvent(Cbor& msg)
     {
