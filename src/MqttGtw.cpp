@@ -11,6 +11,24 @@
 
  int wakeupPipe[2];
 //--------------------------------------------------------------------------------------------------------
+
+void MqttGtw::onEvent(Cbor& msg)
+{
+	if ( eb.isRequest(H("connect"))) {
+		connect(msg);
+	} else if ( eb.isRequest(H("disconnect"))) {
+		disconnect(msg);
+	} else if ( eb.isRequest(H("publish"))) {
+		publish(msg);
+	} else if ( eb.isRequest(H("subscribe"))) {
+		subscribe(msg);
+	} else if ( eb.isRequest(H("connected)"))) {
+		isConnected(msg);
+	} else {
+		eb.defaultHandler(this,msg);
+	}
+}
+/*
 void MqttGtw::onEvent(Cbor& msg) {
     Cbor cbor(0);
     uint32_t error;
@@ -40,7 +58,7 @@ CONNECTED: {
     }
 
     PT_END()
-}
+}*/
 //--------------------------------------------------------------------------------------------------------
 void MqttGtw::onActorRegister(Cbor& cbor) {
 
@@ -81,11 +99,11 @@ void MqttGtw::setup() {
     _willTopic.append("/system/alive");
     _willMessage = "false";
     _keepAlive=120;
-    timeout(2000);
     if (pipe(wakeupPipe) < 0)        LOGF("Failed to create pipe: %s (%d)", strerror(errno), errno);
 
     if (fcntl(wakeupPipe[0], F_SETFL, O_NONBLOCK) < 0)
         LOGF("Failed to set pipe non-blocking mode: %s (%d)", strerror(errno), errno);
+	eb.onDst(H("mqtt")).subscribe(this);
 }
 //--------------------------------------------------------------------------------------------------------
 void MqttGtw::loadConfig(Cbor& cbor) {

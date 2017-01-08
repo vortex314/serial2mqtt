@@ -345,69 +345,7 @@ extern void logCbor(Cbor&);
 extern char* hash2string(uint32_t h);
 //_______________________________________________________________________________________________________________
 //
-class Id
-{
-    char* _name;
-    uint16_t _id;
-    static Id* _first;
-    Id* _next;
-public:
-    Id(const char* name,uint16_t id)
-    {
-        _name = (char*)malloc(strlen(name));
-        strcpy(_name,name);
-        _id=id;
-        _next=0;
-        if (first() == 0)
-        {
-            setFirst(this);
-        }
-        else
-        {
-            last()->setNext(this);
-        }
-    }
-    Id* last()
-    {
-        Id* cursor = first();
-        while (cursor->_next)
-        {
-            cursor = cursor->next();
-        }
-        return cursor;
-    }
 
-    static Id* first()
-    {
-        return Id::_first;
-    }
-    Id* next()
-    {
-        return _next;
-    }
-    void setNext(Id* a)
-    {
-        _next = a;
-    }
-    static void setFirst(Id* f)
-    {
-        _first = f;
-    }
-
-    static char* findById(uint16_t h)
-    {
-        char *ptr=0;
-        ptr=hash2string(h);
-        if ( ptr ) return ptr;
-        if ( first()==0) return 0;
-        for (Id* cur=first(); cur; cur=cur->next())
-        {
-            if ( cur->_id == h ) return cur->_name;
-        }
-        return 0;
-    }
-
-};
 /*
   if ( isRequest(actor->id(),H("status"))) {
         eb.reply()
@@ -416,7 +354,7 @@ public:
         .addKeyValue(H("id"),actor->_id)
         .addKeyValue(H("line"),actor->_ptLine);
         */
-Id* Id::_first=0;
+
 
 //_______________________________________________________________________________________________________________
 //
@@ -583,10 +521,10 @@ int main(int argc, char* argv[])
 
     //    Mqtt.setup();
     mqttGtw.setup();
-    eb.onRequest(H("mqtt"), H("publish")).subscribe(&mqttGtw, (MethodHandler)&MqttGtw::publish);
+/*    eb.onRequest(H("mqtt"), H("publish")).subscribe(&mqttGtw, (MethodHandler)&MqttGtw::publish);
     eb.onRequest(H("mqtt"), H("subscribe")).subscribe(&mqttGtw, (MethodHandler)&MqttGtw::subscribe);
     eb.onRequest(H("mqtt"), H("connected")).subscribe(&mqttGtw, (MethodHandler)&MqttGtw::isConnected);
-    eb.onRequest(H("mqtt")).subscribe(&mqttGtw);
+    eb.onRequest(H("mqtt")).subscribe(&mqttGtw); */
 
 
 //   router.setup();
@@ -621,3 +559,9 @@ int main(int argc, char* argv[])
         eb.eventLoop();
     }
 }
+/*,
+H"dst"),H("src"),H("request"),H("reply"),H("event"),H("error"),H("Actor"),H("bootTime"),H("clientId"),H("connect"),H("connected"),H("data"),H("disconnect"),H("disconnected"),H("#dst"),
+H("#dst_device"),H("error"),H("error_msg"),H("#event"),H("#from"),H("host"),H("hostname"),H("id"),H("init"),H("keep_alive"),H("line"),H("message"),H("motor"),H("mqtt"),H("now"),
+H("prefix"),H("props"),H("publish"),H("published"),H("register"),H("Relay"),H("#reply"),H("#request"),H("reset"),H("Router"),H("rxd"),H("set"),H("setup"),H("#src"),H("#src_device"),H("state"),
+H("status"),H("subscribe"),H("system"),H("timeout"),H("topic"),H("upTime"),H("will_message"),H("will_topic"),
+*/
