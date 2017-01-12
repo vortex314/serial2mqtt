@@ -58,6 +58,7 @@ using namespace std;
 
 EventBus eb(10240, 1024);
 Uid uid(100);
+Log log(300);
 
 Str str(300);
 void logCbor(Cbor& cbor)

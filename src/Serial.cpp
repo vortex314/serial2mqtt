@@ -229,7 +229,7 @@ bool Serial::hasData()
 
 
 int Serial::fd()
-{
+{ 
     return _fd;
 }
 
