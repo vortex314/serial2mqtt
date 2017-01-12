@@ -1,0 +1,4 @@
+// DON'T EDIT auto-generated
+static const char* labels[]={"dummy" 
+"Actor","bootTime","clean_session","client_id","clientId","closed","connect","connected","connected)","data","disconnect","disconnected","#dst","#dst_device","Echo","err","error","error_detail","error_msg","event","#event","#from","host","hostname","id","init","keep_alive","line","log","Logger","message","method","motor","mqtt","name","now","nr","object","opened","password","ping","port","prefix","props","publish","published","qos","register","Relay","reply","#reply","request","#request","reset","retain","retained","Router","rxd","serial","set","setup","slip","Sonar","src","#src","#src_device","state","status","subscribe","sys","system","tcp","Tester","tick","time","timeout","topic","uint32_t","upTime","user","will_message","will_qos","will_retain","will_topic",};
+#define LABEL_COUNT (sizeof(labels)/sizeof(const char*))

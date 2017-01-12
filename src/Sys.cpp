@@ -9,10 +9,17 @@
 char Sys::_hostname[] ;
 
 uint64_t Sys::_upTime=0;
+uint64_t Sys::_boot_time=0;
 
-void Sys::init(){
-gethostname(_hostname,30);
+Sys::Sys() {
+	//ctor
 }
+
+Sys::~Sys() {
+	//dtor
+}
+#ifdef LINUX
+#include <time.h>
 
 uint64_t Sys::millis()   // time in msec since boot, only increasing
 {
@@ -22,17 +29,37 @@ uint64_t Sys::millis()   // time in msec since boot, only increasing
     return _upTime;
 }
 
+#endif
+
+void Sys::init(){
+gethostname(_hostname,30);
+}
+
+
+
 void Sys::delay(uint32_t time){
 usleep(time*1000);
 }
 
-const char* Sys::hostname(){
-	return _hostname;
+uint64_t Sys::now()
+{
+	return _boot_time+Sys::millis();
 }
 
+void Sys::setNow(uint64_t n)
+{
+	_boot_time = n-Sys::millis();
+}
 
+void Sys::hostname(const char* hostname)
+{
+	strncpy(_hostname , hostname,sizeof(_hostname));
+}
 
-
+const char* Sys::hostname()
+{
+	return _hostname;
+}
 
 
 
