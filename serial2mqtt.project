@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeLite_Project Name="serial2mqtt" InternalType="Console">
+  <Plugins>
+    <Plugin Name="qmake">
+      <![CDATA[00010001N0005Debug000000000000]]>
+    </Plugin>
+    <Plugin Name="CMakePlugin">
+      <![CDATA[[{
+  "name": "Debug",
+  "enabled": false,
+  "buildDirectory": "build",
+  "sourceDirectory": "$(ProjectPath)",
+  "generator": "",
+  "buildType": "",
+  "arguments": [],
+  "parentProject": ""
+ }]]]>
+    </Plugin>
+  </Plugins>
+  <Reconciliation>
+    <Regexes/>
+    <Excludepaths/>
+    <Ignorefiles/>
+    <Extensions>
+      <![CDATA[cpp;c;h;hpp;xrc;wxcp;fbp]]>
+    </Extensions>
+    <Topleveldir>../serial2mqtt</Topleveldir>
+  </Reconciliation>
+  <Description/>
+  <Dependencies/>
+  <VirtualDirectory Name="src">
+    <File Name="src/Serial.cpp"/>
+    <File Name="src/main.cpp"/>
+    <File Name="src/MqttGtw.cpp"/>
+    <File Name="src/Sys.cpp"/>
+    <File Name="main_labels.h"/>
+  </VirtualDirectory>
+  <VirtualDirectory Name="inc">
+    <File Name="inc/MqttGtw.h"/>
+    <File Name="inc/Serial.h"/>
+  </VirtualDirectory>
+  <Dependencies Name="Debug"/>
+  <Dependencies Name="Release"/>
+  <VirtualDirectory Name="serial2mqtt">
+    <File Name="keys.sh"/>
+    <File Name="ex.sh"/>
+  </VirtualDirectory>
+  <VirtualDirectory Name="Ebos">
+    <File Name="../Ebos/Actor.cpp"/>
+    <File Name="../Ebos/Actor.h"/>
+    <File Name="../Ebos/Ebos.mk"/>
+    <File Name="../Ebos/Ebos.project"/>
+    <File Name="../Ebos/Ebos.txt"/>
+    <File Name="../Ebos/EventBus.cpp"/>
+    <File Name="../Ebos/EventBus.h"/>
+    <File Name="../Ebos/keys.sh"/>
+    <File Name="../Ebos/README.md"/>
+    <File Name="../Ebos/Router.cpp"/>
+    <File Name="../Ebos/Router.h"/>
+    <File Name="../Ebos/Slip.cpp"/>
+    <File Name="../Ebos/Slip.h"/>
+    <File Name="../Ebos/SlipStream.cpp"/>
+    <File Name="../Ebos/SlipStream.h"/>
+    <File Name="../Ebos/static_labels.cpp"/>
+    <File Name="../Ebos/System.cpp"/>
+    <File Name="../Ebos/System.h"/>
+    <File Name="../Ebos/Uid.cpp"/>
+    <File Name="../Ebos/Uid.h"/>
+  </VirtualDirectory>
+  <VirtualDirectory Name="Common">
+    <File Name="../Common/src/Base64.cpp"/>
+    <File Name="../Common/src/BipBuffer.cpp"/>
+    <File Name="../Common/src/BufferedByteStream.cpp"/>
+    <File Name="../Common/src/Bytes.cpp"/>
+    <File Name="../Common/src/Cbor.cpp"/>
+    <File Name="../Common/src/CborQueue.cpp"/>
+    <File Name="../Common/src/CircBuf.cpp"/>
+    <File Name="../Common/src/EventSource.cpp"/>
+    <File Name="../Common/src/jsmn.c"/>
+    <File Name="../Common/src/Json.cpp"/>
+    <File Name="../Common/src/Log.cpp"/>
+    <File Name="../Common/src/Msg.cpp"/>
+    <File Name="../Common/src/Msgpack.cpp"/>
+    <File Name="../Common/src/Node.cpp"/>
+    <File Name="../Common/src/PIC32_stubs.cpp"/>
+    <File Name="../Common/src/printf.c"/>
+    <File Name="../Common/src/STM32_stubs.cpp"/>
+    <File Name="../Common/src/Str.cpp"/>
+    <File Name="../Common/src/Strpack.cpp"/>
+    <File Name="../Common/inc/Base64.h"/>
+    <File Name="../Common/inc/BipBuffer.h"/>
+    <File Name="../Common/inc/Bits.h"/>
+    <File Name="../Common/inc/Board.h"/>
+    <File Name="../Common/inc/BufferedByteStream.h"/>
+    <File Name="../Common/inc/Bytes.h"/>
+    <File Name="../Common/inc/ByteStream.h"/>
+    <File Name="../Common/inc/Cbor.h"/>
+    <File Name="../Common/inc/CborQueue.h"/>
+    <File Name="../Common/inc/CircBuf.h"/>
+    <File Name="../Common/inc/Erc.h"/>
+    <File Name="../Common/inc/EventSource.h"/>
+    <File Name="../Common/inc/Flags.h"/>
+    <File Name="../Common/inc/Handler.h"/>
+    <File Name="../Common/inc/Interface.h"/>
+    <File Name="../Common/inc/jsmn.h"/>
+    <File Name="../Common/inc/Json.h"/>
+    <File Name="../Common/inc/lc.h"/>
+    <File Name="../Common/inc/lc-addrlabels.h"/>
+    <File Name="../Common/inc/lc-switch.h"/>
+    <File Name="../Common/inc/Link.h"/>
+    <File Name="../Common/inc/LinkedList.cpp"/>
+    <File Name="../Common/inc/LinkedList.h"/>
+    <File Name="../Common/inc/Log.h"/>
+    <File Name="../Common/inc/Logger.h"/>
+    <File Name="../Common/inc/Msg.h"/>
+    <File Name="../Common/inc/Msgpack.h"/>
+    <File Name="../Common/inc/Mutex.h"/>
+    <File Name="../Common/inc/Node.h"/>
+    <File Name="../Common/inc/Packer.h"/>
+    <File Name="../Common/inc/platform.h"/>
+    <File Name="../Common/inc/Pool.h"/>
+    <File Name="../Common/inc/printf.h"/>
+    <File Name="../Common/inc/Prop.h"/>
+    <File Name="../Common/inc/Property.h"/>
+    <File Name="../Common/inc/ProtoThread.h"/>
+    <File Name="../Common/inc/pt.h"/>
+    <File Name="../Common/inc/pt-sem.h"/>
+    <File Name="../Common/inc/QueueTemplate.h"/>
+    <File Name="../Common/inc/Signal.h"/>
+    <File Name="../Common/inc/Str.h"/>
+    <File Name="../Common/inc/Strpack.h"/>
+    <File Name="../Common/inc/Sys.h"/>
+    <File Name="../Common/inc/Thread.h"/>
+    <File Name="../Common/inc/Timer.h"/>
+    <File Name="../Common/inc/Uart.h"/>
+  </VirtualDirectory>
+  <Settings Type="Executable">
+    <GlobalSettings>
+      <Compiler Options="" C_Options="" Assembler="">
+        <IncludePath Value="."/>
+      </Compiler>
+      <Linker Options="">
+        <LibraryPath Value="."/>
+      </Linker>
+      <ResourceCompiler Options=""/>
+    </GlobalSettings>
+    <Configuration Name="Debug" CompilerType="GCC" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+      <Compiler Options="-g;-O0;-std=c++11;-Wall;-fno-rtti -DLINUX" C_Options="-g;-O0;-Wall;-fno-rtti -DLINUX" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
+        <IncludePath Value="."/>
+        <IncludePath Value="inc"/>
+        <IncludePath Value="../Common/inc"/>
+        <IncludePath Value="../paho/src"/>
+        <IncludePath Value="../Ebos"/>
+      </Compiler>
+      <Linker Options="" Required="yes">
+        <LibraryPath Value="../paho/build/output"/>
+        <Library Value="paho-mqtt3a"/>
+        <Library Value="pthread"/>
+      </Linker>
+      <ResourceCompiler Options="" Required="no"/>
+      <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Debug" Command="./$(ProjectName)" CommandArguments="-d /dev/rfcomm1 " UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
+        <![CDATA[]]>
+      </Environment>
+      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="" IsExtended="yes">
+        <DebuggerSearchPaths/>
+        <PostConnectCommands/>
+        <StartupCommands>export LD_LIBRARY_PATH=../paho/build/output:$LD_LIBRARY_PATH</StartupCommands>
+      </Debugger>
+      <PreBuild>
+        <Command Enabled="yes">./keys.sh</Command>
+      </PreBuild>
+      <PostBuild/>
+      <CustomBuild Enabled="no">
+        <RebuildCommand/>
+        <CleanCommand/>
+        <BuildCommand/>
+        <PreprocessFileCommand/>
+        <SingleFileCommand/>
+        <MakefileGenerationCommand/>
+        <ThirdPartyToolName>None</ThirdPartyToolName>
+        <WorkingDirectory/>
+      </CustomBuild>
+      <AdditionalRules>
+        <CustomPostBuild/>
+        <CustomPreBuild/>
+      </AdditionalRules>
+      <Completion EnableCpp11="no" EnableCpp14="no">
+        <ClangCmpFlagsC/>
+        <ClangCmpFlags/>
+        <ClangPP/>
+        <SearchPaths/>
+      </Completion>
+    </Configuration>
+    <Configuration Name="Release" CompilerType="GCC" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+      <Compiler Options="-O2;-Wall" C_Options="-O2;-Wall" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
+        <IncludePath Value="."/>
+        <Preprocessor Value="NDEBUG"/>
+      </Compiler>
+      <Linker Options="" Required="yes"/>
+      <ResourceCompiler Options="" Required="no"/>
+      <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Release" Command="./$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
+        <![CDATA[]]>
+      </Environment>
+      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="" IsExtended="no">
+        <DebuggerSearchPaths/>
+        <PostConnectCommands/>
+        <StartupCommands/>
+      </Debugger>
+      <PreBuild/>
+      <PostBuild/>
+      <CustomBuild Enabled="no">
+        <RebuildCommand/>
+        <CleanCommand/>
+        <BuildCommand/>
+        <PreprocessFileCommand/>
+        <SingleFileCommand/>
+        <MakefileGenerationCommand/>
+        <ThirdPartyToolName>None</ThirdPartyToolName>
+        <WorkingDirectory/>
+      </CustomBuild>
+      <AdditionalRules>
+        <CustomPostBuild/>
+        <CustomPreBuild/>
+      </AdditionalRules>
+      <Completion EnableCpp11="no" EnableCpp14="no">
+        <ClangCmpFlagsC/>
+        <ClangCmpFlags/>
+        <ClangPP/>
+        <SearchPaths/>
+      </Completion>
+    </Configuration>
+  </Settings>
+</CodeLite_Project>
