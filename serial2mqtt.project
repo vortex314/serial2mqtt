@@ -55,8 +55,6 @@
     <File Name="../Ebos/EventBus.h"/>
     <File Name="../Ebos/keys.sh"/>
     <File Name="../Ebos/README.md"/>
-    <File Name="../Ebos/Router.cpp"/>
-    <File Name="../Ebos/Router.h"/>
     <File Name="../Ebos/Slip.cpp"/>
     <File Name="../Ebos/Slip.h"/>
     <File Name="../Ebos/SlipStream.cpp"/>
@@ -68,71 +66,79 @@
     <File Name="../Ebos/Uid.h"/>
   </VirtualDirectory>
   <VirtualDirectory Name="Common">
-    <File Name="../Common/src/Base64.cpp"/>
-    <File Name="../Common/src/BipBuffer.cpp"/>
-    <File Name="../Common/src/BufferedByteStream.cpp"/>
-    <File Name="../Common/src/Bytes.cpp"/>
-    <File Name="../Common/src/Cbor.cpp"/>
-    <File Name="../Common/src/CborQueue.cpp"/>
-    <File Name="../Common/src/CircBuf.cpp"/>
-    <File Name="../Common/src/EventSource.cpp"/>
-    <File Name="../Common/src/jsmn.c"/>
-    <File Name="../Common/src/Json.cpp"/>
-    <File Name="../Common/src/Log.cpp"/>
-    <File Name="../Common/src/Msg.cpp"/>
-    <File Name="../Common/src/Msgpack.cpp"/>
-    <File Name="../Common/src/Node.cpp"/>
-    <File Name="../Common/src/PIC32_stubs.cpp"/>
-    <File Name="../Common/src/printf.c"/>
-    <File Name="../Common/src/STM32_stubs.cpp"/>
-    <File Name="../Common/src/Str.cpp"/>
-    <File Name="../Common/src/Strpack.cpp"/>
-    <File Name="../Common/inc/Base64.h"/>
-    <File Name="../Common/inc/BipBuffer.h"/>
-    <File Name="../Common/inc/Bits.h"/>
-    <File Name="../Common/inc/Board.h"/>
-    <File Name="../Common/inc/BufferedByteStream.h"/>
-    <File Name="../Common/inc/Bytes.h"/>
-    <File Name="../Common/inc/ByteStream.h"/>
-    <File Name="../Common/inc/Cbor.h"/>
-    <File Name="../Common/inc/CborQueue.h"/>
-    <File Name="../Common/inc/CircBuf.h"/>
-    <File Name="../Common/inc/Erc.h"/>
-    <File Name="../Common/inc/EventSource.h"/>
-    <File Name="../Common/inc/Flags.h"/>
-    <File Name="../Common/inc/Handler.h"/>
-    <File Name="../Common/inc/Interface.h"/>
-    <File Name="../Common/inc/jsmn.h"/>
-    <File Name="../Common/inc/Json.h"/>
-    <File Name="../Common/inc/lc.h"/>
-    <File Name="../Common/inc/lc-addrlabels.h"/>
-    <File Name="../Common/inc/lc-switch.h"/>
-    <File Name="../Common/inc/Link.h"/>
-    <File Name="../Common/inc/LinkedList.cpp"/>
-    <File Name="../Common/inc/LinkedList.h"/>
-    <File Name="../Common/inc/Log.h"/>
-    <File Name="../Common/inc/Logger.h"/>
-    <File Name="../Common/inc/Msg.h"/>
-    <File Name="../Common/inc/Msgpack.h"/>
-    <File Name="../Common/inc/Mutex.h"/>
-    <File Name="../Common/inc/Node.h"/>
-    <File Name="../Common/inc/Packer.h"/>
-    <File Name="../Common/inc/platform.h"/>
-    <File Name="../Common/inc/Pool.h"/>
-    <File Name="../Common/inc/printf.h"/>
-    <File Name="../Common/inc/Prop.h"/>
-    <File Name="../Common/inc/Property.h"/>
-    <File Name="../Common/inc/ProtoThread.h"/>
-    <File Name="../Common/inc/pt.h"/>
-    <File Name="../Common/inc/pt-sem.h"/>
-    <File Name="../Common/inc/QueueTemplate.h"/>
-    <File Name="../Common/inc/Signal.h"/>
-    <File Name="../Common/inc/Str.h"/>
-    <File Name="../Common/inc/Strpack.h"/>
-    <File Name="../Common/inc/Sys.h"/>
-    <File Name="../Common/inc/Thread.h"/>
-    <File Name="../Common/inc/Timer.h"/>
-    <File Name="../Common/inc/Uart.h"/>
+    <File Name="../Common/Base64.cpp"/>
+    <File Name="../Common/Base64.h"/>
+    <File Name="../Common/BipBuffer.cpp"/>
+    <File Name="../Common/BipBuffer.h"/>
+    <File Name="../Common/Bits.h"/>
+    <File Name="../Common/Board.h"/>
+    <File Name="../Common/BufferedByteStream.cpp"/>
+    <File Name="../Common/BufferedByteStream.h"/>
+    <File Name="../Common/Bytes.cpp"/>
+    <File Name="../Common/Bytes.h"/>
+    <File Name="../Common/ByteStream.h"/>
+    <File Name="../Common/Cbor.cpp"/>
+    <File Name="../Common/Cbor.h"/>
+    <File Name="../Common/CborQueue.cpp"/>
+    <File Name="../Common/CborQueue.h"/>
+    <File Name="../Common/CircBuf.cpp"/>
+    <File Name="../Common/CircBuf.h"/>
+    <File Name="../Common/Common.cbp"/>
+    <File Name="../Common/Common.depend"/>
+    <File Name="../Common/Common.layout"/>
+    <File Name="../Common/Common.mk"/>
+    <File Name="../Common/Common.project"/>
+    <File Name="../Common/Common.txt"/>
+    <File Name="../Common/Erc.h"/>
+    <File Name="../Common/EventSource.cpp"/>
+    <File Name="../Common/EventSource.h"/>
+    <File Name="../Common/Flags.h"/>
+    <File Name="../Common/Handler.h"/>
+    <File Name="../Common/Interface.h"/>
+    <File Name="../Common/jsmn.c"/>
+    <File Name="../Common/jsmn.h"/>
+    <File Name="../Common/Json.cpp"/>
+    <File Name="../Common/Json.h"/>
+    <File Name="../Common/lc.h"/>
+    <File Name="../Common/lc-addrlabels.h"/>
+    <File Name="../Common/lc-switch.h"/>
+    <File Name="../Common/Link.h"/>
+    <File Name="../Common/LinkedList.cpp"/>
+    <File Name="../Common/LinkedList.h"/>
+    <File Name="../Common/Log.cpp"/>
+    <File Name="../Common/Log.h"/>
+    <File Name="../Common/Logger.h"/>
+    <File Name="../Common/Msg.cpp"/>
+    <File Name="../Common/Msg.h"/>
+    <File Name="../Common/Msgpack.cpp"/>
+    <File Name="../Common/Msgpack.h"/>
+    <File Name="../Common/Mutex.h"/>
+    <File Name="../Common/Node.cpp"/>
+    <File Name="../Common/Node.h"/>
+    <File Name="../Common/nohup.out"/>
+    <File Name="../Common/Packer.h"/>
+    <File Name="../Common/PIC32_stubs.cpp"/>
+    <File Name="../Common/platform.h"/>
+    <File Name="../Common/Pool.h"/>
+    <File Name="../Common/printf.c"/>
+    <File Name="../Common/printf.h"/>
+    <File Name="../Common/Prop.h"/>
+    <File Name="../Common/Property.h"/>
+    <File Name="../Common/ProtoThread.h"/>
+    <File Name="../Common/pt.h"/>
+    <File Name="../Common/pt-sem.h"/>
+    <File Name="../Common/QueueTemplate.h"/>
+    <File Name="../Common/README.md"/>
+    <File Name="../Common/Signal.h"/>
+    <File Name="../Common/STM32_stubs.cpp"/>
+    <File Name="../Common/Str.cpp"/>
+    <File Name="../Common/Str.h"/>
+    <File Name="../Common/Strpack.cpp"/>
+    <File Name="../Common/Strpack.h"/>
+    <File Name="../Common/Sys.h"/>
+    <File Name="../Common/Thread.h"/>
+    <File Name="../Common/Timer.h"/>
+    <File Name="../Common/Uart.h"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>
@@ -148,7 +154,7 @@
       <Compiler Options="-g;-O0;-std=c++11;-Wall;-fno-rtti -DLINUX -fPIC" C_Options="-g;-O0;-Wall;-DLINUX -fPIC" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
         <IncludePath Value="."/>
         <IncludePath Value="inc"/>
-        <IncludePath Value="../Common/inc"/>
+        <IncludePath Value="../Common"/>
         <IncludePath Value="../paho/src"/>
         <IncludePath Value="../Ebos"/>
       </Compiler>
@@ -159,7 +165,6 @@
       </Linker>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Debug" Command="./$(ProjectName)" CommandArguments="-d /dev/rfcomm1 " UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
-      <BuildSystem Name="Default"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
       </Environment>
@@ -201,7 +206,6 @@
       <Linker Options="" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Release" Command="./$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
-      <BuildSystem Name="Default"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
       </Environment>

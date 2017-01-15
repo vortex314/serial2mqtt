@@ -58,7 +58,7 @@ using namespace std;
 
 EventBus eb(10240, 1024);
 Uid uid(100);
-Log log(300);
+Log logger(300);
 
 Str str(300);
 void logCbor(Cbor& cbor)
@@ -308,133 +308,15 @@ void interceptAllSignals()
 
 #include "Json.h"
 
-#define EB_ROUTE H("Router")
 
-uint16_t h(Str& str)
-{
-	uint32_t hh = FNV_OFFSET;
-	str.offset(0);
-	while(str.hasData()) {
-		hh = hh * FNV_PRIME;
-		hh = hh ^ str.read();
-	}
-	return hh & 0xFFFF;
-}
 extern void logCbor(Cbor&);
-extern char* hash2string(uint32_t h);
-//_______________________________________________________________________________________________________________
-//
-
-/*
-  if ( isRequest(actor->id(),H("status"))) {
-        eb.reply()
-        .addKeyValue(H("state"),actor->_state)
-        .addKeyValue(H("timeout"),actor->_timeout)
-        .addKeyValue(H("id"),actor->_id)
-        .addKeyValue(H("line"),actor->_ptLine);
-        */
-
 
 //_______________________________________________________________________________________________________________
 //
-class Logger : public Actor
-{
 
-public:
-	Logger()
-		: Actor("Logger") {
-	}
-	void setup() {
-	}
-	void init() {
-
-	}
-#define CNT 100
-	void onEvent(Cbor& msg) {
-		if(eb.isRequest(0,H("log"))) {
-			Str host(20);
-			uint64_t time;
-			Str object(20);
-			Str method(20);
-			Str line(100);
-			host = "<host>";
-			time = 0;
-			object = "<object>";
-			method = "<method>";
-			line = "-";
-			msg.getKeyValue(H("time"), time);
-			msg.getKeyValue(H("host"), host);
-			msg.getKeyValue(H("object"), object);
-			msg.getKeyValue(H("method"), method);
-			msg.getKeyValue(H("line"), line);
-			fprintf(stderr, "%s \n", line.c_str());
-			//        fprintf(stderr,"%llu | %s | %s:%s %s
-			//        \n",time,host.c_str(),object.c_str(),method.c_str(),line.c_str());
-		} else eb.defaultHandler(this,msg);
-	}
-};
-
-class Relay : public Actor
-{
-public:
-	Relay():Actor("Relay") {
-	}
-	void setup() {
-		eb.onDst(H("Relay")).subscribe(this);
-	}
-	void init() {
-
-	}
-	void onEvent(Cbor& msg) {
-		eb.defaultHandler(this,msg);
-	}
-};
-
-Relay relay;
-
-Logger logger;
 //_______________________________________________________________________________________________________________
 //
-class Sonar : public Actor
-{
-	uint32_t _counter;
 
-public:
-	Sonar()
-		: Actor("Sonar") {
-		_counter++;
-	}
-
-	void setup() {
-		timeout(2000);
-	}
-	void init() {
-
-	}
-
-	void onEvent(Cbor& msg) {
-		PT_BEGIN();
-		timeout(2000);
-		eb.request(H("Router"), H("subscribe"), H("Sonar")).addKeyValue(H("name"), "Sonar");
-		eb.send();
-		PT_YIELD_UNTIL(timeout());
-		goto PINGING;
-
-PINGING : {
-			while(true) {
-				timeout(2000);
-				PT_YIELD_UNTIL(timeout());
-//               eb.request(H("Echo"), H("ping"), H("Sonar")).addKeyValue(H("nr"), _counter++);
-//               eb.send();
-//               PT_YIELD_UNTIL(timeout());
-			}
-		}
-
-		PT_END();
-	}
-};
-
-Sonar sonar;
 
 //_______________________________________________________________________________________________________________
 //
@@ -459,23 +341,21 @@ int main(int argc, char* argv[])
 {
 
 	INFO("Start %s version : %s %s", argv[0], __DATE__, __TIME__);
-	LOGF(" H('sys') : %d   H('timeout')=%d", H("sys"), H("timeout"));
-	LOGF(" EB_REQUEST %d EB_DST %d EB_SRC %d ",EB_REQUEST,EB_DST,EB_SRC);
 	static_assert(H("timeout") == 16294, " timout hash incorrect");
-	Str tim("timeout");
-	if(h(tim) != 16294)
-		exit(-1);
+
 
 	eb.setup();
 	uid.add(labels,LABEL_COUNT);
 	loadOptions(argc, argv);
-	log.level(context.logLevel);
+	logger.level(context.logLevel);
 	//    Mqtt.loadConfig(mqttConfig);
 	mqttGtw.loadConfig(mqttConfig);
+	
 	eb.onAny().subscribe([](Cbor& cbor) {
-		if(log.level() <= Log::LOG_DEBUG)
+		if(logger.level() <= Log::LOG_DEBUG)
 			logCbor(cbor);
 	});
+	
 	interceptAllSignals();
 
 	serial.setDevice(context.device);
@@ -486,48 +366,21 @@ int main(int argc, char* argv[])
 	slip.src(serial.id());
 	slip.id(H("slip"));
 	slip.setup();
-
-	//    Mqtt.setup();
 	mqttGtw.setup();
-	/*    eb.onRequest(H("mqtt"), H("publish")).subscribe(&mqttGtw, (MethodHandler)&MqttGtw::publish);
-	    eb.onRequest(H("mqtt"), H("subscribe")).subscribe(&mqttGtw, (MethodHandler)&MqttGtw::subscribe);
-	    eb.onRequest(H("mqtt"), H("connected")).subscribe(&mqttGtw, (MethodHandler)&MqttGtw::isConnected);
-	    eb.onRequest(H("mqtt")).subscribe(&mqttGtw); */
-
-
-//   router.setup();
-//   eb.onRemote().subscribe(&router, (MethodHandler)&Router::onPublish);
-
-//    eb.onEvent(H("mqtt"), H("published")).subscribe(&router, (MethodHandler)&Router::onPublished);
-//    eb.onEvent(H("mqtt"), H("disconnected")).subscribe(&router, (MethodHandler)&Router::onEvent);
-
-//    echo.setup();
-	//    eb.onRequest(H("Router"),H("subscribe")).subscribe(&router,(MethodHandler)&Router::onSubscribe);
-
+	
 	eb.onEvent(slip.id(), H("rxd")).subscribe([](Cbor& msg) { // put SLIP messages on EB
 		Cbor data(0);
 		if(msg.mapKeyValue(H("data"), data)) {
+			LOGF(" from serial port ");
 
 			eb.publish(data);
 		}
 	});
 	eb.onSrc(H("mqtt")).subscribe(slipSend); // put some EB messages on SLIP
-	eb.onRequest(H("Logger")).subscribe(&logger);
-
-//    sonar.setup();
-//    relay.setup();
-	// push some downstream for test purpose
-
-
 
 	while(1) {
 		poller(serial.fd(), mqttGtw.fd(), Actor::lowestTimeout());
 		eb.eventLoop();
 	}
 }
-/*,
-H"dst"),H("src"),H("request"),H("reply"),H("event"),H("error"),H("Actor"),H("bootTime"),H("clientId"),H("connect"),H("connected"),H("data"),H("disconnect"),H("disconnected"),H("#dst"),
-H("#dst_device"),H("error"),H("error_msg"),H("#event"),H("#from"),H("host"),H("hostname"),H("id"),H("init"),H("keep_alive"),H("line"),H("message"),H("motor"),H("mqtt"),H("now"),
-H("prefix"),H("props"),H("publish"),H("published"),H("register"),H("Relay"),H("#reply"),H("#request"),H("reset"),H("Router"),H("rxd"),H("set"),H("setup"),H("#src"),H("#src_device"),H("state"),
-H("status"),H("subscribe"),H("system"),H("timeout"),H("topic"),H("upTime"),H("will_message"),H("will_topic"),
-*/
+

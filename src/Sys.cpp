@@ -11,13 +11,7 @@ char Sys::_hostname[] ;
 uint64_t Sys::_upTime=0;
 uint64_t Sys::_boot_time=0;
 
-Sys::Sys() {
-	//ctor
-}
 
-Sys::~Sys() {
-	//dtor
-}
 #ifdef LINUX
 #include <time.h>
 

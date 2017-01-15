@@ -5,16 +5,16 @@
 ## Debug
 ProjectName            :=serial2mqtt
 ConfigurationName      :=Debug
-WorkspacePath          :=/home/lieven/linux
-ProjectPath            :=/home/lieven/linux/serial2mqtt
+WorkspacePath          := "/home/lieven/linux"
+ProjectPath            := "/home/lieven/linux/serial2mqtt"
 IntermediateDirectory  :=./Debug
 OutDir                 := $(IntermediateDirectory)
 CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=Lieven
-Date                   :=12/01/17
-CodeLitePath           :=/home/lieven/.codelite
+Date                   :=15/01/17
+CodeLitePath           :="/home/lieven/.codelite"
 LinkerName             :=/usr/bin/g++
 SharedObjectLinkerName :=/usr/bin/g++ -shared -fPIC
 ObjectSuffix           :=.o
@@ -36,7 +36,7 @@ ObjectsFileList        :="serial2mqtt.txt"
 PCHCompileFlags        :=
 MakeDirCommand         :=mkdir -p
 LinkOptions            :=  
-IncludePath            :=  $(IncludeSwitch). $(IncludeSwitch). $(IncludeSwitch)inc $(IncludeSwitch)../Common/inc $(IncludeSwitch)../paho/src $(IncludeSwitch)../Ebos 
+IncludePath            :=  $(IncludeSwitch). $(IncludeSwitch). $(IncludeSwitch)inc $(IncludeSwitch)../Common $(IncludeSwitch)../paho/src $(IncludeSwitch)../Ebos 
 IncludePCH             := 
 RcIncludePath          := 
 Libs                   := $(LibrarySwitch)paho-mqtt3a $(LibrarySwitch)pthread 
@@ -60,10 +60,10 @@ AS       := /usr/bin/as
 ## User defined environment variables
 ##
 CodeLiteDir:=/usr/share/codelite
-Objects0=$(IntermediateDirectory)/src_Serial.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_main.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_MqttGtw.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_Sys.cpp$(ObjectSuffix) $(IntermediateDirectory)/Actor.cpp$(ObjectSuffix) $(IntermediateDirectory)/EventBus.cpp$(ObjectSuffix) $(IntermediateDirectory)/Router.cpp$(ObjectSuffix) $(IntermediateDirectory)/Slip.cpp$(ObjectSuffix) $(IntermediateDirectory)/SlipStream.cpp$(ObjectSuffix) $(IntermediateDirectory)/static_labels.cpp$(ObjectSuffix) \
-	$(IntermediateDirectory)/System.cpp$(ObjectSuffix) $(IntermediateDirectory)/Uid.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_Base64.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_BipBuffer.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_BufferedByteStream.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_Bytes.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_Cbor.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_CborQueue.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_CircBuf.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_EventSource.cpp$(ObjectSuffix) \
-	$(IntermediateDirectory)/src_jsmn.c$(ObjectSuffix) $(IntermediateDirectory)/src_Json.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_Log.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_Msg.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_Msgpack.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_Node.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_PIC32_stubs.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_printf.c$(ObjectSuffix) $(IntermediateDirectory)/src_STM32_stubs.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_Str.cpp$(ObjectSuffix) \
-	$(IntermediateDirectory)/src_Strpack.cpp$(ObjectSuffix) $(IntermediateDirectory)/inc_LinkedList.cpp$(ObjectSuffix) 
+Objects0=$(IntermediateDirectory)/src_Serial.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_main.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_MqttGtw.cpp$(ObjectSuffix) $(IntermediateDirectory)/src_Sys.cpp$(ObjectSuffix) $(IntermediateDirectory)/Ebos_Actor.cpp$(ObjectSuffix) $(IntermediateDirectory)/Ebos_EventBus.cpp$(ObjectSuffix) $(IntermediateDirectory)/Ebos_Slip.cpp$(ObjectSuffix) $(IntermediateDirectory)/Ebos_SlipStream.cpp$(ObjectSuffix) $(IntermediateDirectory)/Ebos_static_labels.cpp$(ObjectSuffix) $(IntermediateDirectory)/Ebos_System.cpp$(ObjectSuffix) \
+	$(IntermediateDirectory)/Ebos_Uid.cpp$(ObjectSuffix) $(IntermediateDirectory)/Common_Base64.cpp$(ObjectSuffix) $(IntermediateDirectory)/Common_BipBuffer.cpp$(ObjectSuffix) $(IntermediateDirectory)/Common_BufferedByteStream.cpp$(ObjectSuffix) $(IntermediateDirectory)/Common_Bytes.cpp$(ObjectSuffix) $(IntermediateDirectory)/Common_Cbor.cpp$(ObjectSuffix) $(IntermediateDirectory)/Common_CborQueue.cpp$(ObjectSuffix) $(IntermediateDirectory)/Common_CircBuf.cpp$(ObjectSuffix) $(IntermediateDirectory)/Common_EventSource.cpp$(ObjectSuffix) $(IntermediateDirectory)/Common_jsmn.c$(ObjectSuffix) \
+	$(IntermediateDirectory)/Common_Json.cpp$(ObjectSuffix) $(IntermediateDirectory)/Common_LinkedList.cpp$(ObjectSuffix) $(IntermediateDirectory)/Common_Log.cpp$(ObjectSuffix) $(IntermediateDirectory)/Common_Msg.cpp$(ObjectSuffix) $(IntermediateDirectory)/Common_Msgpack.cpp$(ObjectSuffix) $(IntermediateDirectory)/Common_Node.cpp$(ObjectSuffix) $(IntermediateDirectory)/Common_PIC32_stubs.cpp$(ObjectSuffix) $(IntermediateDirectory)/Common_printf.c$(ObjectSuffix) $(IntermediateDirectory)/Common_STM32_stubs.cpp$(ObjectSuffix) $(IntermediateDirectory)/Common_Str.cpp$(ObjectSuffix) \
+	$(IntermediateDirectory)/Common_Strpack.cpp$(ObjectSuffix) 
 
 
 
@@ -100,258 +100,250 @@ PreBuild:
 $(IntermediateDirectory)/src_Serial.cpp$(ObjectSuffix): src/Serial.cpp $(IntermediateDirectory)/src_Serial.cpp$(DependSuffix)
 	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/serial2mqtt/src/Serial.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_Serial.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/src_Serial.cpp$(DependSuffix): src/Serial.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_Serial.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_Serial.cpp$(DependSuffix) -MM src/Serial.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_Serial.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_Serial.cpp$(DependSuffix) -MM "src/Serial.cpp"
 
 $(IntermediateDirectory)/src_Serial.cpp$(PreprocessSuffix): src/Serial.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_Serial.cpp$(PreprocessSuffix)src/Serial.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_Serial.cpp$(PreprocessSuffix) "src/Serial.cpp"
 
 $(IntermediateDirectory)/src_main.cpp$(ObjectSuffix): src/main.cpp $(IntermediateDirectory)/src_main.cpp$(DependSuffix)
 	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/serial2mqtt/src/main.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_main.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/src_main.cpp$(DependSuffix): src/main.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_main.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_main.cpp$(DependSuffix) -MM src/main.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_main.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_main.cpp$(DependSuffix) -MM "src/main.cpp"
 
 $(IntermediateDirectory)/src_main.cpp$(PreprocessSuffix): src/main.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_main.cpp$(PreprocessSuffix)src/main.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_main.cpp$(PreprocessSuffix) "src/main.cpp"
 
 $(IntermediateDirectory)/src_MqttGtw.cpp$(ObjectSuffix): src/MqttGtw.cpp $(IntermediateDirectory)/src_MqttGtw.cpp$(DependSuffix)
 	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/serial2mqtt/src/MqttGtw.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_MqttGtw.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/src_MqttGtw.cpp$(DependSuffix): src/MqttGtw.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_MqttGtw.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_MqttGtw.cpp$(DependSuffix) -MM src/MqttGtw.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_MqttGtw.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_MqttGtw.cpp$(DependSuffix) -MM "src/MqttGtw.cpp"
 
 $(IntermediateDirectory)/src_MqttGtw.cpp$(PreprocessSuffix): src/MqttGtw.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_MqttGtw.cpp$(PreprocessSuffix)src/MqttGtw.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_MqttGtw.cpp$(PreprocessSuffix) "src/MqttGtw.cpp"
 
 $(IntermediateDirectory)/src_Sys.cpp$(ObjectSuffix): src/Sys.cpp $(IntermediateDirectory)/src_Sys.cpp$(DependSuffix)
 	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/serial2mqtt/src/Sys.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_Sys.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/src_Sys.cpp$(DependSuffix): src/Sys.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_Sys.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_Sys.cpp$(DependSuffix) -MM src/Sys.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_Sys.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_Sys.cpp$(DependSuffix) -MM "src/Sys.cpp"
 
 $(IntermediateDirectory)/src_Sys.cpp$(PreprocessSuffix): src/Sys.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_Sys.cpp$(PreprocessSuffix)src/Sys.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_Sys.cpp$(PreprocessSuffix) "src/Sys.cpp"
 
-$(IntermediateDirectory)/Actor.cpp$(ObjectSuffix): ../Ebos/Actor.cpp $(IntermediateDirectory)/Actor.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Ebos/Actor.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Actor.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/Actor.cpp$(DependSuffix): ../Ebos/Actor.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Actor.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Actor.cpp$(DependSuffix) -MM ../Ebos/Actor.cpp
+$(IntermediateDirectory)/Ebos_Actor.cpp$(ObjectSuffix): ../Ebos/Actor.cpp $(IntermediateDirectory)/Ebos_Actor.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Ebos/Actor.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Ebos_Actor.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Ebos_Actor.cpp$(DependSuffix): ../Ebos/Actor.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Ebos_Actor.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Ebos_Actor.cpp$(DependSuffix) -MM "../Ebos/Actor.cpp"
 
-$(IntermediateDirectory)/Actor.cpp$(PreprocessSuffix): ../Ebos/Actor.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Actor.cpp$(PreprocessSuffix)../Ebos/Actor.cpp
+$(IntermediateDirectory)/Ebos_Actor.cpp$(PreprocessSuffix): ../Ebos/Actor.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Ebos_Actor.cpp$(PreprocessSuffix) "../Ebos/Actor.cpp"
 
-$(IntermediateDirectory)/EventBus.cpp$(ObjectSuffix): ../Ebos/EventBus.cpp $(IntermediateDirectory)/EventBus.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Ebos/EventBus.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/EventBus.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/EventBus.cpp$(DependSuffix): ../Ebos/EventBus.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/EventBus.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/EventBus.cpp$(DependSuffix) -MM ../Ebos/EventBus.cpp
+$(IntermediateDirectory)/Ebos_EventBus.cpp$(ObjectSuffix): ../Ebos/EventBus.cpp $(IntermediateDirectory)/Ebos_EventBus.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Ebos/EventBus.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Ebos_EventBus.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Ebos_EventBus.cpp$(DependSuffix): ../Ebos/EventBus.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Ebos_EventBus.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Ebos_EventBus.cpp$(DependSuffix) -MM "../Ebos/EventBus.cpp"
 
-$(IntermediateDirectory)/EventBus.cpp$(PreprocessSuffix): ../Ebos/EventBus.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/EventBus.cpp$(PreprocessSuffix)../Ebos/EventBus.cpp
+$(IntermediateDirectory)/Ebos_EventBus.cpp$(PreprocessSuffix): ../Ebos/EventBus.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Ebos_EventBus.cpp$(PreprocessSuffix) "../Ebos/EventBus.cpp"
 
-$(IntermediateDirectory)/Router.cpp$(ObjectSuffix): ../Ebos/Router.cpp $(IntermediateDirectory)/Router.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Ebos/Router.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Router.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/Router.cpp$(DependSuffix): ../Ebos/Router.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Router.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Router.cpp$(DependSuffix) -MM ../Ebos/Router.cpp
+$(IntermediateDirectory)/Ebos_Slip.cpp$(ObjectSuffix): ../Ebos/Slip.cpp $(IntermediateDirectory)/Ebos_Slip.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Ebos/Slip.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Ebos_Slip.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Ebos_Slip.cpp$(DependSuffix): ../Ebos/Slip.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Ebos_Slip.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Ebos_Slip.cpp$(DependSuffix) -MM "../Ebos/Slip.cpp"
 
-$(IntermediateDirectory)/Router.cpp$(PreprocessSuffix): ../Ebos/Router.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Router.cpp$(PreprocessSuffix)../Ebos/Router.cpp
+$(IntermediateDirectory)/Ebos_Slip.cpp$(PreprocessSuffix): ../Ebos/Slip.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Ebos_Slip.cpp$(PreprocessSuffix) "../Ebos/Slip.cpp"
 
-$(IntermediateDirectory)/Slip.cpp$(ObjectSuffix): ../Ebos/Slip.cpp $(IntermediateDirectory)/Slip.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Ebos/Slip.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Slip.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/Slip.cpp$(DependSuffix): ../Ebos/Slip.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Slip.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Slip.cpp$(DependSuffix) -MM ../Ebos/Slip.cpp
+$(IntermediateDirectory)/Ebos_SlipStream.cpp$(ObjectSuffix): ../Ebos/SlipStream.cpp $(IntermediateDirectory)/Ebos_SlipStream.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Ebos/SlipStream.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Ebos_SlipStream.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Ebos_SlipStream.cpp$(DependSuffix): ../Ebos/SlipStream.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Ebos_SlipStream.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Ebos_SlipStream.cpp$(DependSuffix) -MM "../Ebos/SlipStream.cpp"
 
-$(IntermediateDirectory)/Slip.cpp$(PreprocessSuffix): ../Ebos/Slip.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Slip.cpp$(PreprocessSuffix)../Ebos/Slip.cpp
+$(IntermediateDirectory)/Ebos_SlipStream.cpp$(PreprocessSuffix): ../Ebos/SlipStream.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Ebos_SlipStream.cpp$(PreprocessSuffix) "../Ebos/SlipStream.cpp"
 
-$(IntermediateDirectory)/SlipStream.cpp$(ObjectSuffix): ../Ebos/SlipStream.cpp $(IntermediateDirectory)/SlipStream.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Ebos/SlipStream.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/SlipStream.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/SlipStream.cpp$(DependSuffix): ../Ebos/SlipStream.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/SlipStream.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/SlipStream.cpp$(DependSuffix) -MM ../Ebos/SlipStream.cpp
+$(IntermediateDirectory)/Ebos_static_labels.cpp$(ObjectSuffix): ../Ebos/static_labels.cpp $(IntermediateDirectory)/Ebos_static_labels.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Ebos/static_labels.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Ebos_static_labels.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Ebos_static_labels.cpp$(DependSuffix): ../Ebos/static_labels.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Ebos_static_labels.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Ebos_static_labels.cpp$(DependSuffix) -MM "../Ebos/static_labels.cpp"
 
-$(IntermediateDirectory)/SlipStream.cpp$(PreprocessSuffix): ../Ebos/SlipStream.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/SlipStream.cpp$(PreprocessSuffix)../Ebos/SlipStream.cpp
+$(IntermediateDirectory)/Ebos_static_labels.cpp$(PreprocessSuffix): ../Ebos/static_labels.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Ebos_static_labels.cpp$(PreprocessSuffix) "../Ebos/static_labels.cpp"
 
-$(IntermediateDirectory)/static_labels.cpp$(ObjectSuffix): ../Ebos/static_labels.cpp $(IntermediateDirectory)/static_labels.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Ebos/static_labels.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/static_labels.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/static_labels.cpp$(DependSuffix): ../Ebos/static_labels.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/static_labels.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/static_labels.cpp$(DependSuffix) -MM ../Ebos/static_labels.cpp
+$(IntermediateDirectory)/Ebos_System.cpp$(ObjectSuffix): ../Ebos/System.cpp $(IntermediateDirectory)/Ebos_System.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Ebos/System.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Ebos_System.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Ebos_System.cpp$(DependSuffix): ../Ebos/System.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Ebos_System.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Ebos_System.cpp$(DependSuffix) -MM "../Ebos/System.cpp"
 
-$(IntermediateDirectory)/static_labels.cpp$(PreprocessSuffix): ../Ebos/static_labels.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/static_labels.cpp$(PreprocessSuffix)../Ebos/static_labels.cpp
+$(IntermediateDirectory)/Ebos_System.cpp$(PreprocessSuffix): ../Ebos/System.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Ebos_System.cpp$(PreprocessSuffix) "../Ebos/System.cpp"
 
-$(IntermediateDirectory)/System.cpp$(ObjectSuffix): ../Ebos/System.cpp $(IntermediateDirectory)/System.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Ebos/System.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/System.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/System.cpp$(DependSuffix): ../Ebos/System.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/System.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/System.cpp$(DependSuffix) -MM ../Ebos/System.cpp
+$(IntermediateDirectory)/Ebos_Uid.cpp$(ObjectSuffix): ../Ebos/Uid.cpp $(IntermediateDirectory)/Ebos_Uid.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Ebos/Uid.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Ebos_Uid.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Ebos_Uid.cpp$(DependSuffix): ../Ebos/Uid.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Ebos_Uid.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Ebos_Uid.cpp$(DependSuffix) -MM "../Ebos/Uid.cpp"
 
-$(IntermediateDirectory)/System.cpp$(PreprocessSuffix): ../Ebos/System.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/System.cpp$(PreprocessSuffix)../Ebos/System.cpp
+$(IntermediateDirectory)/Ebos_Uid.cpp$(PreprocessSuffix): ../Ebos/Uid.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Ebos_Uid.cpp$(PreprocessSuffix) "../Ebos/Uid.cpp"
 
-$(IntermediateDirectory)/Uid.cpp$(ObjectSuffix): ../Ebos/Uid.cpp $(IntermediateDirectory)/Uid.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Ebos/Uid.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Uid.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/Uid.cpp$(DependSuffix): ../Ebos/Uid.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Uid.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Uid.cpp$(DependSuffix) -MM ../Ebos/Uid.cpp
+$(IntermediateDirectory)/Common_Base64.cpp$(ObjectSuffix): ../Common/Base64.cpp $(IntermediateDirectory)/Common_Base64.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/Base64.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Common_Base64.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Common_Base64.cpp$(DependSuffix): ../Common/Base64.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Common_Base64.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Common_Base64.cpp$(DependSuffix) -MM "../Common/Base64.cpp"
 
-$(IntermediateDirectory)/Uid.cpp$(PreprocessSuffix): ../Ebos/Uid.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Uid.cpp$(PreprocessSuffix)../Ebos/Uid.cpp
+$(IntermediateDirectory)/Common_Base64.cpp$(PreprocessSuffix): ../Common/Base64.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Common_Base64.cpp$(PreprocessSuffix) "../Common/Base64.cpp"
 
-$(IntermediateDirectory)/src_Base64.cpp$(ObjectSuffix): ../Common/src/Base64.cpp $(IntermediateDirectory)/src_Base64.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/src/Base64.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_Base64.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/src_Base64.cpp$(DependSuffix): ../Common/src/Base64.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_Base64.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_Base64.cpp$(DependSuffix) -MM ../Common/src/Base64.cpp
+$(IntermediateDirectory)/Common_BipBuffer.cpp$(ObjectSuffix): ../Common/BipBuffer.cpp $(IntermediateDirectory)/Common_BipBuffer.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/BipBuffer.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Common_BipBuffer.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Common_BipBuffer.cpp$(DependSuffix): ../Common/BipBuffer.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Common_BipBuffer.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Common_BipBuffer.cpp$(DependSuffix) -MM "../Common/BipBuffer.cpp"
 
-$(IntermediateDirectory)/src_Base64.cpp$(PreprocessSuffix): ../Common/src/Base64.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_Base64.cpp$(PreprocessSuffix)../Common/src/Base64.cpp
+$(IntermediateDirectory)/Common_BipBuffer.cpp$(PreprocessSuffix): ../Common/BipBuffer.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Common_BipBuffer.cpp$(PreprocessSuffix) "../Common/BipBuffer.cpp"
 
-$(IntermediateDirectory)/src_BipBuffer.cpp$(ObjectSuffix): ../Common/src/BipBuffer.cpp $(IntermediateDirectory)/src_BipBuffer.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/src/BipBuffer.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_BipBuffer.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/src_BipBuffer.cpp$(DependSuffix): ../Common/src/BipBuffer.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_BipBuffer.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_BipBuffer.cpp$(DependSuffix) -MM ../Common/src/BipBuffer.cpp
+$(IntermediateDirectory)/Common_BufferedByteStream.cpp$(ObjectSuffix): ../Common/BufferedByteStream.cpp $(IntermediateDirectory)/Common_BufferedByteStream.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/BufferedByteStream.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Common_BufferedByteStream.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Common_BufferedByteStream.cpp$(DependSuffix): ../Common/BufferedByteStream.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Common_BufferedByteStream.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Common_BufferedByteStream.cpp$(DependSuffix) -MM "../Common/BufferedByteStream.cpp"
 
-$(IntermediateDirectory)/src_BipBuffer.cpp$(PreprocessSuffix): ../Common/src/BipBuffer.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_BipBuffer.cpp$(PreprocessSuffix)../Common/src/BipBuffer.cpp
+$(IntermediateDirectory)/Common_BufferedByteStream.cpp$(PreprocessSuffix): ../Common/BufferedByteStream.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Common_BufferedByteStream.cpp$(PreprocessSuffix) "../Common/BufferedByteStream.cpp"
 
-$(IntermediateDirectory)/src_BufferedByteStream.cpp$(ObjectSuffix): ../Common/src/BufferedByteStream.cpp $(IntermediateDirectory)/src_BufferedByteStream.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/src/BufferedByteStream.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_BufferedByteStream.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/src_BufferedByteStream.cpp$(DependSuffix): ../Common/src/BufferedByteStream.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_BufferedByteStream.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_BufferedByteStream.cpp$(DependSuffix) -MM ../Common/src/BufferedByteStream.cpp
+$(IntermediateDirectory)/Common_Bytes.cpp$(ObjectSuffix): ../Common/Bytes.cpp $(IntermediateDirectory)/Common_Bytes.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/Bytes.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Common_Bytes.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Common_Bytes.cpp$(DependSuffix): ../Common/Bytes.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Common_Bytes.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Common_Bytes.cpp$(DependSuffix) -MM "../Common/Bytes.cpp"
 
-$(IntermediateDirectory)/src_BufferedByteStream.cpp$(PreprocessSuffix): ../Common/src/BufferedByteStream.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_BufferedByteStream.cpp$(PreprocessSuffix)../Common/src/BufferedByteStream.cpp
+$(IntermediateDirectory)/Common_Bytes.cpp$(PreprocessSuffix): ../Common/Bytes.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Common_Bytes.cpp$(PreprocessSuffix) "../Common/Bytes.cpp"
 
-$(IntermediateDirectory)/src_Bytes.cpp$(ObjectSuffix): ../Common/src/Bytes.cpp $(IntermediateDirectory)/src_Bytes.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/src/Bytes.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_Bytes.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/src_Bytes.cpp$(DependSuffix): ../Common/src/Bytes.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_Bytes.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_Bytes.cpp$(DependSuffix) -MM ../Common/src/Bytes.cpp
+$(IntermediateDirectory)/Common_Cbor.cpp$(ObjectSuffix): ../Common/Cbor.cpp $(IntermediateDirectory)/Common_Cbor.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/Cbor.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Common_Cbor.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Common_Cbor.cpp$(DependSuffix): ../Common/Cbor.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Common_Cbor.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Common_Cbor.cpp$(DependSuffix) -MM "../Common/Cbor.cpp"
 
-$(IntermediateDirectory)/src_Bytes.cpp$(PreprocessSuffix): ../Common/src/Bytes.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_Bytes.cpp$(PreprocessSuffix)../Common/src/Bytes.cpp
+$(IntermediateDirectory)/Common_Cbor.cpp$(PreprocessSuffix): ../Common/Cbor.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Common_Cbor.cpp$(PreprocessSuffix) "../Common/Cbor.cpp"
 
-$(IntermediateDirectory)/src_Cbor.cpp$(ObjectSuffix): ../Common/src/Cbor.cpp $(IntermediateDirectory)/src_Cbor.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/src/Cbor.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_Cbor.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/src_Cbor.cpp$(DependSuffix): ../Common/src/Cbor.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_Cbor.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_Cbor.cpp$(DependSuffix) -MM ../Common/src/Cbor.cpp
+$(IntermediateDirectory)/Common_CborQueue.cpp$(ObjectSuffix): ../Common/CborQueue.cpp $(IntermediateDirectory)/Common_CborQueue.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/CborQueue.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Common_CborQueue.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Common_CborQueue.cpp$(DependSuffix): ../Common/CborQueue.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Common_CborQueue.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Common_CborQueue.cpp$(DependSuffix) -MM "../Common/CborQueue.cpp"
 
-$(IntermediateDirectory)/src_Cbor.cpp$(PreprocessSuffix): ../Common/src/Cbor.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_Cbor.cpp$(PreprocessSuffix)../Common/src/Cbor.cpp
+$(IntermediateDirectory)/Common_CborQueue.cpp$(PreprocessSuffix): ../Common/CborQueue.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Common_CborQueue.cpp$(PreprocessSuffix) "../Common/CborQueue.cpp"
 
-$(IntermediateDirectory)/src_CborQueue.cpp$(ObjectSuffix): ../Common/src/CborQueue.cpp $(IntermediateDirectory)/src_CborQueue.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/src/CborQueue.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_CborQueue.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/src_CborQueue.cpp$(DependSuffix): ../Common/src/CborQueue.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_CborQueue.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_CborQueue.cpp$(DependSuffix) -MM ../Common/src/CborQueue.cpp
+$(IntermediateDirectory)/Common_CircBuf.cpp$(ObjectSuffix): ../Common/CircBuf.cpp $(IntermediateDirectory)/Common_CircBuf.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/CircBuf.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Common_CircBuf.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Common_CircBuf.cpp$(DependSuffix): ../Common/CircBuf.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Common_CircBuf.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Common_CircBuf.cpp$(DependSuffix) -MM "../Common/CircBuf.cpp"
 
-$(IntermediateDirectory)/src_CborQueue.cpp$(PreprocessSuffix): ../Common/src/CborQueue.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_CborQueue.cpp$(PreprocessSuffix)../Common/src/CborQueue.cpp
+$(IntermediateDirectory)/Common_CircBuf.cpp$(PreprocessSuffix): ../Common/CircBuf.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Common_CircBuf.cpp$(PreprocessSuffix) "../Common/CircBuf.cpp"
 
-$(IntermediateDirectory)/src_CircBuf.cpp$(ObjectSuffix): ../Common/src/CircBuf.cpp $(IntermediateDirectory)/src_CircBuf.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/src/CircBuf.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_CircBuf.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/src_CircBuf.cpp$(DependSuffix): ../Common/src/CircBuf.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_CircBuf.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_CircBuf.cpp$(DependSuffix) -MM ../Common/src/CircBuf.cpp
+$(IntermediateDirectory)/Common_EventSource.cpp$(ObjectSuffix): ../Common/EventSource.cpp $(IntermediateDirectory)/Common_EventSource.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/EventSource.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Common_EventSource.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Common_EventSource.cpp$(DependSuffix): ../Common/EventSource.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Common_EventSource.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Common_EventSource.cpp$(DependSuffix) -MM "../Common/EventSource.cpp"
 
-$(IntermediateDirectory)/src_CircBuf.cpp$(PreprocessSuffix): ../Common/src/CircBuf.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_CircBuf.cpp$(PreprocessSuffix)../Common/src/CircBuf.cpp
+$(IntermediateDirectory)/Common_EventSource.cpp$(PreprocessSuffix): ../Common/EventSource.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Common_EventSource.cpp$(PreprocessSuffix) "../Common/EventSource.cpp"
 
-$(IntermediateDirectory)/src_EventSource.cpp$(ObjectSuffix): ../Common/src/EventSource.cpp $(IntermediateDirectory)/src_EventSource.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/src/EventSource.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_EventSource.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/src_EventSource.cpp$(DependSuffix): ../Common/src/EventSource.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_EventSource.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_EventSource.cpp$(DependSuffix) -MM ../Common/src/EventSource.cpp
+$(IntermediateDirectory)/Common_jsmn.c$(ObjectSuffix): ../Common/jsmn.c $(IntermediateDirectory)/Common_jsmn.c$(DependSuffix)
+	$(CC) $(SourceSwitch) "/home/lieven/linux/Common/jsmn.c" $(CFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Common_jsmn.c$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Common_jsmn.c$(DependSuffix): ../Common/jsmn.c
+	@$(CC) $(CFLAGS) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Common_jsmn.c$(ObjectSuffix) -MF$(IntermediateDirectory)/Common_jsmn.c$(DependSuffix) -MM "../Common/jsmn.c"
 
-$(IntermediateDirectory)/src_EventSource.cpp$(PreprocessSuffix): ../Common/src/EventSource.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_EventSource.cpp$(PreprocessSuffix)../Common/src/EventSource.cpp
+$(IntermediateDirectory)/Common_jsmn.c$(PreprocessSuffix): ../Common/jsmn.c
+	$(CC) $(CFLAGS) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Common_jsmn.c$(PreprocessSuffix) "../Common/jsmn.c"
 
-$(IntermediateDirectory)/src_jsmn.c$(ObjectSuffix): ../Common/src/jsmn.c $(IntermediateDirectory)/src_jsmn.c$(DependSuffix)
-	$(CC) $(SourceSwitch) "/home/lieven/linux/Common/src/jsmn.c" $(CFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_jsmn.c$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/src_jsmn.c$(DependSuffix): ../Common/src/jsmn.c
-	@$(CC) $(CFLAGS) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_jsmn.c$(ObjectSuffix) -MF$(IntermediateDirectory)/src_jsmn.c$(DependSuffix) -MM ../Common/src/jsmn.c
+$(IntermediateDirectory)/Common_Json.cpp$(ObjectSuffix): ../Common/Json.cpp $(IntermediateDirectory)/Common_Json.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/Json.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Common_Json.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Common_Json.cpp$(DependSuffix): ../Common/Json.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Common_Json.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Common_Json.cpp$(DependSuffix) -MM "../Common/Json.cpp"
 
-$(IntermediateDirectory)/src_jsmn.c$(PreprocessSuffix): ../Common/src/jsmn.c
-	$(CC) $(CFLAGS) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_jsmn.c$(PreprocessSuffix)../Common/src/jsmn.c
+$(IntermediateDirectory)/Common_Json.cpp$(PreprocessSuffix): ../Common/Json.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Common_Json.cpp$(PreprocessSuffix) "../Common/Json.cpp"
 
-$(IntermediateDirectory)/src_Json.cpp$(ObjectSuffix): ../Common/src/Json.cpp $(IntermediateDirectory)/src_Json.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/src/Json.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_Json.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/src_Json.cpp$(DependSuffix): ../Common/src/Json.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_Json.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_Json.cpp$(DependSuffix) -MM ../Common/src/Json.cpp
+$(IntermediateDirectory)/Common_LinkedList.cpp$(ObjectSuffix): ../Common/LinkedList.cpp $(IntermediateDirectory)/Common_LinkedList.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/LinkedList.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Common_LinkedList.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Common_LinkedList.cpp$(DependSuffix): ../Common/LinkedList.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Common_LinkedList.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Common_LinkedList.cpp$(DependSuffix) -MM "../Common/LinkedList.cpp"
 
-$(IntermediateDirectory)/src_Json.cpp$(PreprocessSuffix): ../Common/src/Json.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_Json.cpp$(PreprocessSuffix)../Common/src/Json.cpp
+$(IntermediateDirectory)/Common_LinkedList.cpp$(PreprocessSuffix): ../Common/LinkedList.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Common_LinkedList.cpp$(PreprocessSuffix) "../Common/LinkedList.cpp"
 
-$(IntermediateDirectory)/src_Log.cpp$(ObjectSuffix): ../Common/src/Log.cpp $(IntermediateDirectory)/src_Log.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/src/Log.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_Log.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/src_Log.cpp$(DependSuffix): ../Common/src/Log.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_Log.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_Log.cpp$(DependSuffix) -MM ../Common/src/Log.cpp
+$(IntermediateDirectory)/Common_Log.cpp$(ObjectSuffix): ../Common/Log.cpp $(IntermediateDirectory)/Common_Log.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/Log.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Common_Log.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Common_Log.cpp$(DependSuffix): ../Common/Log.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Common_Log.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Common_Log.cpp$(DependSuffix) -MM "../Common/Log.cpp"
 
-$(IntermediateDirectory)/src_Log.cpp$(PreprocessSuffix): ../Common/src/Log.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_Log.cpp$(PreprocessSuffix)../Common/src/Log.cpp
+$(IntermediateDirectory)/Common_Log.cpp$(PreprocessSuffix): ../Common/Log.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Common_Log.cpp$(PreprocessSuffix) "../Common/Log.cpp"
 
-$(IntermediateDirectory)/src_Msg.cpp$(ObjectSuffix): ../Common/src/Msg.cpp $(IntermediateDirectory)/src_Msg.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/src/Msg.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_Msg.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/src_Msg.cpp$(DependSuffix): ../Common/src/Msg.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_Msg.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_Msg.cpp$(DependSuffix) -MM ../Common/src/Msg.cpp
+$(IntermediateDirectory)/Common_Msg.cpp$(ObjectSuffix): ../Common/Msg.cpp $(IntermediateDirectory)/Common_Msg.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/Msg.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Common_Msg.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Common_Msg.cpp$(DependSuffix): ../Common/Msg.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Common_Msg.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Common_Msg.cpp$(DependSuffix) -MM "../Common/Msg.cpp"
 
-$(IntermediateDirectory)/src_Msg.cpp$(PreprocessSuffix): ../Common/src/Msg.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_Msg.cpp$(PreprocessSuffix)../Common/src/Msg.cpp
+$(IntermediateDirectory)/Common_Msg.cpp$(PreprocessSuffix): ../Common/Msg.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Common_Msg.cpp$(PreprocessSuffix) "../Common/Msg.cpp"
 
-$(IntermediateDirectory)/src_Msgpack.cpp$(ObjectSuffix): ../Common/src/Msgpack.cpp $(IntermediateDirectory)/src_Msgpack.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/src/Msgpack.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_Msgpack.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/src_Msgpack.cpp$(DependSuffix): ../Common/src/Msgpack.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_Msgpack.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_Msgpack.cpp$(DependSuffix) -MM ../Common/src/Msgpack.cpp
+$(IntermediateDirectory)/Common_Msgpack.cpp$(ObjectSuffix): ../Common/Msgpack.cpp $(IntermediateDirectory)/Common_Msgpack.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/Msgpack.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Common_Msgpack.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Common_Msgpack.cpp$(DependSuffix): ../Common/Msgpack.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Common_Msgpack.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Common_Msgpack.cpp$(DependSuffix) -MM "../Common/Msgpack.cpp"
 
-$(IntermediateDirectory)/src_Msgpack.cpp$(PreprocessSuffix): ../Common/src/Msgpack.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_Msgpack.cpp$(PreprocessSuffix)../Common/src/Msgpack.cpp
+$(IntermediateDirectory)/Common_Msgpack.cpp$(PreprocessSuffix): ../Common/Msgpack.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Common_Msgpack.cpp$(PreprocessSuffix) "../Common/Msgpack.cpp"
 
-$(IntermediateDirectory)/src_Node.cpp$(ObjectSuffix): ../Common/src/Node.cpp $(IntermediateDirectory)/src_Node.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/src/Node.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_Node.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/src_Node.cpp$(DependSuffix): ../Common/src/Node.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_Node.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_Node.cpp$(DependSuffix) -MM ../Common/src/Node.cpp
+$(IntermediateDirectory)/Common_Node.cpp$(ObjectSuffix): ../Common/Node.cpp $(IntermediateDirectory)/Common_Node.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/Node.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Common_Node.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Common_Node.cpp$(DependSuffix): ../Common/Node.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Common_Node.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Common_Node.cpp$(DependSuffix) -MM "../Common/Node.cpp"
 
-$(IntermediateDirectory)/src_Node.cpp$(PreprocessSuffix): ../Common/src/Node.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_Node.cpp$(PreprocessSuffix)../Common/src/Node.cpp
+$(IntermediateDirectory)/Common_Node.cpp$(PreprocessSuffix): ../Common/Node.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Common_Node.cpp$(PreprocessSuffix) "../Common/Node.cpp"
 
-$(IntermediateDirectory)/src_PIC32_stubs.cpp$(ObjectSuffix): ../Common/src/PIC32_stubs.cpp $(IntermediateDirectory)/src_PIC32_stubs.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/src/PIC32_stubs.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_PIC32_stubs.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/src_PIC32_stubs.cpp$(DependSuffix): ../Common/src/PIC32_stubs.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_PIC32_stubs.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_PIC32_stubs.cpp$(DependSuffix) -MM ../Common/src/PIC32_stubs.cpp
+$(IntermediateDirectory)/Common_PIC32_stubs.cpp$(ObjectSuffix): ../Common/PIC32_stubs.cpp $(IntermediateDirectory)/Common_PIC32_stubs.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/PIC32_stubs.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Common_PIC32_stubs.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Common_PIC32_stubs.cpp$(DependSuffix): ../Common/PIC32_stubs.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Common_PIC32_stubs.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Common_PIC32_stubs.cpp$(DependSuffix) -MM "../Common/PIC32_stubs.cpp"
 
-$(IntermediateDirectory)/src_PIC32_stubs.cpp$(PreprocessSuffix): ../Common/src/PIC32_stubs.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_PIC32_stubs.cpp$(PreprocessSuffix)../Common/src/PIC32_stubs.cpp
+$(IntermediateDirectory)/Common_PIC32_stubs.cpp$(PreprocessSuffix): ../Common/PIC32_stubs.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Common_PIC32_stubs.cpp$(PreprocessSuffix) "../Common/PIC32_stubs.cpp"
 
-$(IntermediateDirectory)/src_printf.c$(ObjectSuffix): ../Common/src/printf.c $(IntermediateDirectory)/src_printf.c$(DependSuffix)
-	$(CC) $(SourceSwitch) "/home/lieven/linux/Common/src/printf.c" $(CFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_printf.c$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/src_printf.c$(DependSuffix): ../Common/src/printf.c
-	@$(CC) $(CFLAGS) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_printf.c$(ObjectSuffix) -MF$(IntermediateDirectory)/src_printf.c$(DependSuffix) -MM ../Common/src/printf.c
+$(IntermediateDirectory)/Common_printf.c$(ObjectSuffix): ../Common/printf.c $(IntermediateDirectory)/Common_printf.c$(DependSuffix)
+	$(CC) $(SourceSwitch) "/home/lieven/linux/Common/printf.c" $(CFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Common_printf.c$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Common_printf.c$(DependSuffix): ../Common/printf.c
+	@$(CC) $(CFLAGS) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Common_printf.c$(ObjectSuffix) -MF$(IntermediateDirectory)/Common_printf.c$(DependSuffix) -MM "../Common/printf.c"
 
-$(IntermediateDirectory)/src_printf.c$(PreprocessSuffix): ../Common/src/printf.c
-	$(CC) $(CFLAGS) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_printf.c$(PreprocessSuffix)../Common/src/printf.c
+$(IntermediateDirectory)/Common_printf.c$(PreprocessSuffix): ../Common/printf.c
+	$(CC) $(CFLAGS) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Common_printf.c$(PreprocessSuffix) "../Common/printf.c"
 
-$(IntermediateDirectory)/src_STM32_stubs.cpp$(ObjectSuffix): ../Common/src/STM32_stubs.cpp $(IntermediateDirectory)/src_STM32_stubs.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/src/STM32_stubs.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_STM32_stubs.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/src_STM32_stubs.cpp$(DependSuffix): ../Common/src/STM32_stubs.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_STM32_stubs.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_STM32_stubs.cpp$(DependSuffix) -MM ../Common/src/STM32_stubs.cpp
+$(IntermediateDirectory)/Common_STM32_stubs.cpp$(ObjectSuffix): ../Common/STM32_stubs.cpp $(IntermediateDirectory)/Common_STM32_stubs.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/STM32_stubs.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Common_STM32_stubs.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Common_STM32_stubs.cpp$(DependSuffix): ../Common/STM32_stubs.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Common_STM32_stubs.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Common_STM32_stubs.cpp$(DependSuffix) -MM "../Common/STM32_stubs.cpp"
 
-$(IntermediateDirectory)/src_STM32_stubs.cpp$(PreprocessSuffix): ../Common/src/STM32_stubs.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_STM32_stubs.cpp$(PreprocessSuffix)../Common/src/STM32_stubs.cpp
+$(IntermediateDirectory)/Common_STM32_stubs.cpp$(PreprocessSuffix): ../Common/STM32_stubs.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Common_STM32_stubs.cpp$(PreprocessSuffix) "../Common/STM32_stubs.cpp"
 
-$(IntermediateDirectory)/src_Str.cpp$(ObjectSuffix): ../Common/src/Str.cpp $(IntermediateDirectory)/src_Str.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/src/Str.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_Str.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/src_Str.cpp$(DependSuffix): ../Common/src/Str.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_Str.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_Str.cpp$(DependSuffix) -MM ../Common/src/Str.cpp
+$(IntermediateDirectory)/Common_Str.cpp$(ObjectSuffix): ../Common/Str.cpp $(IntermediateDirectory)/Common_Str.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/Str.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Common_Str.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Common_Str.cpp$(DependSuffix): ../Common/Str.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Common_Str.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Common_Str.cpp$(DependSuffix) -MM "../Common/Str.cpp"
 
-$(IntermediateDirectory)/src_Str.cpp$(PreprocessSuffix): ../Common/src/Str.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_Str.cpp$(PreprocessSuffix)../Common/src/Str.cpp
+$(IntermediateDirectory)/Common_Str.cpp$(PreprocessSuffix): ../Common/Str.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Common_Str.cpp$(PreprocessSuffix) "../Common/Str.cpp"
 
-$(IntermediateDirectory)/src_Strpack.cpp$(ObjectSuffix): ../Common/src/Strpack.cpp $(IntermediateDirectory)/src_Strpack.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/src/Strpack.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/src_Strpack.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/src_Strpack.cpp$(DependSuffix): ../Common/src/Strpack.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/src_Strpack.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/src_Strpack.cpp$(DependSuffix) -MM ../Common/src/Strpack.cpp
+$(IntermediateDirectory)/Common_Strpack.cpp$(ObjectSuffix): ../Common/Strpack.cpp $(IntermediateDirectory)/Common_Strpack.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/Strpack.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Common_Strpack.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Common_Strpack.cpp$(DependSuffix): ../Common/Strpack.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Common_Strpack.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Common_Strpack.cpp$(DependSuffix) -MM "../Common/Strpack.cpp"
 
-$(IntermediateDirectory)/src_Strpack.cpp$(PreprocessSuffix): ../Common/src/Strpack.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/src_Strpack.cpp$(PreprocessSuffix)../Common/src/Strpack.cpp
-
-$(IntermediateDirectory)/inc_LinkedList.cpp$(ObjectSuffix): ../Common/inc/LinkedList.cpp $(IntermediateDirectory)/inc_LinkedList.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lieven/linux/Common/inc/LinkedList.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/inc_LinkedList.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/inc_LinkedList.cpp$(DependSuffix): ../Common/inc/LinkedList.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/inc_LinkedList.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/inc_LinkedList.cpp$(DependSuffix) -MM ../Common/inc/LinkedList.cpp
-
-$(IntermediateDirectory)/inc_LinkedList.cpp$(PreprocessSuffix): ../Common/inc/LinkedList.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/inc_LinkedList.cpp$(PreprocessSuffix)../Common/inc/LinkedList.cpp
+$(IntermediateDirectory)/Common_Strpack.cpp$(PreprocessSuffix): ../Common/Strpack.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Common_Strpack.cpp$(PreprocessSuffix) "../Common/Strpack.cpp"
 
 
 -include $(IntermediateDirectory)/*$(DependSuffix)

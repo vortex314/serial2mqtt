@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <linux/serial.h>
 #include <sys/ioctl.h>
-
+#include <Log.h>
 #include <EventBus.h>
 
 typedef struct
