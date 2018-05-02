@@ -3,7 +3,7 @@
 #include "MqttGtw.h"
 #include "MQTTAsync.h"
 #include <Cbor.h>
-#include <EventBus.h>
+//#include <EventBus.h>
 
 #include <unistd.h>
 #include <fcntl.h>
