@@ -89,3 +89,5 @@ deactivate serial2mqtt;
 )
 # Logging through serial2mqtt
 The microcontroller will also log to the central logging system
+
+UML in README.md - you are on your own
