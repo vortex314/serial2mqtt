@@ -2,7 +2,7 @@
 # WORK IN PROGRESS !! Major rework
 <script type="text/javascript" src="https://unpkg.com/mermaid@8.0.0-rc.8/src/mermaid.js"></script>
 <script type="text/javascript" src="https://unpkg.com/mermaid@7.1.0/dist/"></script>
-<div class="mermaid">
+```mermaid
 sequenceDiagram
 µC->> serial2mqtt: M,PUB,0,0,src/drive/motor/rpm,1234
 Note right of serial2mqtt: connects to mqtt broker at first message.
@@ -14,7 +14,7 @@ serial2mqtt-->>MQTT Broker: PUBLISH("src/drive/motor/rpm",1000,0,false)
 serial2mqtt-->>MQTT Broker:  PUBLISH("src/drive/motor/temp",20,0,false)
 Note right of µC: no more messages after 5 sec, serial2mqtt disconnects.
 serial2mqtt-->>MQTT Broker: DISCONNECT
-</div>
+```
 
 MQTT for all micro-controllers ! The purpose is to offer MQTT publisher/subscriber functionality to all small micro controllers. Those with just a UART or USB interface.
 Example : a cheap STM32 board on ebay.
