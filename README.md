@@ -72,33 +72,20 @@ serial2mqtt-->>MQTT Broker: DISCONNECT
 ```
 # Programming through serial2mqtt
 A command line utility will send a single mqtt request to the serial2mqtt gateway to program the microcontroller.
-```mermaid
-sequenceDiagram
-µC->> serial2mqtt: M,PUB,0,0,src/drive/motor/rpm,1234
-serial2mqtt->>MQTT Broker:  PUBLISH("src/drive/motor/temp",20,0,false)
-programmer CLI -x MQTT Broker: PUBLISH("dst/drive/prog/flash",flash image binary)
-MQTT Broker -x serial2mqtt : PUBLISH
-activate serial2mqtt
-serial2mqtt -x µC : program flash image
-deactivate serial2mqtt
-```
-# Logging through serial2mqtt
-The microcontroller will also log to the central logging system
-
-![Alt text](https://g.gravizo.com/source/svg?https://raw.githubusercontent.com/htssouza/plantuml_with_gravizo/master/sequence1.plantuml)
-@startuml
-
-@enduml
-
-
 ![Alt text](https://g.gravizo.com/g?
 @startuml;
-µC->> serial2mqtt: M,PUB,0,0,src/drive/motor/rpm,1234;
-serial2mqtt->>MQTT Broker:  PUBLISH("src/drive/motor/temp",20,0,false);
-programmer CLI -x MQTT Broker: PUBLISH("dst/drive/prog/flash",flash image binary);
-MQTT Broker -x serial2mqtt : PUBLISH;
+MicroCtrl-> serial2mqtt: M,PUB,0,0,src/DEVICE/motor/rpm,1234;
 activate serial2mqtt;
-serial2mqtt -x µC : program flash image;
+serial2mqtt->"MQTT Broker":  PUBLISH"'src/DEVICE/motor/temp',20,0,false";
+deactivate serial2mqtt;
+"programmer CLI"->"MQTT Broker":PUBLISH"'dst/DEVICE/serial2mqtt/flash','binary-image'";
+"MQTT Broker"-> serial2mqtt : PUBLISH;
+activate serial2mqtt;
+serial2mqtt-> MicroCtrl:FLASH IMAGE;
+serial2mqtt -> MicroCtrl:reset;
+serial2mqtt -> "programmer CLI": PUBLISH "src/DEVICE/serial2mqtt/flash";
 deactivate serial2mqtt;
 @enduml
 )
+# Logging through serial2mqtt
+The microcontroller will also log to the central logging system
