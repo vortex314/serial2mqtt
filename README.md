@@ -72,7 +72,7 @@ serial2mqtt-->>MQTT Broker: DISCONNECT
 ```
 # Programming through serial2mqtt
 A command line utility will send a single mqtt request to the serial2mqtt gateway to program the microcontroller.
-![Alt text](https://g.gravizo.com/g?
+![Alt text](http://g.gravizo.com/g?
 @startuml;
 MicroCtrl-> serial2mqtt: M,PUB,0,0,src/DEVICE/motor/rpm,1234;
 activate serial2mqtt;
