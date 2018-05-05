@@ -72,7 +72,7 @@ serial2mqtt-->>MQTT Broker: DISCONNECT
 ```
 # Programming through serial2mqtt
 A command line utility will send a single mqtt request to the serial2mqtt gateway to program the microcontroller.
-![Alt text](http://g.gravizo.com/g?
+![Sequence diagram for programming](http://g.gravizo.com/g?
 @startuml;
 MicroCtrl-> serial2mqtt: M,PUB,0,0,src/DEVICE/motor/rpm,1234;
 activate serial2mqtt;
@@ -85,7 +85,7 @@ serial2mqtt-> MicroCtrl:FLASH IMAGE;
 serial2mqtt -> MicroCtrl:reset;
 serial2mqtt -> "programmer CLI": PUBLISH "src/DEVICE/serial2mqtt/flash";
 deactivate serial2mqtt;
-@enduml
+@enduml;
 )
 # Logging through serial2mqtt
 The microcontroller will also log to the central logging system
