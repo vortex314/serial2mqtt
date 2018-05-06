@@ -10,17 +10,20 @@
     <Excludepaths/>
     <Ignorefiles/>
     <Extensions>
-      <![CDATA[*.cpp;*.c;*.h;*.hpp;*.xrc;*.wxcp;*.fbp]]>
+      <![CDATA[*.cpp;*.c;*.h;*.hpp;*.xrc;*.wxcp;*.fbp;*.json;*.md]]>
     </Extensions>
     <Topleveldir>/home/lieven/workspace/serial2mqtt</Topleveldir>
   </Reconciliation>
   <Description/>
   <Dependencies/>
   <VirtualDirectory Name="src">
-    <File Name="src/main.cpp"/>
-    <File Name="src/Sys.cpp"/>
-    <File Name="src/Serial.cpp"/>
-    <File Name="src/MqttGtw.cpp"/>
+    <File Name="Serial2Mqtt.cpp"/>
+    <File Name="Serial2Mqtt.h"/>
+    <File Name="config.json"/>
+    <File Name="Sys.cpp"/>
+    <File Name="Config.h"/>
+    <File Name="Config.cpp"/>
+    <File Name="main.cpp"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>
@@ -33,13 +36,19 @@
       <ResourceCompiler Options=""/>
     </GlobalSettings>
     <Configuration Name="Debug" CompilerType="GCC" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
-      <Compiler Options="-g;-O0;-Wall" C_Options="-g;-O0;-Wall" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
+      <Compiler Options="-g;-O0;-Wall;" C_Options="-g;-O0;-Wall" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
         <IncludePath Value="."/>
-        <IncludePath Value="inc"/>
-        <IncludePath Value="../paho.mqtt.c/src"/>
         <IncludePath Value="../Common"/>
+        <IncludePath Value="../json/single_include/nlohmann"/>
+        <IncludePath Value="../paho.mqtt.c/src"/>
       </Compiler>
-      <Linker Options="" Required="yes"/>
+      <Linker Options="-static" Required="yes">
+        <LibraryPath Value="../Common/Debug"/>
+        <LibraryPath Value="../paho.mqtt.c/build/output"/>
+        <Library Value="Common"/>
+        <Library Value="paho-mqtt3c"/>
+        <Library Value="pthread"/>
+      </Linker>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Debug" Command="./$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
       <BuildSystem Name="Default"/>
