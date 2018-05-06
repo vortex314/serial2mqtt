@@ -69,7 +69,7 @@ Arduino Sample program to communicate with the serial2mqtt  gateway
       digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
       delay(100);                       // wait for a 0.1 second
       Mqtt::publish( "system/upTime", String(millis(), 10), 0, false);
-      Mqtt::publish("system/host", "arduino1", 0, false);
+      Mqtt::publish("system/host", Mqtt, 0, false);
       Mqtt::publish("system/alive", "true", 0, false);
       }
 
@@ -137,5 +137,5 @@ The micrcontroller will also log to the central logging system
  - write binary image to file and send to microcontroller by activating configured external command , example esptool or stm32flash
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbOTIyOTUzNjQ1XX0=
+eyJoaXN0b3J5IjpbLTE2MzgyMzYyNjAsOTIyOTUzNjQ1XX0=
 -->
