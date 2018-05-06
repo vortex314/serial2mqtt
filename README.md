@@ -142,11 +142,8 @@ The micrcontroller will also log to the central logging system
 
 # Still to do
 
- - logging mechanism
- - disconnect serial and retry to avoid locking USB ports after timeouts
+ - logging mechanism - DONE just use mqtt topic
+ - disconnect serial and retry to avoid locking USB ports after timeouts - DONE
  - write binary image to file and send to microcontroller by activating configured external command , example esptool or stm32flash
 
 
-<!--stackedit_data:
-eyJoaXN0b3J5IjpbLTQ0MjYzMjgyM119
--->
