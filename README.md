@@ -135,10 +135,10 @@ The micrcontroller will also log to the central logging system
  - clone eclipse/paho.mqtt.c
  - clone nlohmann/json
  - clone vortex314/Common
- - install libsll-dev ( apt-get )
+ - install libsll-dev ( apt-get  install libssl)
  - build static library in paho.mqtt.c by using makePaho.sh
- - build libCommon.a
- - build serial2mqtt
+ - build libCommon.a via "make -f Common.mk"
+ - build serial2mqtt via "make -f serial2mqtt.mk" 
 
 # Still to do
 
@@ -148,5 +148,5 @@ The micrcontroller will also log to the central logging system
 
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTQ2ODQ4NTE2M119
+eyJoaXN0b3J5IjpbLTEyNjA0NTYxMzgsMTQ2ODQ4NTE2M119
 -->
