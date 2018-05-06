@@ -132,8 +132,11 @@ The micrcontroller will also log to the central logging system
 # Build instructions
 
  - use Codelite
- - clone paho.mqtt.c
- - 
+ - clone eclipse/paho.mqtt.c
+ - clone nlohmann/json
+ - clone vortex314/Common
+ - install libsll-dev ( apt-get )
+ - build static in 
 
 # Still to do
 
@@ -143,5 +146,5 @@ The micrcontroller will also log to the central logging system
 
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTEwODc4NDk1NjZdfQ==
+eyJoaXN0b3J5IjpbLTU2MjQwODExNl19
 -->
