@@ -11,6 +11,7 @@
 #include <termios.h>
 #include <asm-generic/ioctls.h>
 #include <sys/ioctl.h>
+#include <Timer.h>
 
 
 class Serial2Mqtt

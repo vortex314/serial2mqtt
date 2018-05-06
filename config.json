@@ -8,10 +8,7 @@
         "port": "/dev/ttyUSB0"
     },
     "system": {
-        "a": 123,
-        "host": "justAPC",
-        "name": "just AnotherName",
-        "pid": 13951,
-        "upTime": 47299313
+        "pid": 10755,
+        "upTime": 705379070
     }
 }
