@@ -1,7 +1,4 @@
 # serial2mqtt
-# WORK IN PROGRESS !! Major rework
-<script type="text/javascript" src="https://unpkg.com/mermaid@8.0.0-rc.8/src/mermaid.js"></script>
-<script type="text/javascript" src="https://unpkg.com/mermaid@7.1.0/dist/"></script>
 
 MQTT for all micro-controllers ! The purpose is to offer MQTT publisher/subscriber functionality to all small micro controllers. Those with just a UART or USB interface.
 Example : a cheap STM32 board on ebay.
@@ -139,7 +136,3 @@ The micrcontroller will also log to the central logging system
  - write binary image to file and send to microcontroller by activating configured external command , example esptool or stm32flash
 
 
-<!--stackedit_data:
-eyJoaXN0b3J5IjpbMTg1ODA4NzIyMCw2NzU5ODA1OTQsOTIyOT
-UzNjQ1XX0=
--->
