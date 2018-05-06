@@ -272,6 +272,7 @@ Erc Serial2Mqtt::serialConnect()
     options.c_cflag &= ~PARENB;
     options.c_cflag &= ~CSTOPB;
     options.c_cflag &= ~CSIZE;
+    options.c_cflag &= ~HUPCL;  // avoid DTR drop at close time
     options.c_cflag |= CS8;
     options.c_cflag &= ~CRTSCTS; /* Disable hardware flow control */
 
@@ -282,13 +283,13 @@ Erc Serial2Mqtt::serialConnect()
         ERROR("tcsetattr() failed '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
     INFO("set baudrate to %d ", _serialBaudrate);
 
-    int status;
+/*    int status;
     if ( ioctl(_serialFd, TIOCMGET,&status )<0)
         ERROR("ioctl()<0 '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
     status |= TIOCM_DTR | TIOCM_RTS;
     if ( ioctl( _serialFd, TIOCMSET, &status )<0)
         ERROR("ioctl()<0 '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
-
+*/
     _serialConnected=true;
     return E_OK;
 }
@@ -328,7 +329,7 @@ bool Serial2Mqtt::serialGetLine(std::string& line)
         } else {
             if ( line.length()>1024 ) {
                 line.clear();
-                WARN(" buffer garbage  > 1024 flushed ");
+                WARN(" %s buffer garbage  > 1024 flushed ",_serialPortShort.c_str());
             }
             line += ch;
         }
@@ -403,7 +404,7 @@ void ParseCSV(const std::string& csvSource, vector<string> & line)
 
 void Serial2Mqtt::serialHandleLine(std::string& line)
 {
-    INFO(" RXD %d bytes ",line.length());
+//    INFO(" RXD %d bytes ",line.length());
     std::vector<std::string> token;
     /*	char cLine[line.length()+1];
     	strcpy(cLine,line.c_str());
@@ -412,7 +413,7 @@ void Serial2Mqtt::serialHandleLine(std::string& line)
 
         try {
             json args=json::parse(line);
-            INFO("%s",args.dump().c_str());
+            INFO("%s %s",_serialPortShort.c_str(),args.dump().c_str());
 //	ParseCSV(line,token);
 //	for(uint32_t i=0; i<token.size(); i++)
 //		INFO(" token[%d] = %s",i,token[i].c_str());
@@ -568,8 +569,7 @@ int Serial2Mqtt::onMessage(void *context, char *topicName, int topicLen, MQTTAsy
 
 void Serial2Mqtt::onDeliveryComplete(void* context, MQTTAsync_token response)
 {
-    Serial2Mqtt* me = (Serial2Mqtt*)context;
-    INFO(" DELIVERED ");
+//    Serial2Mqtt* me = (Serial2Mqtt*)context;
 }
 
 void Serial2Mqtt::onDisconnect(void* context, MQTTAsync_successData* response)
@@ -619,7 +619,7 @@ void Serial2Mqtt::mqttPublish(std::string topic,Bytes message,int qos,bool retai
     MQTTAsync_responseOptions opts = MQTTAsync_responseOptions_initializer;
     MQTTAsync_message pubmsg = MQTTAsync_message_initializer;
 
-    INFO("mqttPublish %s",topic.c_str());
+//    INFO("mqttPublish %s",topic.c_str());
 
     int rc = E_OK;
     opts.onSuccess = onPublishSuccess;
