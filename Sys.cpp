@@ -82,12 +82,12 @@ uint32_t Sys::getFreeHeap()
 char Sys::_hostname[30];
 uint64_t Sys::_boot_time = 0;
 
-
+/*
 uint32_t Sys::sec()
 {
 	return millis()/1000;
 }
-
+*/
 
 
 void Sys::setHostname(const char *h)
