@@ -129,6 +129,12 @@ deactivate serial2mqtt
 # Logging through serial2mqtt
 The micrcontroller will also log to the central logging system 
 
+# Build instructions
+
+ - use Codelite
+ - clone paho.mqtt.c
+ - 
+
 # Still to do
 
  - logging mechanism
@@ -137,5 +143,5 @@ The micrcontroller will also log to the central logging system
 
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTExMjY0NTcwMTFdfQ==
+eyJoaXN0b3J5IjpbLTEwODc4NDk1NjZdfQ==
 -->
