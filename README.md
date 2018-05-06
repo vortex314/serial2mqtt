@@ -2,7 +2,7 @@
 
 MQTT for all micro-controllers ! The purpose is to offer MQTT publisher/subscriber functionality to all small micro controllers. Those with just a UART or USB interface.
 Example : a cheap STM32 board on ebay.
-![Afbeeldingsresultaat voor lm4f120h5qr](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSrCMlaYevJNoWyIXyfdzTFL8nwC8WI-fKORO-c50cjDWjGZCqmZA)![Afbeeldingsresultaat voor ebay stm32](http://www.rogerclark.net/wp-content/uploads/2014/11/STM32Mini-300x300.jpg)
+![Afbeeldingsresultaat voor stm32 maple mini](https://img.staticbg.com/thumb/view/oaupload/banggood/images/8F/4A/3db92309-2e0b-4e4d-b2f1-9b017877ff42.jpg)![Afbeeldingsresultaat voor lm4f120h5qr](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSrCMlaYevJNoWyIXyfdzTFL8nwC8WI-fKORO-c50cjDWjGZCqmZA)![Afbeeldingsresultaat voor ebay stm32](http://www.rogerclark.net/wp-content/uploads/2014/11/STM32Mini-300x300.jpg)
 This program will act as a full MQTT Client gateway and make integration as simple as possible.
 This was created because Ethernet or WiFi is still absent in most ( cheap ) controllers .
 Also the concept behind is that a central PC or Raspberry PI can act as the intelligent mind behind commodity components.
@@ -148,6 +148,6 @@ The micrcontroller will also log to the central logging system
 
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTg1MTQzNjQ1NywtMTA2MTU2NjMxNywxND
-Y4NDg1MTYzXX0=
+eyJoaXN0b3J5IjpbLTEwNTU1NTkzMzIsMTg1MTQzNjQ1NywtMT
+A2MTU2NjMxNywxNDY4NDg1MTYzXX0=
 -->
