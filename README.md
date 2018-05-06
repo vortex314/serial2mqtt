@@ -97,7 +97,7 @@ Structure topic to and from  device :
 
 # Protocol
 ## ASCII TEXT
-- `M,PUB,<qos>,<retain>,<topic>,<message>`
+- `{ "cmd":"MQTT-PUB","topic":"src/device/service/property","message":"1234.66","qos":0}`
 ## BINARY CBOR SLIP
     <END><SLIP ENCODED MESSAGE><END>
     <SLIP ENCODED MESSAGE> == <'M'><"PUB">,<qos Integer><retain boolean><topic string><message binary><CRC integer>
@@ -137,5 +137,6 @@ The micrcontroller will also log to the central logging system
  - write binary image to file and send to microcontroller by activating configured external command , example esptool or stm32flash
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNjc1OTgwNTk0LDkyMjk1MzY0NV19
+eyJoaXN0b3J5IjpbLTI1OTA3ODkwMCw2NzU5ODA1OTQsOTIyOT
+UzNjQ1XX0=
 -->
