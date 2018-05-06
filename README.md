@@ -136,7 +136,9 @@ The micrcontroller will also log to the central logging system
  - clone nlohmann/json
  - clone vortex314/Common
  - install libsll-dev ( apt-get )
- - build static in 
+ - build static library in paho.mqtt.c by using makePaho.sh
+ - build libCommon.a
+ - build serial2mqtt
 
 # Still to do
 
@@ -146,5 +148,5 @@ The micrcontroller will also log to the central logging system
 
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTU2MjQwODExNl19
+eyJoaXN0b3J5IjpbLTQ0MjYzMjgyM119
 -->
