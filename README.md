@@ -140,6 +140,11 @@ The micrcontroller will also log to the central logging system
  - build libCommon.a via "make -f Common.mk"
  - build serial2mqtt via "make -f serial2mqtt.mk" 
 
+# Tested
+
+ - ESP32 NodeMCU
+ - 
+
 # Still to do
 
  - logging mechanism - DONE just use mqtt topic
@@ -147,7 +152,3 @@ The micrcontroller will also log to the central logging system
  - write binary image to file and send to microcontroller by activating configured external command , example esptool or stm32flash
 
 
-<!--stackedit_data:
-eyJoaXN0b3J5IjpbLTEwNTU1NTkzMzIsMTg1MTQzNjQ1NywtMT
-A2MTU2NjMxNywxNDY4NDg1MTYzXX0=
--->
