@@ -97,7 +97,9 @@ Structure topic to and from  device :
 
 # Protocol
 ## ASCII TEXT
-- `{ "cmd":"MQTT-PUB","topic":"src/device/service/property","message":"1234.66","qos":0}`
+
+    { "cmd":"MQTT-PUB","topic":"src/device/service/property","message":"1234.66","qos":0,"retained":false }
+
 ## BINARY CBOR SLIP
     <END><SLIP ENCODED MESSAGE><END>
     <SLIP ENCODED MESSAGE> == <'M'><"PUB">,<qos Integer><retain boolean><topic string><message binary><CRC integer>
@@ -136,7 +138,8 @@ The micrcontroller will also log to the central logging system
  - disconnect serial and retry to avoid locking USB ports after timeouts
  - write binary image to file and send to microcontroller by activating configured external command , example esptool or stm32flash
 
+
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTI1OTA3ODkwMCw2NzU5ODA1OTQsOTIyOT
+eyJoaXN0b3J5IjpbLTY1MTE2OTc3MCw2NzU5ODA1OTQsOTIyOT
 UzNjQ1XX0=
 -->
