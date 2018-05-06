@@ -6,13 +6,16 @@
 
 Log logger(2048);
 Config config;
-#define MAX_PORT	1
-Serial2Mqtt serial2mqtt[MAX_PORT];
+#define MAX_PORT	2
 
+    Serial2Mqtt serial2mqtt[MAX_PORT];
 
 int main(int argc, char **argv)
 {
+
     std::thread threads[MAX_PORT];
+    
+    
     Sys::init();
     INFO("version : " __DATE__ " " __TIME__ "\n");
     config.setFile("/home/lieven/workspace/serial2mqtt/config.json");

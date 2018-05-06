@@ -1,14 +1,14 @@
 {
     "mqtt": {
-        "host": "test.mosquitto.org",
+        "host": "pi1.local",
         "port": 1883
     },
     "serial": {
         "baudrate": 115200,
-        "port": "/dev/ttyUSB0"
+        "port": "/dev/ttyUSB1"
     },
     "system": {
-        "pid": 10755,
-        "upTime": 705379070
+        "pid": 26596,
+        "upTime": 740233524
     }
 }

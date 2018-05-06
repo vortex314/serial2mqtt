@@ -24,6 +24,14 @@ _expiresOn=msec;
 return *this;
 }
 
+Timer& Timer::atDelta(uint32_t msec)
+{
+_repeat=false;
+_active=true;
+_expiresOn=Sys::millis()+msec;
+return *this;
+}
+
 Timer& Timer::doThis(TimerHandler action){
     _action=action;
     return *this;

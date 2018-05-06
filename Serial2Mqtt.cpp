@@ -44,11 +44,13 @@ int baudSymbol(uint32_t br)
 void Serial2Mqtt::setSerialPort(std::string port)
 {
     _serialPort=port;
-    _mqttDevice = Sys::hostname();
-    _mqttDevice += "."+_serialPort.substr(5,_serialPort.length()-5);
-    _mqttSubscribedTo = "dst/"+_mqttDevice+"/#";
-    _mqttClientId = _mqttDevice;
-    _config.get("willTopic",_mqttWillTopic,"src/"+_mqttDevice+"/system/alive");
+    _serialPortShort = _serialPort.substr(8,_serialPort.length()-8);
+    _serial2mqttDevice = Sys::hostname();
+    _serial2mqttDevice += "."+_serialPortShort;
+    _mqttDevice = _serial2mqttDevice;
+    _mqttSubscribedTo = "dst/"+_serial2mqttDevice+"/#";
+    _mqttClientId = _mqttDevice+std::to_string(getpid());
+    _config.get("willTopic",_mqttWillTopic,"src/"+_serial2mqttDevice+"/serial2mqtt/alive");
 }
 
 void Serial2Mqtt::init()
@@ -58,7 +60,7 @@ void Serial2Mqtt::init()
     _config.setNameSpace("mqtt");
     _config.get("port",_mqttPort,1883);
     _config.get("host",_mqttHost,"test.mosquitto.org");
-    _config.get("keepAliveInterval",_mqttKeepAliveInterval,10000);
+    _config.get("keepAliveInterval",_mqttKeepAliveInterval,5);
     _config.get("willMessage",_mqttWillMessage,"false");
 
 
@@ -77,20 +79,30 @@ void Serial2Mqtt::run()
 {
     std::string line;
     Timer mqttTimer;
+    Timer serialTimer;
+
     mqttTimer.atInterval(5000).doThis([this]() {
         if ( !_mqttConnected) {
             _mqttConnecting=true;
             mqttConnect();
         } else {
-            Str msg(10);
-            msg="true";
-            mqttPublish("src/"+_mqttDevice+"/serial2mqtt/alive",msg,0,0);
+            mqttPublish("src/"+_serial2mqttDevice+"/serial2mqtt/alive","true",0,0);
+            mqttPublish("src/"+_serial2mqttDevice+"/serial2mqtt/device",_mqttDevice,0,0);
         }
     });
+    serialTimer.atDelta(5000).doThis([this]() {
+        if ( _serialConnected ) {
+            serialDisconnect();
+            WARN(" disconecting serial no new data received in %d msec",5000);
+        }
+
+    });
+
     while(true) {
         while(true) {
             Signal s = waitSignal(1000);
             mqttTimer.check();
+            serialTimer.check();
             switch(s) {
             case TIMEOUT: {
                 if ( !_serialConnected) {
@@ -101,43 +113,37 @@ void Serial2Mqtt::run()
             case SERIAL_RXD : {
                 serialRxd();
                 if ( serialGetLine(line)) {
+                    serialTimer.atDelta(5000);
                     serialHandleLine(line);
                     line.clear();
                 }
                 break;
             }
             case MQTT_CONNECT_SUCCESS : {
+                INFO("MQTT_CONNECT_SUCCESS %s ",_serialPortShort.c_str());
                 _mqttConnected=true;
                 _mqttConnecting=false;
                 mqttSubscribe(_mqttSubscribedTo);
                 break;
             }
             case MQTT_CONNECT_FAIL : {
-                WARN("MQTT_CONNECT_FAIL %s ",_serialPort.c_str());
+                WARN("MQTT_CONNECT_FAIL %s ",_serialPortShort.c_str());
                 _mqttConnected=false;
                 _mqttConnecting=false;
-                mqttDisconnect();
-                mqttConnect();
                 break;
             }
             case MQTT_DISCONNECTED: {
-                WARN("MQTT_DISCONNECTED %s ",_serialPort.c_str());
+                WARN("MQTT_DISCONNECTED %s ",_serialPortShort.c_str());
                 _mqttConnected=false;
                 _mqttConnecting=false;
-                mqttDisconnect();
-                mqttConnect();
-                _mqttConnecting=true;
                 break;
             }
             case MQTT_SUBSCRIBE_SUCCESS: {
-                INFO("MQTT_SUBSCRIBE_SUCCESS %s ",_serialPort.c_str());
-                Str msg(10);
-                msg="true";
-                mqttPublish("src/"+_mqttDevice+"/serial2mqtt/alive",msg,0,0);
+                INFO("MQTT_SUBSCRIBE_SUCCESS %s ",_serialPortShort.c_str());
                 break;
             }
             case MQTT_SUBSCRIBE_FAIL: {
-                WARN("MQTT_SUBSCRIBE_FAIL %s ",_serialPort.c_str());
+                WARN("MQTT_SUBSCRIBE_FAIL %s ",_serialPortShort.c_str());
                 mqttDisconnect();
                 break;
             }
@@ -148,7 +154,7 @@ void Serial2Mqtt::run()
                 break;
             }
             default: {
-                WARN("received signal '%c'",s);
+                WARN("received signal '%c' for %s ",s,_serialPortShort.c_str());
             }
             }
         }
@@ -423,9 +429,9 @@ void Serial2Mqtt::serialHandleLine(std::string& line)
                         mqttSubscribe(_mqttSubscribedTo);
                     }
                     std::string message=args["message"];
-                    Bytes msg(1024);
-                    msg.append((uint8_t*)message.c_str(),message.length());
-                    mqttPublish(topic,msg,qos,retained);
+                    /*                    Bytes msg(1024);
+                                        msg.append((uint8_t*)message.c_str(),message.length());*/
+                    mqttPublish(topic,message,qos,retained);
                 }
             }
         } catch(...) {
@@ -440,10 +446,15 @@ void Serial2Mqtt::serialHandleLine(std::string& line)
 void Serial2Mqtt::serialPublish(std::string topic,Bytes message,int qos,bool retained)
 {
     std::string line;
-    line="M,"+topic+',';
-    line+=std::string((char*)message.data(),message.length());
-    line+=','+std::to_string(qos);
-    line+=','+std::to_string(retained?1:0);
+    Str msg(1024);
+    msg.write( message.data(),0,message.length());
+    json out ;
+    out["cmd"]="MQTT-PUB";
+    out["topic"]=topic;
+    out["message"]=msg.c_str();
+    if ( qos ) out["qos"]=qos;
+    if ( retained ) out["retained"]=retained;
+    line = out.dump();
     int erc = write(_serialFd,line.c_str(),line.length());
     if ( erc < 0 ) {
         INFO("write() failed '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
@@ -474,11 +485,11 @@ Erc Serial2Mqtt::mqttConnect()
 
     connection = "tcp://"+ _mqttHost+":";
     connection +=std::to_string(_mqttPort);
-    INFO(" connecting %s ...",connection.c_str());
+    INFO(" MQTT connecting %s ... for %s ",connection.c_str(),_serialPortShort.c_str());
     MQTTAsync_create(&_client, connection.c_str(), _mqttClientId.c_str(),
                      MQTTCLIENT_PERSISTENCE_NONE, NULL);
 
-    MQTTAsync_setCallbacks(_client, this, onConnectionLost, onMessage, NULL); //TODO add ondelivery
+    MQTTAsync_setCallbacks(_client, this, onConnectionLost, onMessage, onDeliveryComplete); //TODO add ondelivery
 
     conn_opts.keepAliveInterval = _mqttKeepAliveInterval;
     conn_opts.cleansession = 1;
@@ -491,7 +502,7 @@ Erc Serial2Mqtt::mqttConnect()
     will_opts.retained = _mqttWillRetained;
     conn_opts.will = &will_opts;
     if ((rc = MQTTAsync_connect(_client, &conn_opts)) != MQTTASYNC_SUCCESS) {
-        INFO("Failed to start connect, return code %d", rc);
+        WARN("Failed to start connect, return code %d", rc);
         return E_NOT_FOUND;
     }
     _mqttConnecting=true;
@@ -508,6 +519,7 @@ void Serial2Mqtt::mqttDisconnect()
     if ((rc = MQTTAsync_disconnect(_client, &disc_opts))
         != MQTTASYNC_SUCCESS) {
         WARN("Failed to disconnect, return code %d", rc);
+        return;
     }
     MQTTAsync_destroy(&_client);
     _mqttConnecting=false;
@@ -528,14 +540,16 @@ void Serial2Mqtt::mqttSubscribe(std::string topic)
     if ((rc = MQTTAsync_subscribe(_client, topic.c_str(), qos, &opts))
         != MQTTASYNC_SUCCESS) {
         ERROR("Failed to start subscribe, return code %d", rc);
+        signal(MQTT_SUBSCRIBE_FAIL);
+    } else {
+        INFO(" subscribe send ");
     }
-    INFO(" subscribe send ");
 }
 
 void Serial2Mqtt::onConnectionLost(void *context, char *cause)
 {
     Serial2Mqtt* me = (Serial2Mqtt*)context;
-    me->mqttDisconnect();
+//   me->mqttDisconnect();
     me->signal(MQTT_DISCONNECTED);
 }
 int Serial2Mqtt::onMessage(void *context, char *topicName, int topicLen, MQTTAsync_message *message)
@@ -550,6 +564,12 @@ int Serial2Mqtt::onMessage(void *context, char *topicName, int topicLen, MQTTAsy
     MQTTAsync_free(topicName);
     me->signal(MQTT_MESSAGE_RECEIVED);
     return 1;
+}
+
+void Serial2Mqtt::onDeliveryComplete(void* context, MQTTAsync_token response)
+{
+    Serial2Mqtt* me = (Serial2Mqtt*)context;
+    INFO(" DELIVERED ");
 }
 
 void Serial2Mqtt::onDisconnect(void* context, MQTTAsync_successData* response)
@@ -580,6 +600,13 @@ void Serial2Mqtt::onSubscribeFailure(void* context, MQTTAsync_failureData* respo
 {
     Serial2Mqtt* me = (Serial2Mqtt*)context;
     me->signal(MQTT_SUBSCRIBE_FAIL);
+}
+
+void Serial2Mqtt::mqttPublish(std::string topic,std::string message,int qos,bool retained)
+{
+    Str msg(message.length()+2);
+    msg=message.c_str();
+    mqttPublish(topic,msg,qos,retained);
 }
 
 void Serial2Mqtt::mqttPublish(std::string topic,Bytes message,int qos,bool retained)

@@ -18,6 +18,7 @@ public:
     ~Timer();
     Timer& atInterval(uint32_t msec);
     Timer& atExpiry(uint64_t msec);
+    Timer& atDelta(uint32_t msec);
     Timer& doThis(TimerHandler);
     void check();
 };
