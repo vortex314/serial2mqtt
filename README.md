@@ -98,7 +98,7 @@ Structure topic to and from  device :
 # Protocol
 ## ASCII TEXT
 
-    { "cmd":"MQTT-PUB","topic":"src/device/service/property","message":"1234.66","qos":0,"retained":false }
+    { "cmd":"MQTT-PUB","topic":"src/device/service/property","message":"1234.66","qos":0,"retained":false }\n
 
 ## BINARY CBOR SLIP
     <END><SLIP ENCODED MESSAGE><END>
@@ -140,6 +140,6 @@ The micrcontroller will also log to the central logging system
 
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTY1MTE2OTc3MCw2NzU5ODA1OTQsOTIyOT
+eyJoaXN0b3J5IjpbMTg1ODA4NzIyMCw2NzU5ODA1OTQsOTIyOT
 UzNjQ1XX0=
 -->
