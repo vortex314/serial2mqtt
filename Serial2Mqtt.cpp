@@ -97,6 +97,7 @@ void Serial2Mqtt::run()
         }
 
     });
+    mqttConnect();
 
     while(true) {
         while(true) {
@@ -117,6 +118,10 @@ void Serial2Mqtt::run()
                     serialHandleLine(line);
                     line.clear();
                 }
+                break;
+            }
+            case SERIAL_ERROR : {
+                serialDisconnect();
                 break;
             }
             case MQTT_CONNECT_SUCCESS : {
@@ -145,6 +150,14 @@ void Serial2Mqtt::run()
             case MQTT_SUBSCRIBE_FAIL: {
                 WARN("MQTT_SUBSCRIBE_FAIL %s ",_serialPortShort.c_str());
                 mqttDisconnect();
+                break;
+            }
+            case MQTT_ERROR : {
+                WARN("MQTT_ERROR %s ",_serialPortShort.c_str());
+                break;
+            }
+            case PIPE_ERROR : {
+                WARN("PIPE_ERROR %s ",_serialPortShort.c_str());
                 break;
             }
             case MQTT_PUBLISH_SUCCESS: {
@@ -229,9 +242,11 @@ Serial2Mqtt::Signal Serial2Mqtt::waitSignal(uint32_t timeout)
             }
             if(FD_ISSET(_serialFd, &efds)) {
                 WARN("serial  error : %s (%d)", strerror(errno), errno);
+                return SERIAL_ERROR;
             }
             if(FD_ISSET(_signalFd[0], &efds)) {
                 WARN("pipe  error : %s (%d)", strerror(errno), errno);
+                return PIPE_ERROR;
             }
         } else {
             TRACE(" timeout %llu", Sys::millis());
@@ -283,13 +298,13 @@ Erc Serial2Mqtt::serialConnect()
         ERROR("tcsetattr() failed '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
     INFO("set baudrate to %d ", _serialBaudrate);
 
-/*    int status;
-    if ( ioctl(_serialFd, TIOCMGET,&status )<0)
-        ERROR("ioctl()<0 '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
-    status |= TIOCM_DTR | TIOCM_RTS;
-    if ( ioctl( _serialFd, TIOCMSET, &status )<0)
-        ERROR("ioctl()<0 '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
-*/
+    /*    int status;
+        if ( ioctl(_serialFd, TIOCMGET,&status )<0)
+            ERROR("ioctl()<0 '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
+        status |= TIOCM_DTR | TIOCM_RTS;
+        if ( ioctl( _serialFd, TIOCMSET, &status )<0)
+            ERROR("ioctl()<0 '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
+    */
     _serialConnected=true;
     return E_OK;
 }
@@ -425,6 +440,7 @@ void Serial2Mqtt::serialHandleLine(std::string& line)
                     std::string topic=args["topic"];
                     token = split(topic,'/');
                     if ( token[1].compare(_mqttDevice)!=0 ) {
+                        WARN(" subscribed topic differ %s <> %s ",token[1].c_str(),_mqttDevice.c_str());
                         _mqttDevice =  token[1];
                         _mqttSubscribedTo = "dst/"+_mqttDevice+"/#";
                         mqttSubscribe(_mqttSubscribedTo);
@@ -435,12 +451,11 @@ void Serial2Mqtt::serialHandleLine(std::string& line)
                     mqttPublish(topic,message,qos,retained);
                 }
             }
-        } catch(...) {
-            ERROR("JSON parsing failed");
+        } catch(...) { // JSON Object parse failure
+            mqttPublish("src/"+_serial2mqttDevice+"/serial2mqtt/log",line,0,false);
         }
-
-    } else {
-        ERROR("JSON not found ");
+    } else { // no JSON object
+        mqttPublish("src/"+_serial2mqttDevice+"/serial2mqtt/log",line,0,false);
     }
 }
 

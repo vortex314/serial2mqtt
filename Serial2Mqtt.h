@@ -48,10 +48,11 @@ class Serial2Mqtt
     Config _config;
 
 public:
-    typedef enum {ERROR,
+    typedef enum {PIPE_ERROR,
                   SERIAL_CONNECT,
                   SERIAL_DISCONNECT,
                   SERIAL_RXD,
+                  SERIAL_ERROR,
                   MQTT_CONNECT_SUCCESS,
                   MQTT_CONNECT_FAIL,
                   MQTT_SUBSCRIBE_SUCCESS,
@@ -60,6 +61,7 @@ public:
                   MQTT_PUBLISH_FAIL,
                   MQTT_DISCONNECTED,
                   MQTT_MESSAGE_RECEIVED,
+                  MQTT_ERROR,
                   TIMEOUT='T'
                  } Signal;
 

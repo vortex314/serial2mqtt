@@ -5,10 +5,15 @@
     },
     "serial": {
         "baudrate": 115200,
-        "port": "/dev/ttyUSB1"
+        "port": "/dev/ttyUSB2",
+        "ports": [
+            "/dev/ttyUSB0",
+            "/dev/ttyUSB1",
+            "/dev/ttyUSB2"
+        ]
     },
     "system": {
-        "pid": 27755,
-        "upTime": 741773326
+        "pid": 22545,
+        "upTime": 818806732
     }
 }

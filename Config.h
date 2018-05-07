@@ -20,50 +20,54 @@ using json=nlohmann::json;
 class Config
 {
 
-	Str _nameSpace;
-	bool _loaded;
+    Str _nameSpace;
+    bool _loaded;
 //	cJSON* _json;
-	Str _configFile;
-	json* nameSpace();
-	json _json;
+    Str _configFile;
+    json* nameSpace();
+    json _json;
 
 public:
-	Config();
-	~Config();
+    Config();
+    ~Config();
 
-	void clear();
-	void setFile(const char* s);
-	void load();
-	void save();
-	void print(Str& str);
-	void printPretty(Str& str);
+    void clear();
+    void setFile(const char* s);
+    void load();
+    void save();
+    void print(Str& str);
+    void printPretty(Str& str);
 
-	bool hasKey(const char* key);
-	void setNameSpace(const char* ns);
-	const char* getNameSpace();
+    bool hasKey(const char* key);
+    void setNameSpace(const char* ns);
+    const char* getNameSpace();
 
 //	void get(const char*, std::string&, const char* defaultValue);
 
-	void remove(const char* key);
-	template <typename T> void set(const char* key,T value)
-	{
-		_json[getNameSpace()][key]=value;
-	};
-	template <typename T,typename T1> void get(const char* key,T& target,T1 defaultValue)
-	{
-		if ( _json[getNameSpace()][key].is_null()) {
-			target = defaultValue;
-			_json[getNameSpace()][key]=defaultValue;
-		} else
-			target = _json[getNameSpace()][key];
-	}
-	/*
-	void set(const char*, uint64_t);
-		void set(const char*, uint32_t);
-		void set(const char*, int32_t);
-		void set(const char*, Str&);
-		void set(const char*, double);
-		void set(const char* key, const char* value);*/
+    void remove(const char* key);
+    template <typename T> void set(const char* key,T value)
+    {
+        _json[getNameSpace()][key]=value;
+    };
+    template <typename T,typename T1> void get(const char* key,T& target,T1 defaultValue)
+    {
+        if ( _json[getNameSpace()][key].is_null()) {
+            target = defaultValue;
+            _json[getNameSpace()][key]=defaultValue;
+        } else
+            target = _json[getNameSpace()][key];
+    }
+    json getJson(const char* key,json defaultValue)
+    {
+        json target;
+        if ( _json[getNameSpace()][key].is_null()) {
+            target = defaultValue;
+            _json[getNameSpace()][key]=defaultValue;
+        } else
+            target = _json[getNameSpace()][key];
+        return target;
+    }
+
 };
 
 extern Config config;

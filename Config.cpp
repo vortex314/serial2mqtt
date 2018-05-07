@@ -78,12 +78,14 @@ Config::~Config() {}
 void Config::setFile(const char* s)
 {
 	_configFile=s;
+        _loaded=false;
 }
 
 
 void Config::setNameSpace(const char* ns)
 {
 	_nameSpace = ns;
+
 }
 
 const char* Config::getNameSpace()
