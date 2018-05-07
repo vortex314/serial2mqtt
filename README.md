@@ -77,13 +77,12 @@ Arduino Sample program to communicate with the serial2mqtt  gateway
 Structure topic to and from  device :
 -- dst/DEVICE/SERVICE/PROPERTY
 -- src/DEVICE/SERVICE/PROPERTY
--- if DEVICE is not known yet the serial2mqtt will subscribe to the dst/HOST.PORT/serial2mqtt, where PORT is for example ttyUSB0
+-- if DEVICE is not known yet the serial2mqtt will subscribe to the dst/HOST.PORT/serial2mqtt/# , where PORT is for example ttyUSB0
 - Serial messages will be **BINARY** or **JSON**
 -- BINARY format will be CBOR encoded in a SLIP envelope
 -- JSON will be text delimited by newlines
-- 
-- Through the same communication, debugging logs can be handled without disturbing the mqtt flow
-- the serial2mqtt establishes the client MQTT link and subscribes to dst/DEVICE/#
+- Through the same communication, debugging logs can be handled without disturbing the mqtt flow. Any line that doesn't start with '{' or be a valid JSON is considered log.
+- the serial2mqtt establishes the client MQTT link and subscribes to dst/DEVICE/# when DEVICE is known 
 - when there is a big delay on the serial2mqtt serial input, it will do a serial disconnect and connect attempt , to unlock USB ports
 - serial2mqtt is event driven and as much as possible unblocking using MQTT in Async mode
 - one instance of serial2mqtt should be able to handle different serial ports
@@ -170,5 +169,5 @@ The micrcontroller will also log to the central logging system
 
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTg1OTYyOTAxOSw2MjI2OTYzMDVdfQ==
+eyJoaXN0b3J5IjpbMTQxNjcxMjIwNiw2MjI2OTYzMDVdfQ==
 -->
