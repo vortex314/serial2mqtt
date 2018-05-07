@@ -132,9 +132,7 @@ deactivate serial2mqtt
 ```
 # Logging through serial2mqtt
 The micrcontroller will also log to the central logging system 
-
 # Build instructions
-
  - use Codelite
  - clone eclipse/paho.mqtt.c
  - clone nlohmann/json
@@ -145,12 +143,8 @@ The micrcontroller will also log to the central logging system
  - build serial2mqtt via "make -f serial2mqtt.mk" 
 
 # Tested
-
  - ESP32 NodeMCU
- - 
-
 # Still to do
-
  - logging mechanism - DONE just use mqtt topic
  - disconnect serial and retry to avoid locking USB ports after timeouts - DONE
  - write binary image to file and send to microcontroller by activating configured external command , example esptool or stm32flash
