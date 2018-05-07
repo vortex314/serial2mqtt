@@ -77,7 +77,7 @@ Arduino Sample program to communicate with the serial2mqtt  gateway
 Structure topic to and from  device :
 -- dst/DEVICE/SERVICE/PROPERTY
 -- src/DEVICE/SERVICE/PROPERTY
--- if DEVICE is not known yet the serial2mqtt will subscribe to the dst/PORT/prog , where PORT is for example ttyUSB0
+-- if DEVICE is not known yet the serial2mqtt will subscribe to the dst/HOST.PORT/serial2mqtt, where PORT is for example ttyUSB0
 - Serial messages will be **BINARY** or **JSON**
 -- BINARY format will be CBOR encoded in a SLIP envelope
 -- JSON will be text delimited by newlines
@@ -166,8 +166,9 @@ The micrcontroller will also log to the central logging system
  - logging mechanism - DONE just use mqtt topic
  - disconnect serial and retry to avoid locking USB ports after timeouts - DONE
  - write binary image to file and send to microcontroller by activating configured external command , example esptool or stm32flash
+ - implement binary
 
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTk2MzI3OTU5Niw2MjI2OTYzMDVdfQ==
+eyJoaXN0b3J5IjpbMTg1OTYyOTAxOSw2MjI2OTYzMDVdfQ==
 -->
