@@ -85,8 +85,8 @@ Structure topic to and from  device :
 - The serial2mqtt should be able to program new code into the device
 - Through the same communication, debugging logs can be handled without disturbing the mqtt flow
 - the serial2mqtt establishes the client MQTT link and subscribes to dst/DEVICE/#
-- when there is a big delay on the serial2mqtt serial input, it will stop the TCP MQTT connection
-- serial2mqtt is event driven and not blocking
+- when there is a big delay on the serial2mqtt serial input, it will do a serial disconnect and connect attempt , to unlock USB ports
+- serial2mqtt is event driven and as much as possible unblocking using MQTT in Async mode
 - one instance of serial2mqtt should be able to handle different serial ports
 - USB devices coming and going should be tracked by serial2mqtt
 - Configuration can be command line and config file driven ( JSON )
@@ -166,5 +166,5 @@ The micrcontroller will also log to the central logging system
 
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNjIyNjk2MzA1XX0=
+eyJoaXN0b3J5IjpbMzgyOTA3NjcwLDYyMjY5NjMwNV19
 -->
