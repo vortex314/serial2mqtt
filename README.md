@@ -103,11 +103,16 @@ Structure topic to and from  device :
  ## CONNECTION SETUP
 ```mermaid
 sequenceDiagram
+participant µC
+participant serial2mqtt
+participant MQTT Broker
+activate serial2mqtt
+serial2mqtt-->>MQTT Broker: CONNECT(broker,port)
+MQTT Broker -->> serial2mqtt: CONNACK
 µC->> serial2mqtt: {"topic":"src/DEVICE/SERVICE/PROP",...}
+deactivate serial2mqtt
 activate serial2mqtt
 Note right of serial2mqtt: connects to mqtt broker at first message.
-serial2mqtt-->>MQTT Broker: CONNECT(broker,port)
-MQTT Broker --x serial2mqtt: CONNACK
 serial2mqtt-->>MQTT Broker: SUBSCRIBE("dst/DEVICE/#")
 serial2mqtt-->>MQTT Broker: PUBLISH("src/DEVICE/SERVICE/PROP",...)
 deactivate serial2mqtt
