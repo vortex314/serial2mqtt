@@ -103,14 +103,18 @@ Structure topic to and from  device :
  ## CONNECTION SETUP
 ```mermaid
 sequenceDiagram
-µC->> serial2mqtt: M,PUB,0,0,src/drive/motor/rpm,1234
+µC->> serial2mqtt: {"topic":"src/DEVICE/SERVICE/PROP",...}
+activate serial2mqtt
 Note right of serial2mqtt: connects to mqtt broker at first message.
 serial2mqtt-->>MQTT Broker: CONNECT(broker,port)
 MQTT Broker --x serial2mqtt: CONNACK
-serial2mqtt-->>MQTT Broker: SUBSCRIBE("dst/drive/#")
-serial2mqtt-->>MQTT Broker: PUBLISH("src/drive/motor/rpm",1000,0,false)
-µC->> serial2mqtt: M,PUB,0,0,src/drive/motor/temp,20
-serial2mqtt-->>MQTT Broker:  PUBLISH("src/drive/motor/temp",20,0,false)
+serial2mqtt-->>MQTT Broker: SUBSCRIBE("dst/DEVICE/#")
+serial2mqtt-->>MQTT Broker: PUBLISH("src/DEVICE/SERVICE/PROP",...)
+deactivate serial2mqtt
+µC->> serial2mqtt: {"topic":"src/DEVICE/SERVICE/PROP1",...}
+activate serial2mqtt
+serial2mqtt-->>MQTT Broker:  PUBLISH("src/DEVICE/SERVICE/PROP1",...)
+deactivate serial2mqtt
 Note right of µC: no more messages after 5 sec, serial2mqtt disconnects.
 serial2mqtt-->>MQTT Broker: DISCONNECT
 ```
@@ -152,6 +156,3 @@ The micrcontroller will also log to the central logging system
  - write binary image to file and send to microcontroller by activating configured external command , example esptool or stm32flash
 
 
-<!--stackedit_data:
-eyJoaXN0b3J5IjpbNTM1ODMzMDgyXX0=
--->
