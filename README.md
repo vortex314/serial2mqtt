@@ -170,9 +170,6 @@ The micrcontroller will also log to the central logging system
  - command line tool to flash and monitor logs.  
  - s2mflash -f file.bin -m test.mosquitto.org -t pi1-USB0
  - s2mflash -f file.bin -m test.mosquitto.org -t steer.USB0
- - Both lines have the same destination, logical and physical destination , if pi1 host is connected   
+ - Both lines have the same destination, logical and physical destination , if steer device is connected to pi1 host.  
 
 
-<!--stackedit_data:
-eyJoaXN0b3J5IjpbOTc4ODk0NTcsNjIyNjk2MzA1XX0=
--->
