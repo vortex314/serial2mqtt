@@ -107,6 +107,7 @@ participant µC
 participant serial2mqtt
 participant MQTT Broker
 activate serial2mqtt
+serial2mqtt-->>µC: CONNECT
 serial2mqtt-->>MQTT Broker: CONNECT(broker,port)
 MQTT Broker -->> serial2mqtt: CONNACK
 Note right of serial2mqtt: connect serial
@@ -120,8 +121,9 @@ deactivate serial2mqtt
 activate serial2mqtt
 serial2mqtt-->>MQTT Broker:  PUBLISH("src/DEVICE/SERVICE/PROP1",...)
 deactivate serial2mqtt
-Note right of µC: no more messages after 5 sec, serial2mqtt disconnects.
-serial2mqtt-->>MQTT Broker: DISCONNECT
+Note right of µC: no more messages after 5 sec, serial2mqtt disconnects serial port and tries to reconnect. MQTT connection always open.
+serial2mqtt-->>µC: DISCONNECT
+serial2mqtt-->>µC: CONNECT
 ```
 # Programming through serial2mqtt
 A command line utility will send a single mqtt request to the serial2mqtt gateway to program the microcontroller.
