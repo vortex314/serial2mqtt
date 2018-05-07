@@ -152,3 +152,6 @@ The micrcontroller will also log to the central logging system
  - write binary image to file and send to microcontroller by activating configured external command , example esptool or stm32flash
 
 
+<!--stackedit_data:
+eyJoaXN0b3J5IjpbNTM1ODMzMDgyXX0=
+-->
