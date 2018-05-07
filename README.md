@@ -71,18 +71,17 @@ Arduino Sample program to communicate with the serial2mqtt  gateway
       }
 
 
-## Working assumptions
+## Working assumptions and features
 - Topic Names 
 --The design will take into account some assumptions about topic names and tree-structure to make it simple to use.
 Structure topic to and from  device :
 -- dst/DEVICE/SERVICE/PROPERTY
 -- src/DEVICE/SERVICE/PROPERTY
 -- if DEVICE is not known yet the serial2mqtt will subscribe to the dst/PORT/prog , where PORT is for example ttyUSB0
-- Serial messages will be **BINARY** or **ASCII**
+- Serial messages will be **BINARY** or **JSON**
 -- BINARY format will be CBOR encoded in a SLIP envelope
--- ASCII will be text delimited by newlines
-- The serial2mqtt should be able to reset the device ( hard reset )
-- The serial2mqtt should be able to program new code into the device
+-- JSON will be text delimited by newlines
+- 
 - Through the same communication, debugging logs can be handled without disturbing the mqtt flow
 - the serial2mqtt establishes the client MQTT link and subscribes to dst/DEVICE/#
 - when there is a big delay on the serial2mqtt serial input, it will do a serial disconnect and connect attempt , to unlock USB ports
@@ -91,6 +90,10 @@ Structure topic to and from  device :
 - USB devices coming and going should be tracked by serial2mqtt
 - Configuration can be command line and config file driven ( JSON )
 - serial2mqtt should be able to program the device through the serial interface, for this purpose a third party app will be launched with the concerned serial port as argument.
+
+## Optional 
+The serial2mqtt should be able to reset the device ( hard reset )
+- The serial2mqtt should be able to program new code into the device
 
 # Protocol
 ## ASCII TEXT
@@ -166,5 +169,5 @@ The micrcontroller will also log to the central logging system
 
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMzgyOTA3NjcwLDYyMjY5NjMwNV19
+eyJoaXN0b3J5IjpbLTk2MzI3OTU5Niw2MjI2OTYzMDVdfQ==
 -->
