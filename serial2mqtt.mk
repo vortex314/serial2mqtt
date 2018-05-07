@@ -81,6 +81,9 @@ $(OutputFile): $(IntermediateDirectory)/.d $(Objects)
 PostBuild:
 	@echo Executing Post Build commands ...
 	cp Debug/serial2mqtt Debug/serial2mqtt.`arch`
+	strip Debug/serial2mqtt.`arch`
+	zip -r Debug/serial2mqtt.`arch`.zip Debug/serial2mqtt.`arch`
+	
 	@echo Done
 
 MakeIntermediateDirs:

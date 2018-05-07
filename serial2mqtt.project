@@ -65,6 +65,9 @@
       <PreBuild/>
       <PostBuild>
         <Command Enabled="yes">cp Debug/serial2mqtt Debug/serial2mqtt.`arch`</Command>
+        <Command Enabled="yes">strip Debug/serial2mqtt.`arch`</Command>
+        <Command Enabled="yes">zip -r Debug/serial2mqtt.`arch`.zip Debug/serial2mqtt.`arch`</Command>
+        <Command Enabled="yes"/>
       </PostBuild>
       <CustomBuild Enabled="no">
         <RebuildCommand/>
