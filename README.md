@@ -127,9 +127,9 @@ serial2mqtt-->>MQTT Broker: DISCONNECT
 A command line utility will send a single mqtt request to the serial2mqtt gateway to program the microcontroller.
 ```mermaid
 sequenceDiagram
-µC->> serial2mqtt: M,PUB,0,0,src/drive/motor/rpm,1234
-serial2mqtt->>MQTT Broker:  PUBLISH("src/drive/motor/temp",20,0,false)
-programmer CLI -x MQTT Broker: PUBLISH("dst/drive/prog/flash",flash image binary)
+µC->> serial2mqtt: {"topic":"src/DEVICE/SERVICE/PROP",...}
+serial2mqtt->>MQTT Broker:  PUBLISH("src/DEVICE/SERVICE/PROP",20,0,false)
+programmer CLI -x MQTT Broker: PUBLISH("dst/drive/serial2mqtt/flash",flash image binary)
 MQTT Broker -x serial2mqtt : PUBLISH
 activate serial2mqtt
 serial2mqtt -x µC : program flash image
