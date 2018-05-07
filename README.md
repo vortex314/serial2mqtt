@@ -167,8 +167,9 @@ The micrcontroller will also log to the central logging system
  - disconnect serial and retry to avoid locking USB ports after timeouts - DONE
  - write binary image to file and send to microcontroller by activating configured external command , example esptool or stm32flash
  - implement binary
+ - command line tool to flash and monitor logs.  s2mflash 
 
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTEzNTMzMTgwMTksNjIyNjk2MzA1XX0=
+eyJoaXN0b3J5IjpbMTYxMzk3NDkyNCw2MjI2OTYzMDVdfQ==
 -->
