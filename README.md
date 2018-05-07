@@ -148,7 +148,7 @@ deactivate serial2mqtt
 # Logging through serial2mqtt
 The micrcontroller will also log to the central logging system 
 # Build instructions
- - use Codelite
+ - use Codelite ( optional )
  - clone eclipse/paho.mqtt.c
  - clone nlohmann/json
  - clone vortex314/Common 
