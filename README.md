@@ -82,17 +82,18 @@ Structure topic to and from  device :
 -- BINARY format will be CBOR encoded in a SLIP envelope
 -- JSON will be text delimited by newlines
 - Through the same communication, debugging logs can be handled without disturbing the mqtt flow. Any line that doesn't start with '{' or be a valid JSON is considered log.
-- the serial2mqtt establishes the client MQTT link and subscribes to dst/DEVICE/# when DEVICE is known 
+- the serial2mqtt establishes the client MQTT link and subscribes to dst/DEVICE/# when DEVICE is known. 
 - when there is a big delay on the serial2mqtt serial input, it will do a serial disconnect and connect attempt , to unlock USB ports
 - serial2mqtt is event driven and as much as possible unblocking using MQTT in Async mode
 - one instance of serial2mqtt should be able to handle different serial ports
 - USB devices coming and going should be tracked by serial2mqtt
-- Configuration can be command line and config file driven ( JSON )
-- serial2mqtt should be able to program the device through the serial interface, for this purpose a third party app will be launched with the concerned serial port as argument.
+- Configuration can be command line and config file driven ( JSON ). command line overrides config settings. 
+
 
 ## Optional 
 The serial2mqtt should be able to reset the device ( hard reset )
 - The serial2mqtt should be able to program new code into the device
+- serial2mqtt should be able to program the device through the serial interface, for this purpose a third party app will be launched with the concerned serial port as argument.
 
 # Protocol
 ## ASCII TEXT
@@ -169,5 +170,5 @@ The micrcontroller will also log to the central logging system
 
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTQxNjcxMjIwNiw2MjI2OTYzMDVdfQ==
+eyJoaXN0b3J5IjpbLTEzNTMzMTgwMTksNjIyNjk2MzA1XX0=
 -->
