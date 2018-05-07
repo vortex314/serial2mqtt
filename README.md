@@ -173,3 +173,6 @@ The micrcontroller will also log to the central logging system
  - Both lines have the same destination, logical and physical destination , if steer device is connected to pi1 host.  
 
 
+<!--stackedit_data:
+eyJoaXN0b3J5IjpbLTYyNTAyMDg2MV19
+-->
