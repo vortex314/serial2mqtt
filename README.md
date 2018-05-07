@@ -168,9 +168,10 @@ The micrcontroller will also log to the central logging system
  - write binary image to file and send to microcontroller by activating configured external command , example esptool or stm32flash
  - implement binary
  - command line tool to flash and monitor logs.  
- - s2mflash -f file.bin -m te 
+ - s2mflash -f file.bin -m test.mosquitto.org -t pi1.local-USB0
+ - s2mflash -f file.bin -m test.monitoring.org  
 
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNDA3NDQ1NTIyLDYyMjY5NjMwNV19
+eyJoaXN0b3J5IjpbLTk1NzgzMjI1OCw2MjI2OTYzMDVdfQ==
 -->
