@@ -171,9 +171,10 @@ The micrcontroller will also log to the central logging system
  - s2mflash -f file.bin -m test.mosquitto.org -t pi1-USB0
  - s2mflash -f file.bin -m test.mosquitto.org -t steer.USB0
  - Both lines have the same destination, logical and physical destination , if steer device is connected to pi1 host.
- - add other MQTT config params in  
+ - add other MQTT config params in config file : user, pswd, clientId
+ - test with Maple Mini  
 
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMjIyNjA3NjU4LC02MjUwMjA4NjFdfQ==
+eyJoaXN0b3J5IjpbLTYzMjUwODMwNCwtNjI1MDIwODYxXX0=
 -->
