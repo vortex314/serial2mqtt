@@ -168,13 +168,14 @@ The micrcontroller will also log to the central logging system
  - write binary image to file and send to microcontroller by activating configured external command , example esptool or stm32flash
  - implement binary ? why should I ? 
  - command line tool to flash and monitor logs.  
- - s2mflash -f file.bin -m test.mosquitto.org -t pi1-USB0
- - s2mflash -f file.bin -m test.mosquitto.org -t steer.USB0
+ -- s2m -f file.bin -m test.mosquitto.org -t pi1-USB0
+ -- s2m -f file.bin -m test.mosquitto.org -t steer.USB0
  - Both lines have the same destination, logical and physical destination , if steer device is connected to pi1 host.
  - add other MQTT config params in config file : user, pswd, clientId
- - test with Maple Mini  
+ - test with Maple Mini
+ -   
 
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTYzMjUwODMwNCwtNjI1MDIwODYxXX0=
+eyJoaXN0b3J5IjpbLTExODc1OTc2MzcsLTYyNTAyMDg2MV19
 -->
