@@ -160,7 +160,7 @@ The micrcontroller will also log to the central logging system
  - build libCommon.a via "make -f Common.mk"
  - build serial2mqtt via "make -f serial2mqtt.mk" 
 
-Or just deploy the pre-build versions from the Debug dir
+**Or just deploy the pre-build versions** from the Debug directory , 2 versions available : Linux 64bits Intel and Raspberry Pi ARM.
 
 # Tested
  - ESP32 NodeMCU
@@ -185,6 +185,3 @@ To avoid concurrency issues , the callbacks of the mqtt threads are communicated
 The main threads waits on events : timeout of 1 sec, data on serial file-descriptor or pipe file-descriptor. 
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
-<!--stackedit_data:
-eyJoaXN0b3J5IjpbLTEzNTY3OTk1MDcsLTExMzk3NzM2M119
--->
