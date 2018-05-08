@@ -176,10 +176,10 @@ The micrcontroller will also log to the central logging system
  -   add static topic through config : "src/DEVICE/serial2mqtt/board" "ESP32-Nodemcu" 
 # Code design
 Per serial port there is a main thread and mqtt threads for callback
-The main thread waits for events and handle these primarily. 2 timers in this thread are checked for expiry ( not time critical ) : 
+The main thread waits for events and handle these primarily. 2 timers in this thread are checked for expiry ( not time critical ) : serial-watchdog and mqtt-connect.
 
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTEyODA2OTIwMTMsLTIwMDU1MjQ5NjIsLT
-ExODc1OTc2MzcsLTYyNTAyMDg2MV19
+eyJoaXN0b3J5IjpbLTY3NzUzNjU5MywtMjAwNTUyNDk2MiwtMT
+E4NzU5NzYzNywtNjI1MDIwODYxXX0=
 -->
