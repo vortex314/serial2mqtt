@@ -96,7 +96,7 @@ The serial2mqtt should be able to reset the device ( hard reset )
 - serial2mqtt should be able to program the device through the serial interface, for this purpose a third party app will be launched with the concerned serial port as argument.
 
 # Protocol
-## ASCII TEXT
+## TEXT JSON
 
     { "cmd":"MQTT-PUB","topic":"src/device/service/property","message":"1234.66","qos":0,"retained":false }\n
 
@@ -184,5 +184,5 @@ The main threads waits on events : timeout of 1 sec, data on serial file-descrip
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTExMzk3NzM2M119
+eyJoaXN0b3J5IjpbLTMzMjE3OTgwNCwtMTEzOTc3MzYzXX0=
 -->
