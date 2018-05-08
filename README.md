@@ -178,10 +178,10 @@ The micrcontroller will also log to the central logging system
 Per serial port there is a main thread and mqtt threads for callback
 The main thread waits for events and handle these primarily. 2 timers in this thread are checked for expiry ( not time critical ) : serial-watchdog and mqtt-connect.
 
-To avoid concurrency issues , the callbacks of the mqtt threads are communication back by writing an event code on a piper
+To avoid concurrency issues , the callbacks of the mqtt threads are communicated back by writing an event code on a pipe. 
 
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTUxNDk1MzMwMiwtMjAwNTUyNDk2MiwtMT
-E4NzU5NzYzNywtNjI1MDIwODYxXX0=
+eyJoaXN0b3J5IjpbODYxNTQwMTk1LC0yMDA1NTI0OTYyLC0xMT
+g3NTk3NjM3LC02MjUwMjA4NjFdfQ==
 -->
