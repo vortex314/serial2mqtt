@@ -163,16 +163,17 @@ The micrcontroller will also log to the central logging system
 # Tested
  - ESP32 NodeMCU
 # Still to do
- - logging mechanism - DONE just use mqtt topic
+ - logging mechanism - DONE 
  - disconnect serial and retry to avoid locking USB ports after timeouts - DONE
  - write binary image to file and send to microcontroller by activating configured external command , example esptool or stm32flash
- - implement binary
+ - implement binary ? why should I ? 
  - command line tool to flash and monitor logs.  
  - s2mflash -f file.bin -m test.mosquitto.org -t pi1-USB0
  - s2mflash -f file.bin -m test.mosquitto.org -t steer.USB0
- - Both lines have the same destination, logical and physical destination , if steer device is connected to pi1 host.  
+ - Both lines have the same destination, logical and physical destination , if steer device is connected to pi1 host.
+ - add other MQTT config params in  
 
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTYyNTAyMDg2MV19
+eyJoaXN0b3J5IjpbMjIyNjA3NjU4LC02MjUwMjA4NjFdfQ==
 -->
