@@ -173,9 +173,10 @@ The micrcontroller will also log to the central logging system
  - Both lines have the same destination, logical and physical destination , if steer device is connected to pi1 host.
  - add other MQTT config params in config file : user, pswd, clientId
  - test with Maple Mini
- -   
+ -   add static topic through config : "src/DEVICE/serial2mqtt/board" "ESP32-Nodemcu" 
 
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTExODc1OTc2MzcsLTYyNTAyMDg2MV19
+eyJoaXN0b3J5IjpbLTIwMDU1MjQ5NjIsLTExODc1OTc2MzcsLT
+YyNTAyMDg2MV19
 -->
