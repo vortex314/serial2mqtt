@@ -173,7 +173,8 @@ The micrcontroller will also log to the central logging system
  - Both lines have the same destination, logical and physical destination , if steer device is connected to pi1 host.
  - add other MQTT config params in config file : user, pswd, clientId
  - test with Maple Mini
- -   add static topic through config : "src/DEVICE/serial2mqtt/board" "ESP32-Nodemcu" 
+ -   add static topic through config : "src/DEVICE/serial2mqtt/board" "ESP32-Nodemcu" , which will be published every 5 seconds
+ - add "MQTT-SUB" command to give micro-con
 # Code design
 Per serial port there is a main thread and mqtt threads for callback
 The main thread waits for events and handle these primarily. 2 timers in this thread are checked for expiry ( not time critical ) : serial-watchdog and mqtt-connect.
@@ -183,5 +184,5 @@ The main threads waits on events : timeout of 1 sec, data on serial file-descrip
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTM3ODkzMzUyNF19
+eyJoaXN0b3J5IjpbLTIxNDU2MzE1NzhdfQ==
 -->
