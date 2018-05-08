@@ -179,9 +179,10 @@ Per serial port there is a main thread and mqtt threads for callback
 The main thread waits for events and handle these primarily. 2 timers in this thread are checked for expiry ( not time critical ) : serial-watchdog and mqtt-connect.
 
 To avoid concurrency issues , the callbacks of the mqtt threads are communicated back by writing an event code on a pipe. 
-The main threads waits on events : timeout of 
+The main threads waits on events : timeout of 1 sec, data on serial file-descriptor or pipe file-descriptor. 
+The mqtt event of received message is hand
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE0Nzc5MDA3MTQsLTIwMDU1MjQ5NjIsLT
+eyJoaXN0b3J5IjpbLTIwMzk2NzEzNzMsLTIwMDU1MjQ5NjIsLT
 ExODc1OTc2MzcsLTYyNTAyMDg2MV19
 -->
