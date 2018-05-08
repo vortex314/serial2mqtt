@@ -180,9 +180,5 @@ The main thread waits for events and handle these primarily. 2 timers in this th
 
 To avoid concurrency issues , the callbacks of the mqtt threads are communicated back by writing an event code on a pipe. 
 The main threads waits on events : timeout of 1 sec, data on serial file-descriptor or pipe file-descriptor. 
-The mqtt event of received message is hand
+The mqtt event of received message is handled directly by writing the message on the serial port.
 
-<!--stackedit_data:
-eyJoaXN0b3J5IjpbLTIwMzk2NzEzNzMsLTIwMDU1MjQ5NjIsLT
-ExODc1OTc2MzcsLTYyNTAyMDg2MV19
--->
