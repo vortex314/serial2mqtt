@@ -174,9 +174,12 @@ The micrcontroller will also log to the central logging system
  - add other MQTT config params in config file : user, pswd, clientId
  - test with Maple Mini
  -   add static topic through config : "src/DEVICE/serial2mqtt/board" "ESP32-Nodemcu" 
+# Code design
+Per serial port there is a main thread and mqtt threads for callback
+The main thread waits for events and handle 
 
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTIwMDU1MjQ5NjIsLTExODc1OTc2MzcsLT
-YyNTAyMDg2MV19
+eyJoaXN0b3J5IjpbLTEwNzEwMTM1MTUsLTIwMDU1MjQ5NjIsLT
+ExODc1OTc2MzcsLTYyNTAyMDg2MV19
 -->
