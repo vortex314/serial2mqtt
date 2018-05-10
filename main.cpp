@@ -21,6 +21,7 @@ int main(int argc, char **argv)
 
     Sys::init();
     INFO("version : " __DATE__ " " __TIME__ "\n");
+    INFO(" argv[0] : %s ",argv[0]);
     config.setFile("serial2mqtt.json");
     config.load();
     overrideConfig(config,argc,argv);

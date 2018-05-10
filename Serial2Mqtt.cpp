@@ -19,6 +19,23 @@ BAUDRATE BAUDRATE_TABLE[] = { { 50, B50 }, { 75, B75 }, { 110, B110 }, { 134, B1
     { 3500000, B3500000 }, { 4000000, B4000000 }
 };
 
+const char* signalString[]= {   "PIPE_ERROR",
+                                "SERIAL_CONNECT",
+                                "SERIAL_DISCONNECT",
+                                "SERIAL_RXD",
+                                "SERIAL_ERROR",
+                                "MQTT_CONNECT_SUCCESS",
+                                "MQTT_CONNECT_FAIL",
+                                "MQTT_SUBSCRIBE_SUCCESS",
+                                "MQTT_SUBSCRIBE_FAIL",
+                                "MQTT_PUBLISH_SUCCESS",
+                                "MQTT_PUBLISH_FAIL",
+                                "MQTT_DISCONNECTED",
+                                "MQTT_MESSAGE_RECEIVED",
+                                "MQTT_ERROR",
+                                "TIMEOUT"
+                            } ;
+
 Serial2Mqtt::Serial2Mqtt() : _serialBuffer(10240)
 {
 }
@@ -49,19 +66,27 @@ void Serial2Mqtt::setSerialPort(std::string port)
     _serial2mqttDevice += "."+_serialPortShort;
     _mqttDevice = _serial2mqttDevice;
     _mqttSubscribedTo = "dst/"+_serial2mqttDevice+"/#";
+    _mqttProgrammerTopic = "dst/"+_serial2mqttDevice+"/serial2mqtt/flash";
     _mqttClientId = _mqttDevice+std::to_string(getpid());
     _config.get("willTopic",_mqttWillTopic,"src/"+_serial2mqttDevice+"/serial2mqtt/alive");
 }
 
 void Serial2Mqtt::init()
 {
+    _config.setNameSpace("programmer");
+    _config.get("file",_binFile,"image.binary");
+    _config.get("exec",_programCommand,"echo no command defined ");
+    
     _config.setNameSpace("serial");
     _config.get("baudrate",_serialBaudrate,115200);
+    
     _config.setNameSpace("mqtt");
     _config.get("port",_mqttPort,1883);
     _config.get("host",_mqttHost,"test.mosquitto.org");
     _config.get("keepAliveInterval",_mqttKeepAliveInterval,5);
     _config.get("willMessage",_mqttWillMessage,"false");
+    _mqttWillQos=0;
+    _mqttWillRetained=false;
 
 
     if (pipe(_signalFd) < 0)        INFO("Failed to create pipe: %s (%d)", strerror(errno), errno);
@@ -83,7 +108,6 @@ void Serial2Mqtt::run()
 
     mqttTimer.atInterval(5000).doThis([this]() {
         if ( !_mqttConnected) {
-            _mqttConnecting=true;
             mqttConnect();
         } else {
             mqttPublish("src/"+_serial2mqttDevice+"/serial2mqtt/alive","true",0,0);
@@ -102,6 +126,7 @@ void Serial2Mqtt::run()
     while(true) {
         while(true) {
             Signal s = waitSignal(1000);
+            DEBUG("signal = %s",signalString[s]);
             mqttTimer.check();
             serialTimer.check();
             switch(s) {
@@ -127,20 +152,17 @@ void Serial2Mqtt::run()
             case MQTT_CONNECT_SUCCESS : {
                 INFO("MQTT_CONNECT_SUCCESS %s ",_serialPortShort.c_str());
                 _mqttConnected=true;
-                _mqttConnecting=false;
                 mqttSubscribe(_mqttSubscribedTo);
                 break;
             }
             case MQTT_CONNECT_FAIL : {
                 WARN("MQTT_CONNECT_FAIL %s ",_serialPortShort.c_str());
                 _mqttConnected=false;
-                _mqttConnecting=false;
                 break;
             }
             case MQTT_DISCONNECTED: {
                 WARN("MQTT_DISCONNECTED %s ",_serialPortShort.c_str());
                 _mqttConnected=false;
-                _mqttConnecting=false;
                 break;
             }
             case MQTT_SUBSCRIBE_SUCCESS: {
@@ -364,58 +386,6 @@ std::vector<std::string> split(const std::string &text, char sep)
     return tokens;
 }
 
-void ParseCSV(const std::string& csvSource, vector<string> & line)
-{
-    bool inQuote(false);
-    bool newLine(false);
-    string field;
-    line.clear();
-
-    string::const_iterator aChar = csvSource.begin();
-    while (aChar != csvSource.end()) {
-        switch (*aChar) {
-        case '"':
-            newLine = false;
-            inQuote = !inQuote;
-            break;
-
-        case ',':
-            newLine = false;
-            if (inQuote == true) {
-                field += *aChar;
-            } else {
-                line.push_back(field);
-                field.clear();
-            }
-            break;
-
-        case '\n':
-        case '\r':
-            if (inQuote == true) {
-                field += *aChar;
-            } else {
-                if (newLine == false) {
-                    line.push_back(field);
-                    field.clear();
-                    line.clear();
-                    newLine = true;
-                }
-            }
-            break;
-
-        default:
-            newLine = false;
-            field.push_back(*aChar);
-            break;
-        }
-
-        aChar++;
-    }
-
-    if (field.size())
-        line.push_back(field);
-}
-
 
 void Serial2Mqtt::serialHandleLine(std::string& line)
 {
@@ -452,9 +422,11 @@ void Serial2Mqtt::serialHandleLine(std::string& line)
                 }
             }
         } catch(...) { // JSON Object parse failure
+//            INFO("PARSE FAILED : %s",line.c_str());
             mqttPublish("src/"+_serial2mqttDevice+"/serial2mqtt/log",line,0,false);
         }
     } else { // no JSON object
+//        INFO("NO { FOUND : %s",line.c_str())
         mqttPublish("src/"+_serial2mqttDevice+"/serial2mqtt/log",line,0,false);
     }
 }
@@ -521,7 +493,6 @@ Erc Serial2Mqtt::mqttConnect()
         WARN("Failed to start connect, return code %d", rc);
         return E_NOT_FOUND;
     }
-    _mqttConnecting=true;
     return E_OK;
 }
 
@@ -538,7 +509,6 @@ void Serial2Mqtt::mqttDisconnect()
         return;
     }
     MQTTAsync_destroy(&_client);
-    _mqttConnecting=false;
     _mqttConnected=false;
 }
 
@@ -572,9 +542,14 @@ int Serial2Mqtt::onMessage(void *context, char *topicName, int topicLen, MQTTAsy
 {
     Serial2Mqtt* me = (Serial2Mqtt*)context;
     Bytes msg((uint8_t*) message->payload, message->payloadlen);
-    std::string topic(topicName,topicLen);
-
+    string topic(topicName,topicLen);
+    
+    if ( topic.compare(me->_mqttProgrammerTopic)==0 ) {
+        INFO(" flash image received , saved to %s",me->_binFile.c_str())
+        me->flashBin(msg);
+    } else {
     me->serialPublish(topic,msg,message->qos,message->retained);
+    }
 
     MQTTAsync_freeMessage(&message);
     MQTTAsync_free(topicName);
@@ -661,4 +636,25 @@ void Serial2Mqtt::onPublishFailure(void* context, MQTTAsync_failureData* respons
 {
     Serial2Mqtt* me = (Serial2Mqtt*)context;
     me->signal(MQTT_PUBLISH_FAIL);
+}
+
+
+void Serial2Mqtt::flashBin(Bytes& bytes){
+    FILE *f = NULL;
+	char *data = NULL;
+
+	/* open in read binary mode */
+	f = fopen(_binFile.c_str(),"w");
+	if ( f!=NULL) {
+        size_t rc= fwrite(bytes.data(),1,bytes.length(),f);
+        if ( rc != bytes.length() ) {
+            WARN(" file %s cannot be saved. ",_binFile.c_str());
+        }
+		fclose(f);
+        popen(_programCommand.c_str(),"r");
+	} else {
+		WARN(" bin file %s not found.",_binFile.c_str());
+		data = (char*)malloc(10);
+		strcpy(data,"{}");
+	}
 }

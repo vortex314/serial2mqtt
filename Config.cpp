@@ -42,7 +42,11 @@ void Config::load()
 		data = (char*)malloc(10);
 		strcpy(data,"{}");
 	}
+    try {
 	_json = json::parse(data);
+    } catch(...){
+        WARN(" config file cannot be parsed. Invalid JSON.")
+    }
 	INFO("%s",_json.dump().c_str());
 	free(data);
 	_loaded=true;

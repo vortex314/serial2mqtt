@@ -13,37 +13,42 @@
 #include <sys/ioctl.h>
 #include <Timer.h>
 
+using namespace std;
+
+    
 
 class Serial2Mqtt
 {
 
-    std::string _serial2mqttDevice; // <host>.USBx
+    string _serial2mqttDevice; // <host>.USBx
     MQTTAsync_token _deliveredtoken;
     MQTTAsync _client;
     int _signalFd[2];   // pipe fd to wakeup in select
     // SERIAL
-    std::string _serialPort;    // /dev/ttyUSB0
-    std::string _serialPortShort; // USB0
+    string _serialPort;    // /dev/ttyUSB0
+    string _serialPortShort; // USB0
     int _serialBaudrate;
     int _serialFd=0;
     bool _serialConnected=false;
-    std::string _serialLine;
+    string _serialLine;
     CircBuf _serialBuffer;
+    string _binFile;
+    string _programCommand;
     // MQTT
 
-    std::string _mqttHost;
-    std::string _mqttClientId;
+    string _mqttHost;
+    string _mqttClientId;
     uint16_t _mqttPort;
     uint32_t _mqttKeepAliveInterval;
-    std::string _mqttWillMessage;
-    std::string _mqttWillTopic;
+    string _mqttWillMessage;
+    string _mqttWillTopic;
     uint16_t _mqttWillQos;
     bool _mqttWillRetained;
-    std::string _mqttDevice;
+    string _mqttDevice;
+    string _mqttProgrammerTopic;
 
     bool _mqttConnected=false;
-    bool _mqttConnecting=false;
-    std::string _mqttSubscribedTo;
+    string _mqttSubscribedTo;
 
     Config _config;
 
@@ -62,8 +67,9 @@ public:
                   MQTT_DISCONNECTED,
                   MQTT_MESSAGE_RECEIVED,
                   MQTT_ERROR,
-                  TIMEOUT='T'
+                  TIMEOUT
                  } Signal;
+
 
     Serial2Mqtt();
     ~Serial2Mqtt();
@@ -75,21 +81,22 @@ public:
 
 
     void setConfig(Config config);
-    void setSerialPort(std::string port);
+    void setSerialPort(string port);
     Erc serialConnect();
     void serialDisconnect();
     void serialRxd();
-    bool serialGetLine(std::string& line);
-    void serialHandleLine(std::string& line);
-    void serialPublish(std::string topic,Bytes message,int qos,bool retained);
-//	void serialMqttPublish(std::string topic,Bytes message,int qos,bool retained);
+    bool serialGetLine(string& line);
+    void serialHandleLine(string& line);
+    void serialPublish(string topic,Bytes message,int qos,bool retained);
+    void flashBin(Bytes& msg);
+//	void serialMqttPublish(string topic,Bytes message,int qos,bool retained);
 
 
     Erc mqttConnect();
     void mqttDisconnect();
-    void mqttPublish(std::string topic,Bytes message,int qos,bool retained);
-    void mqttPublish(std::string topic,std::string message,int qos,bool retained);
-    void mqttSubscribe(std::string topic);
+    void mqttPublish(string topic,Bytes message,int qos,bool retained);
+    void mqttPublish(string topic,string message,int qos,bool retained);
+    void mqttSubscribe(string topic);
 
     static void onConnectionLost(void *context, char *cause);
     static int onMessage(void *context, char *topicName, int topicLen, MQTTAsync_message *message);
@@ -101,9 +108,6 @@ public:
     static void onPublishSuccess(void* context, MQTTAsync_successData* response);
     static void onPublishFailure(void* context, MQTTAsync_failureData* response);
     static void onDeliveryComplete(void* context, MQTTAsync_token response);
-
-
-
 };
 
 #endif // SERIAL2MQTT_H
