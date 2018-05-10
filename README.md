@@ -96,7 +96,7 @@ The serial2mqtt should be able to reset the device ( hard reset )
 - serial2mqtt should be able to program the device through the serial interface, for this purpose a third party app will be launched with the concerned serial port as argument.
 
 # Protocol
-## ASCII TEXT
+## TEXT JSON
 
     { "cmd":"MQTT-PUB","topic":"src/device/service/property","message":"1234.66","qos":0,"retained":false }\n
 
@@ -160,19 +160,31 @@ The micrcontroller will also log to the central logging system
  - build libCommon.a via "make -f Common.mk"
  - build serial2mqtt via "make -f serial2mqtt.mk" 
 
+**Or just deploy the pre-build versions** from the Debug directory , 2 versions available : Linux 64bits Intel and Raspberry Pi ARM.
+
 # Tested
  - ESP32 NodeMCU
 # Still to do
- - logging mechanism - DONE just use mqtt topic
+ - logging mechanism - DONE 
  - disconnect serial and retry to avoid locking USB ports after timeouts - DONE
  - write binary image to file and send to microcontroller by activating configured external command , example esptool or stm32flash
- - implement binary
+ - implement binary ? why should I ? 
  - command line tool to flash and monitor logs.  
- - s2mflash -f file.bin -m test.mosquitto.org -t pi1-USB0
- - s2mflash -f file.bin -m test.mosquitto.org -t steer.USB0
- - Both lines have the same destination, logical and physical destination , if steer device is connected to pi1 host.  
+ -- s2m -f file.bin -m test.mosquitto.org -t pi1-USB0
+ -- s2m -f file.bin -m test.mosquitto.org -t steer.USB0
+ - Both lines have the same destination, logical and physical destination , if steer device is connected to pi1 host.
+ - add other MQTT config params in config file : user, pswd, clientId
+ - test with Maple Mini
+ -   add static topic through config : "src/DEVICE/serial2mqtt/board" "ESP32-Nodemcu" , which will be published every 5 seconds
+ - add "MQTT-SUB" command to give micro-controller control over topic subscription.
+# Code design
+Per serial port there is a main thread and mqtt threads for callback
+The main thread waits for events and handle these primarily. 2 timers in this thread are checked for expiry ( not time critical ) : serial-watchdog and mqtt-connect.
 
+To avoid concurrency issues , the callbacks of the mqtt threads are communicated back by writing an event code on a pipe. 
+The main threads waits on events : timeout of 1 sec, data on serial file-descriptor or pipe file-descriptor. 
+The mqtt event of received message is handled directly by writing the message on the serial port.
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTYyNTAyMDg2MV19
+eyJoaXN0b3J5IjpbLTEzNDQxNDU2ODNdfQ==
 -->
