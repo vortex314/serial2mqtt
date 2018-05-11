@@ -2,6 +2,13 @@
 #define SERIAL2MQTT_H
 
 #include "MQTTAsync.h"
+#include "json.hpp"
+#include "inja.hpp"
+
+// For convenience
+using namespace inja;
+using json = nlohmann::json;
+
 #include "Config.h"
 #include "CircBuf.h"
 #include <unistd.h>
@@ -14,6 +21,7 @@
 #include <Timer.h>
 
 using namespace std;
+
 
     
 

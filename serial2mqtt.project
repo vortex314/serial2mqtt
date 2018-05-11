@@ -43,6 +43,7 @@
         <IncludePath Value="../Common"/>
         <IncludePath Value="../json/single_include/nlohmann"/>
         <IncludePath Value="../paho.mqtt.c/src"/>
+        <IncludePath Value="../inja/src"/>
       </Compiler>
       <Linker Options="-static" Required="yes">
         <LibraryPath Value="../Common/Debug"/>

@@ -58,9 +58,28 @@ int baudSymbol(uint32_t br)
     return B115200;
 }
 
-void Serial2Mqtt::setSerialPort(std::string port)
+void Serial2Mqtt::setSerialPort(string port)
 {
     _serialPort=port;
+}
+
+void Serial2Mqtt::init()
+{
+    _config.setNameSpace("programmer");
+    _config.get("file",_binFile,"image.binary");
+    _config.get("exec",_programCommand,"echo no command defined ");
+
+    _config.setNameSpace("serial");
+    _config.get("baudrate",_serialBaudrate,115200);
+
+    _config.setNameSpace("mqtt");
+    _config.get("port",_mqttPort,1883);
+    _config.get("host",_mqttHost,"test.mosquitto.org");
+    _config.get("keepAliveInterval",_mqttKeepAliveInterval,5);
+    _config.get("willMessage",_mqttWillMessage,"false");
+    _mqttWillQos=0;
+    _mqttWillRetained=false;
+
     _serialPortShort = _serialPort.substr(8,_serialPort.length()-8);
     _serial2mqttDevice = Sys::hostname();
     _serial2mqttDevice += "."+_serialPortShort;
@@ -69,24 +88,7 @@ void Serial2Mqtt::setSerialPort(std::string port)
     _mqttProgrammerTopic = "dst/"+_serial2mqttDevice+"/serial2mqtt/flash";
     _mqttClientId = _mqttDevice+std::to_string(getpid());
     _config.get("willTopic",_mqttWillTopic,"src/"+_serial2mqttDevice+"/serial2mqtt/alive");
-}
 
-void Serial2Mqtt::init()
-{
-    _config.setNameSpace("programmer");
-    _config.get("file",_binFile,"image.binary");
-    _config.get("exec",_programCommand,"echo no command defined ");
-    
-    _config.setNameSpace("serial");
-    _config.get("baudrate",_serialBaudrate,115200);
-    
-    _config.setNameSpace("mqtt");
-    _config.get("port",_mqttPort,1883);
-    _config.get("host",_mqttHost,"test.mosquitto.org");
-    _config.get("keepAliveInterval",_mqttKeepAliveInterval,5);
-    _config.get("willMessage",_mqttWillMessage,"false");
-    _mqttWillQos=0;
-    _mqttWillRetained=false;
 
 
     if (pipe(_signalFd) < 0)        INFO("Failed to create pipe: %s (%d)", strerror(errno), errno);
@@ -102,7 +104,7 @@ void Serial2Mqtt::threadFunction(void* pv)
 
 void Serial2Mqtt::run()
 {
-    std::string line;
+    string line;
     Timer mqttTimer;
     Timer serialTimer;
 
@@ -355,7 +357,7 @@ void Serial2Mqtt::serialRxd()
     }
 }
 
-bool Serial2Mqtt::serialGetLine(std::string& line)
+bool Serial2Mqtt::serialGetLine(string& line)
 {
     while(_serialBuffer.hasData()) {
         char ch = _serialBuffer.read();
@@ -374,11 +376,11 @@ bool Serial2Mqtt::serialGetLine(std::string& line)
     return false;
 }
 
-std::vector<std::string> split(const std::string &text, char sep)
+std::vector<string> split(const string &text, char sep)
 {
-    std::vector<std::string> tokens;
+    std::vector<string> tokens;
     std::size_t start = 0, end = 0;
-    while ((end = text.find(sep, start)) != std::string::npos) {
+    while ((end = text.find(sep, start)) != string::npos) {
         tokens.push_back(text.substr(start, end - start));
         start = end + 1;
     }
@@ -387,10 +389,10 @@ std::vector<std::string> split(const std::string &text, char sep)
 }
 
 
-void Serial2Mqtt::serialHandleLine(std::string& line)
+void Serial2Mqtt::serialHandleLine(string& line)
 {
 //    INFO(" RXD %d bytes ",line.length());
-    std::vector<std::string> token;
+    std::vector<string> token;
     /*	char cLine[line.length()+1];
     	strcpy(cLine,line.c_str());
     	token = split(cLine,',');*/
@@ -403,11 +405,11 @@ void Serial2Mqtt::serialHandleLine(std::string& line)
 //	for(uint32_t i=0; i<token.size(); i++)
 //		INFO(" token[%d] = %s",i,token[i].c_str());
             if ( args.find("cmd") != args.end() ) {
-                std::string cmd = args["cmd"];
+                string cmd = args["cmd"];
                 if ( cmd.compare("MQTT-PUB")==0 ) {
                     int qos=0;
                     bool retained=false;
-                    std::string topic=args["topic"];
+                    string topic=args["topic"];
                     token = split(topic,'/');
                     if ( token[1].compare(_mqttDevice)!=0 ) {
                         WARN(" subscribed topic differ %s <> %s ",token[1].c_str(),_mqttDevice.c_str());
@@ -415,7 +417,7 @@ void Serial2Mqtt::serialHandleLine(std::string& line)
                         _mqttSubscribedTo = "dst/"+_mqttDevice+"/#";
                         mqttSubscribe(_mqttSubscribedTo);
                     }
-                    std::string message=args["message"];
+                    string message=args["message"];
                     /*                    Bytes msg(1024);
                                         msg.append((uint8_t*)message.c_str(),message.length());*/
                     mqttPublish(topic,message,qos,retained);
@@ -431,9 +433,9 @@ void Serial2Mqtt::serialHandleLine(std::string& line)
     }
 }
 
-void Serial2Mqtt::serialPublish(std::string topic,Bytes message,int qos,bool retained)
+void Serial2Mqtt::serialPublish(string topic,Bytes message,int qos,bool retained)
 {
-    std::string line;
+    string line;
     Str msg(1024);
     msg.write( message.data(),0,message.length());
     json out ;
@@ -465,7 +467,7 @@ void Serial2Mqtt::serialPublish(std::string topic,Bytes message,int qos,bool ret
 
 Erc Serial2Mqtt::mqttConnect()
 {
-    std::string connection;
+    string connection;
     int rc;
 
     MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
@@ -512,7 +514,7 @@ void Serial2Mqtt::mqttDisconnect()
     _mqttConnected=false;
 }
 
-void Serial2Mqtt::mqttSubscribe(std::string topic)
+void Serial2Mqtt::mqttSubscribe(string topic)
 {
     int qos=0;
     MQTTAsync_responseOptions opts = MQTTAsync_responseOptions_initializer;
@@ -543,12 +545,12 @@ int Serial2Mqtt::onMessage(void *context, char *topicName, int topicLen, MQTTAsy
     Serial2Mqtt* me = (Serial2Mqtt*)context;
     Bytes msg((uint8_t*) message->payload, message->payloadlen);
     string topic(topicName,topicLen);
-    
+
     if ( topic.compare(me->_mqttProgrammerTopic)==0 ) {
         INFO(" flash image received , saved to %s",me->_binFile.c_str())
         me->flashBin(msg);
     } else {
-    me->serialPublish(topic,msg,message->qos,message->retained);
+        me->serialPublish(topic,msg,message->qos,message->retained);
     }
 
     MQTTAsync_freeMessage(&message);
@@ -592,14 +594,14 @@ void Serial2Mqtt::onSubscribeFailure(void* context, MQTTAsync_failureData* respo
     me->signal(MQTT_SUBSCRIBE_FAIL);
 }
 
-void Serial2Mqtt::mqttPublish(std::string topic,std::string message,int qos,bool retained)
+void Serial2Mqtt::mqttPublish(string topic,string message,int qos,bool retained)
 {
     Str msg(message.length()+2);
     msg=message.c_str();
     mqttPublish(topic,msg,qos,retained);
 }
 
-void Serial2Mqtt::mqttPublish(std::string topic,Bytes message,int qos,bool retained)
+void Serial2Mqtt::mqttPublish(string topic,Bytes message,int qos,bool retained)
 {
     if ( !_mqttConnected) {
         INFO("mqttPublish waiting connect ");
@@ -639,22 +641,26 @@ void Serial2Mqtt::onPublishFailure(void* context, MQTTAsync_failureData* respons
 }
 
 
-void Serial2Mqtt::flashBin(Bytes& bytes){
+void Serial2Mqtt::flashBin(Bytes& bytes)
+{
     FILE *f = NULL;
-	char *data = NULL;
-
-	/* open in read binary mode */
-	f = fopen(_binFile.c_str(),"w");
-	if ( f!=NULL) {
+    INFO(" writing binary file %s ",_binFile.c_str());
+    /* open in read binary mode */
+    f = fopen(_binFile.c_str(),"w");
+    if ( f!=NULL) {
         size_t rc= fwrite(bytes.data(),1,bytes.length(),f);
         if ( rc != bytes.length() ) {
             WARN(" file %s cannot be saved. ",_binFile.c_str());
         }
-		fclose(f);
-        popen(_programCommand.c_str(),"r");
-	} else {
-		WARN(" bin file %s not found.",_binFile.c_str());
-		data = (char*)malloc(10);
-		strcpy(data,"{}");
-	}
+        fclose(f);
+        INFO(" executing programming %s ",_programCommand.c_str());
+        FILE *outFd = popen(_programCommand.c_str(),"r");
+        if ( outFd==NULL) {
+            WARN(" stating '%s' failed.",_programCommand.c_str());
+        } else {
+            pclose(outFd);
+        }
+    } else {
+        WARN(" bin file %s not found.",_binFile.c_str());
+    }
 }
