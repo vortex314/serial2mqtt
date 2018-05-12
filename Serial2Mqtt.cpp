@@ -302,10 +302,6 @@ Erc Serial2Mqtt::serialConnect()
 //	fcntl(_serialFd, F_SETFL, FNDELAY);
 
 	INFO("set baudrate to %d ", _serialBaudrate);
-	if ( cfsetispeed(&options, baudSymbol(_serialBaudrate))<0)
-		ERROR("cfsetispeed() failed '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
-	if ( cfsetospeed(&options, baudSymbol(_serialBaudrate))<0)
-		ERROR("cfsetospeed() failed '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
 
 	if ( tcgetattr(_serialFd, &options)<0)
 		ERROR("tcgetattr() failed '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
@@ -320,11 +316,16 @@ Erc Serial2Mqtt::serialConnect()
 
 //	options.c_lflag &= ~(ECHO | ISIG); // no echo, signal
 	options.c_lflag = ICANON ; // wait full line
-	options.c_cc[VEOL]='\n';
+	options.c_cc[VEOL]='\n'; // add an additional EOL symbol
+	options.c_iflag |= IGNCR; // ignore carriage return
 //    cfmakeraw(&options);
+	if ( cfsetispeed(&options, baudSymbol(_serialBaudrate))<0)
+		ERROR("cfsetispeed() failed '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
+	if ( cfsetospeed(&options, baudSymbol(_serialBaudrate))<0)
+		ERROR("cfsetospeed() failed '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
 
-	                   if ( tcsetattr(_serialFd, TCSANOW, &options)<0)
-		                   ERROR("tcsetattr() failed '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
+	if ( tcsetattr(_serialFd, TCSANOW, &options)<0)
+		ERROR("tcsetattr() failed '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
 
 	/*    int status;
 	    if ( ioctl(_serialFd, TIOCMGET,&status )<0)
@@ -404,7 +405,7 @@ void Serial2Mqtt::serialHandleLine(string& line)
 
 		try {
 			json args=json::parse(line);
-			INFO("%s %s",_serialPortShort.c_str(),args.dump().c_str());
+			DEBUG("%s %s",_serialPortShort.c_str(),args.dump().c_str());
 //	ParseCSV(line,token);
 //	for(uint32_t i=0; i<token.size(); i++)
 //		INFO(" token[%d] = %s",i,token[i].c_str());
