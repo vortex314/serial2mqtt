@@ -160,7 +160,7 @@ The micrcontroller will also log to the central logging system
  - build libCommon.a via "make -f Common.mk"
  - build serial2mqtt via "make -f serial2mqtt.mk" 
 
-**Or just deploy the pre-build versions** from the Debug directory , 2 versions available : Linux 64bits Intel and Raspberry Pi ARM.
+**Or just deploy the pre-build versions** from the Debug directory , 2 versions available : Linux 64bits Intel and Raspberry Pi ARM. The armv6l also runs on raspberry pi 3. Watch out for the arch command below. 
 
     wget https://github.com/vortex314/serial2mqtt/raw/master/Debug/serial2mqtt.`arch`.zip
     wget https://github.com/vortex314/serial2mqtt/raw/master/serial2mqtt.json
@@ -194,6 +194,6 @@ The main threads waits on events : timeout of 1 sec, data on serial file-descrip
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTMzMjc3NDM5MCw3NDM5OTc2NDYsLTEzND
-QxNDU2ODNdfQ==
+eyJoaXN0b3J5IjpbMTIwNjY2MDQwNCwtMzMyNzc0MzkwLDc0Mz
+k5NzY0NiwtMTM0NDE0NTY4M119
 -->
