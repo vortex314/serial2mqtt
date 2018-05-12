@@ -162,6 +162,8 @@ The micrcontroller will also log to the central logging system
 
 **Or just deploy the pre-build versions** from the Debug directory , 2 versions available : Linux 64bits Intel and Raspberry Pi ARM.
 
+    enter code here
+
 # Tested
  - ESP32 NodeMCU
 # Still to do
@@ -186,5 +188,5 @@ The main threads waits on events : timeout of 1 sec, data on serial file-descrip
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTEzNDQxNDU2ODNdfQ==
+eyJoaXN0b3J5IjpbNzQzOTk3NjQ2LC0xMzQ0MTQ1NjgzXX0=
 -->
