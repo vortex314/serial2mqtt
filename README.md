@@ -165,7 +165,8 @@ The micrcontroller will also log to the central logging system
     wget https://github.com/vortex314/serial2mqtt/raw/master/Debug/serial2mqtt.armv6l.zip
     wget https://github.com/vortex314/serial2mqtt/raw/master/serial2mqtt.json
     unzip serial2mqtt.armv6l.zip
-    mv serial
+    mv Debug/serial2mqtt.armv6l serial2mqtt
+    
     
     
 
@@ -193,6 +194,6 @@ The main threads waits on events : timeout of 1 sec, data on serial file-descrip
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTA1NjUzMDgsNzQzOTk3NjQ2LC0xMzQ0MT
-Q1NjgzXX0=
+eyJoaXN0b3J5IjpbNDA0NDQ0MjYwLDc0Mzk5NzY0NiwtMTM0ND
+E0NTY4M119
 -->
