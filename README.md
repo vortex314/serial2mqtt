@@ -42,7 +42,7 @@ Arduino Sample program to communicate with the serial2mqtt  gateway
         }
     };
     // create a name for this device
-    String Mqtt::device = "ESP32-" + String((uint32_t)ESP.getEfuseMac(), HEX);
+    String Mqtt::device = "ESP32";
     
     void setup() {
       Serial.begin(115200);
