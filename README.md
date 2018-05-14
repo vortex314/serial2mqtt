@@ -186,6 +186,7 @@ The micrcontroller will also log to the central logging system
  - test with Maple Mini
  -   add static topic through config : "src/DEVICE/serial2mqtt/board" "ESP32-Nodemcu" , which will be published every 5 seconds
  - add "MQTT-SUB" command to give micro-controller control over topic subscription.
+ - add log level as parameter -l ( T,D,I,W,E ) for TRACE,DEBUG,INFO,WARN,ERROR level
 # Code design
 Per serial port there is a main thread and mqtt threads for callback
 The main thread waits for events and handle these primarily. 2 timers in this thread are checked for expiry ( not time critical ) : serial-watchdog and mqtt-connect.
