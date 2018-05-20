@@ -45,7 +45,7 @@ int main(int argc, char **argv)
     }
 
 
-    sleep(60); // UINT32_MAX to sleep 'forever'
+    sleep(UINT32_MAX); // UINT32_MAX to sleep 'forever'
     exit(0);
 
     return 0;
