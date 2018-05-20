@@ -23,7 +23,7 @@ using json = nlohmann::json;
 using namespace std;
 
 
-    
+
 
 class Serial2Mqtt
 {
@@ -62,6 +62,7 @@ class Serial2Mqtt
 
 public:
     typedef enum {PIPE_ERROR,
+                  SELECT_ERROR,
                   SERIAL_CONNECT,
                   SERIAL_DISCONNECT,
                   SERIAL_RXD,
