@@ -6,8 +6,7 @@ git clone https://github.com/vortex314/serial2mqtt
 make -f serial2mqtt.mk
 cd Common
 make -f Common.mk
-cd ..
-cd paho.mqtt.c
+cd ../paho.mqtt.c
 cp ../serial2mqtt/makePaho.sh .
 make
 ./makePaho.sh 
