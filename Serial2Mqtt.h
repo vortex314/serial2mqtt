@@ -54,6 +54,7 @@ class Serial2Mqtt
     bool _mqttWillRetained;
     string _mqttDevice;
     string _mqttProgrammerTopic;
+    uint64_t _startTime;
 
     bool _mqttConnected=false;
     string _mqttSubscribedTo;

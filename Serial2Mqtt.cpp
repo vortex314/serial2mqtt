@@ -65,6 +65,7 @@ void Serial2Mqtt::setSerialPort(string port)
 
 void Serial2Mqtt::init()
 {
+    _startTime = Sys::millis();
     _config.setNameSpace("programmer");
     _config.get("file",_binFile,"image.binary");
     _config.get("exec",_programCommand,"echo no command defined ");
@@ -105,32 +106,36 @@ void Serial2Mqtt::threadFunction(void* pv)
 void Serial2Mqtt::run()
 {
     string line;
-    Timer mqttTimer;
+    Timer mqttConnectTimer;
+    Timer mqttPublishTimer;
     Timer serialTimer;
 
-    mqttTimer.atInterval(5000).doThis([this]() {
+    mqttConnectTimer.atInterval(2000).doThis([this]() {
         if ( !_mqttConnected) {
             mqttConnect();
-        } else {
-            mqttPublish("src/"+_serial2mqttDevice+"/serial2mqtt/alive","true",0,0);
-            mqttPublish("src/"+_serial2mqttDevice+"/serial2mqtt/device",_mqttDevice,0,0);
-        }
+        } 
     });
+    mqttPublishTimer.atInterval(1000).doThis([this]() {
+            std::string sUpTime = std::to_string((Sys::millis()-_startTime)/1000);
+            mqttPublish("src/"+_serial2mqttDevice+"/serial2mqtt/alive","true",0,0);
+            mqttPublish("src/"+_serial2mqttDevice+"/system/upTime",sUpTime,0,0);
+            mqttPublish("src/"+_serial2mqttDevice+"/serial2mqtt/device",_mqttDevice,0,0);
+        });
     serialTimer.atDelta(5000).doThis([this]() {
         if ( _serialConnected ) {
             serialDisconnect();
             WARN(" disconecting serial no new data received in %d msec",5000);
         }
-
     });
     mqttConnect();
     serialConnect();
     while(true) {
         while(true) {
-            Signal s = waitSignal(5000);
+            Signal s = waitSignal(1000);
             DEBUG("signal = %s",signalString[s]);
-            mqttTimer.check();
+            mqttConnectTimer.check();
             serialTimer.check();
+            mqttPublishTimer.check();
             switch(s) {
             case TIMEOUT: {
                 if ( !_serialConnected) {
