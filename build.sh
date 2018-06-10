@@ -13,4 +13,7 @@ make
 cp ../serial2mqtt/makePaho.sh .
 ./makePaho.sh 
 cd ../serial2mqtt
+#
+# change all paths in the .mk file to your paths
+#
 make -f serial2mqtt.mk

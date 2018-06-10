@@ -13,7 +13,7 @@ CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=lieven
-Date                   :=21/05/18
+Date                   :=10/06/18
 CodeLitePath           :=/home/lieven/.codelite
 LinkerName             :=/usr/bin/g++
 SharedObjectLinkerName :=/usr/bin/g++ -shared -fPIC
@@ -81,7 +81,6 @@ $(OutputFile): $(IntermediateDirectory)/.d $(Objects)
 PostBuild:
 	@echo Executing Post Build commands ...
 	cp Debug/serial2mqtt Debug/serial2mqtt.`arch`
-	strip Debug/serial2mqtt.`arch`
 	zip -r Debug/serial2mqtt.`arch`.zip Debug/serial2mqtt.`arch`
 	
 	@echo Done

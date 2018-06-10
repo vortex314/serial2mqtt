@@ -113,14 +113,14 @@ void Serial2Mqtt::run()
     mqttConnectTimer.atInterval(2000).doThis([this]() {
         if ( !_mqttConnected) {
             mqttConnect();
-        } 
+        }
     });
     mqttPublishTimer.atInterval(1000).doThis([this]() {
-            std::string sUpTime = std::to_string((Sys::millis()-_startTime)/1000);
-            mqttPublish("src/"+_serial2mqttDevice+"/serial2mqtt/alive","true",0,0);
-            mqttPublish("src/"+_serial2mqttDevice+"/system/upTime",sUpTime,0,0);
-            mqttPublish("src/"+_serial2mqttDevice+"/serial2mqtt/device",_mqttDevice,0,0);
-        });
+        std::string sUpTime = std::to_string((Sys::millis()-_startTime)/1000);
+        mqttPublish("src/"+_serial2mqttDevice+"/serial2mqtt/alive","true",0,0);
+        mqttPublish("src/"+_serial2mqttDevice+"/system/upTime",sUpTime,0,0);
+        mqttPublish("src/"+_serial2mqttDevice+"/serial2mqtt/device",_mqttDevice,0,0);
+    });
     serialTimer.atDelta(5000).doThis([this]() {
         if ( _serialConnected ) {
             serialDisconnect();
@@ -404,7 +404,9 @@ void Serial2Mqtt::serialHandleLine(string& line)
 //		INFO(" token[%d] = %s",i,token[i].c_str());
             if ( args.find("cmd") != args.end() ) {
                 string cmd = args["cmd"];
-                if ( cmd.compare("MQTT-PUB")==0 ) {
+                if ( cmd.compare("MQTT-PUB")==0
+                     && args.find("topic")!=args.end()
+                     && args.find("message")!= args.end()) {
                     int qos=0;
                     bool retained=false;
                     string topic=args["topic"];
@@ -419,6 +421,11 @@ void Serial2Mqtt::serialHandleLine(string& line)
                     /*                    Bytes msg(1024);
                                         msg.append((uint8_t*)message.c_str(),message.length());*/
                     mqttPublish(topic,message,qos,retained);
+                } else if ( cmd.compare("MQTT-SUB")==0 && args.find("topic")!=args.end() ) {
+                    string topic=args["topic"];
+                    mqttSubscribe(topic);
+                } else {
+                    WARN(" invalid command from device : %s",line.c_str());
                 }
             }
         } catch(...) { // JSON Object parse failure
@@ -443,10 +450,12 @@ void Serial2Mqtt::serialPublish(string topic,Bytes message,int qos,bool retained
     if ( qos ) out["qos"]=qos;
     if ( retained ) out["retained"]=retained;
     line = out.dump();
+
     int erc = write(_serialFd,line.c_str(),line.length());
     if ( erc < 0 ) {
         INFO("write() failed '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
     }
+    write(_serialFd,"\n",1);// append a line feed for ingestion
     INFO(" TXD : %s ",line.c_str());
 }
 
@@ -653,6 +662,7 @@ void Serial2Mqtt::flashBin(Bytes& bytes)
         fclose(f);
         INFO(" executing programming %s ",_programCommand.c_str());
         FILE *outFd = popen(_programCommand.c_str(),"r");
+        sleep(30);
         if ( outFd==NULL) {
             WARN(" stating '%s' failed.",_programCommand.c_str());
         } else {
