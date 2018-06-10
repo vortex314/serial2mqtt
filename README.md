@@ -42,7 +42,7 @@ Arduino Sample program to communicate with the serial2mqtt  gateway
         }
     };
     // create a name for this device
-    String Mqtt::device = "ESP32";
+    String Mqtt::device = "ESP32"-" + String((uint32_t)ESP.getEfuseMac(), HEX);
     
     void setup() {
       Serial.begin(115200);
@@ -195,3 +195,6 @@ To avoid concurrency issues , the callbacks of the mqtt threads are communicated
 The main threads waits on events : timeout of 1 sec, data on serial file-descriptor or pipe file-descriptor. 
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
+<!--stackedit_data:
+eyJoaXN0b3J5IjpbMTgwMjE5MTkwOV19
+-->
