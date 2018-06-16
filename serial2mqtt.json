@@ -6,7 +6,8 @@
     "serial": {
         "baudrate": 115200,
         "ports": [
-            "/dev/ttyUSB0"
+            "/dev/ttyUSB0",
+            "/dev/ttyUSB1"
         ]
     },
     "programmer": {

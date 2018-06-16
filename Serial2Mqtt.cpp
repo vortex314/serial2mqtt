@@ -456,7 +456,7 @@ void Serial2Mqtt::serialPublish(string topic,Bytes message,int qos,bool retained
         INFO("write() failed '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
     }
     write(_serialFd,"\n",1);// append a line feed for ingestion
-    INFO(" TXD : %s ",line.c_str());
+    INFO(" TXD %s : %s ",_serialPort.c_str(),line.c_str());
 }
 
 /*
