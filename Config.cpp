@@ -11,8 +11,7 @@
 #include <stdio.h>
 #include <malloc.h>
 
-void Config::load()
-{
+void Config::load() {
 	if (_loaded) {
 //        char _buffer[1024];
 //       _root->printPretty(_buffer, sizeof(_buffer));
@@ -42,18 +41,17 @@ void Config::load()
 		data = (char*)malloc(10);
 		strcpy(data,"{}");
 	}
-    try {
-	_json = json::parse(data);
-    } catch(...){
-        WARN(" config file cannot be parsed. Invalid JSON.")
-    }
+	try {
+		_json = json::parse(data);
+	} catch(...) {
+		WARN(" config file cannot be parsed. Invalid JSON.");
+	}
 	INFO("%s",_json.dump().c_str());
 	free(data);
 	_loaded=true;
 }
 
-void Config::save()
-{
+void Config::save() {
 	std::string out=_json.dump(4);
 	FILE* fd=fopen(_configFile.c_str(),"w");
 	if(fd==NULL) {
@@ -71,34 +69,30 @@ void Config::save()
 	INFO("to : %s",_configFile.c_str());
 }
 
-Config::Config() :  _nameSpace(30), _loaded(false),_configFile(256)
-{
+Config::Config() :  _nameSpace(30), _loaded(false),_configFile(256) {
 	_configFile = "config.json";
 	_nameSpace="system";
 }
 
 Config::~Config() {}
 
-void Config::setFile(const char* s)
-{
+void Config::setFile(const char* s) {
 	_configFile=s;
-        _loaded=false;
+	_loaded=false;
 }
 
 
-void Config::setNameSpace(const char* ns)
-{
+void Config::setNameSpace(const char* ns) {
 	_nameSpace = ns;
 
 }
 
-const char* Config::getNameSpace()
-{
+const char* Config::getNameSpace() {
 	return _nameSpace.c_str();
 }
 /*
 void Config::get(const char* key,std::string& target,const char* defaultValue){
-	
+
 	if ( _json[getNameSpace()][key].is_null())
 			target = defaultValue;
 		else
@@ -107,8 +101,7 @@ void Config::get(const char* key,std::string& target,const char* defaultValue){
 
 */
 //==================================================
-bool Config::hasKey(const char* key)
-{
+bool Config::hasKey(const char* key) {
 	/*   JsonObject& ns = nameSpace();
 	   if (ns.containsKey(key)) {
 	       return true;
@@ -116,8 +109,7 @@ bool Config::hasKey(const char* key)
 	return false;
 }
 
-void Config::remove(const char* key)
-{
+void Config::remove(const char* key) {
 	load();
 	/*    JsonObject& ns = nameSpace();
 	    ns.remove(key);
