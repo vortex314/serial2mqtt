@@ -1,3 +1,4 @@
+echo "run from workspace directory !"
 #  INSTALL OPENSSL dev libraries first
 # sudo apt-get install libssl-dev
 #
