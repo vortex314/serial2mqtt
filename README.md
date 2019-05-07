@@ -14,62 +14,65 @@ Arduino Sample program to communicate with the serial2mqtt  gateway
 
    
 
-    #include <ArduinoJson.h>
+#include <Arduino.h>
+#include <ArduinoJson.h>
 
-    class Mqtt {
-      public:
-        static String device;
-        static void publish( String topic, String message, int qos = 0, bool retained = false ) {
-          StaticJsonBuffer<200> jsonBuffer;
-          JsonObject& data = jsonBuffer.createObject();
-          data["cmd"] = "MQTT-PUB";
-          data["topic"] = "src/" + device + "/" + topic;
-          data["message"] = message;
-          if ( qos != 0 ) data["qos"] = qos;
-          if ( retained) data["retained"] = retained;
-          data.printTo(Serial);
-          Serial.println();
-        }
-        static void handleLine(String& line) {
-          StaticJsonBuffer<200> jsonBuffer;
-          JsonObject& root = jsonBuffer.parseObject(line);
-          onMqttMessage(root["topic"], root["message"], root["qos"], root["retained"]);
-        }
-    
-        static void onMqttMessage(String topic, String message, int qos, bool retained) {
-        // add your own subscriber here 
-          Serial.printf(" Mqtt Message arrived");
-        }
-    };
-    // create a name for this device
-    String Mqtt::device = "ESP32"-" + String((uint32_t)ESP.getEfuseMac(), HEX);
-    
-    void setup() {
-      Serial.begin(115200);
-      pinMode(LED_BUILTIN, OUTPUT);
-      while (!Serial) {
-        ; // wait for serial port to connect. Needed for native USB port only
-      }
+class Mqtt {
+  public:
+    static String device;
+    static void publish( String topic, String message, int qos = 0, bool retained = false ) {
+      StaticJsonDocument<200> jsonBuffer;
+      JsonObject data = jsonBuffer.createNestedObject();
+      data["cmd"] = "MQTT-PUB";
+      data["topic"] = "src/" + device + "/" + topic;
+      data["message"] = message;
+      if ( qos != 0 ) data["qos"] = qos;
+      if ( retained) data["retained"] = retained;
+      String s;
+      serializeJson(data,s);
+      Serial.println(s);
     }
-    
-    String line;
-    void loop() {
-      while (Serial.available()) {
-        char ch = Serial.read();
-        if ( ch == '\r' || ch == '\n' ) {
-          Mqtt::handleLine(line);
-          line = "";
-        } else
-          line += ch;
-      }
-      digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
-      delay(100);                       // wait for a 0.1 second
-      digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
-      delay(100);                       // wait for a 0.1 second
-      Mqtt::publish( "system/upTime", String(millis(), 10), 0, false);
-      Mqtt::publish("system/host", Mqtt::device, 0, false);
-      Mqtt::publish("system/alive", "true", 0, false);
-      }
+    static void handleLine(String& line) {
+      StaticJsonDocument<200> jsonBuffer;
+      deserializeJson(jsonBuffer,line);
+      JsonObject root = jsonBuffer.as<JsonObject>();
+      onMqttMessage(root["topic"], root["message"], root["qos"], root["retained"]);
+    }
+
+    static void onMqttMessage(String topic, String message, int qos, bool retained) {
+    // add your own subscriber here 
+      Serial.printf(" Mqtt Message arrived");
+    }
+};
+// create a name for this device
+String Mqtt::device = "iot1" ;
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(LED_BUILTIN, OUTPUT);
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
+  }
+}
+
+String line;
+void loop() {
+  while (Serial.available()) {
+    char ch = Serial.read();
+    if ( ch == '\r' || ch == '\n' ) {
+      Mqtt::handleLine(line);
+      line = "";
+    } else
+      line += ch;
+  }
+  digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
+  delay(100);                       // wait for a 0.1 second
+  digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
+  delay(100);                       // wait for a 0.1 second
+  Mqtt::publish( "system/upTime", String(millis(), 10), 0, false);
+  Mqtt::publish("system/host", Mqtt::device, 0, false);
+  Mqtt::publish("system/alive", "true", 0, false);
+  }
 
 
 ## Working assumptions and features

@@ -41,15 +41,14 @@
       <Compiler Options="-g;-O0;-Wall;-std=c++0x" C_Options="-g;-O0;-Wall" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
         <IncludePath Value="."/>
         <IncludePath Value="../Common"/>
-        <IncludePath Value="../json/single_include/nlohmann"/>
+        <IncludePath Value="../json/include"/>
         <IncludePath Value="../paho.mqtt.c/src"/>
-        <IncludePath Value="../inja/src"/>
+        <IncludePath Value="../inja/single_include/inja"/>
       </Compiler>
-      <Linker Options="-static" Required="yes">
+      <Linker Options="-l:libpaho-mqtt3c.a" Required="yes">
         <LibraryPath Value="../Common/Debug"/>
         <LibraryPath Value="../paho.mqtt.c/build/output"/>
         <Library Value="Common"/>
-        <Library Value="paho-mqtt3c"/>
         <Library Value="pthread"/>
       </Linker>
       <ResourceCompiler Options="" Required="no"/>

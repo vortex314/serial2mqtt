@@ -12,8 +12,8 @@ OutDir                 := $(IntermediateDirectory)
 CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
-User                   :=Lieven
-Date                   :=09/02/19
+User                   :=lieven
+Date                   :=07/05/19
 CodeLitePath           :=/home/lieven/.codelite
 LinkerName             :=/usr/bin/g++
 SharedObjectLinkerName :=/usr/bin/g++ -shared -fPIC
@@ -35,12 +35,12 @@ PreprocessOnlySwitch   :=-E
 ObjectsFileList        :="serial2mqtt.txt"
 PCHCompileFlags        :=
 MakeDirCommand         :=mkdir -p
-LinkOptions            :=  -static
-IncludePath            :=  $(IncludeSwitch). $(IncludeSwitch). $(IncludeSwitch)../Common $(IncludeSwitch)../json/single_include $(IncludeSwitch)../paho.mqtt.c/src $(IncludeSwitch)../inja/include/inja
+LinkOptions            :=  -l:libpaho-mqtt3c.a
+IncludePath            :=  $(IncludeSwitch). $(IncludeSwitch). $(IncludeSwitch)../Common $(IncludeSwitch)../json/include $(IncludeSwitch)../paho.mqtt.c/src $(IncludeSwitch)../inja/single_include/inja 
 IncludePCH             := 
 RcIncludePath          := 
-Libs                   := $(LibrarySwitch)Common $(LibrarySwitch)paho-mqtt3c $(LibrarySwitch)pthread 
-ArLibs                 :=  "Common" "paho-mqtt3c" "pthread" 
+Libs                   := $(LibrarySwitch)Common $(LibrarySwitch)pthread 
+ArLibs                 :=  "Common" "pthread" 
 LibPath                := $(LibraryPathSwitch). $(LibraryPathSwitch)../Common/Debug $(LibraryPathSwitch)../paho.mqtt.c/build/output 
 
 ##
