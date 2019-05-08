@@ -11,8 +11,7 @@ Also the concept behind is that a central PC or Raspberry PI can act as the inte
 ![enter image description here](http://drive.google.com/uc?export=view&id=1rGeHOaMEGLJJqxFsd5fnaAE7N1DHoJUI)
 
 Arduino Sample program to communicate with the serial2mqtt  gateway
-
-   
+```
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -73,7 +72,7 @@ void loop() {
   Mqtt::publish("system/host", Mqtt::device, 0, false);
   Mqtt::publish("system/alive", "true", 0, false);
   }
-
+```
 
 ## Working assumptions and features
 - Topic Names 
