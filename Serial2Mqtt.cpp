@@ -116,7 +116,9 @@ void Serial2Mqtt::run() {
 	serialTimer.atDelta(5000).doThis([this]() {
 		if ( _serialConnected ) {
 			serialDisconnect();
-			WARN(" disconecting serial no new data received in %d msec",5000);
+			WARN(" disconnecting serial no new data received in %d msec",5000);
+			sleep(5);
+			serialConnect();
 		}
 	});
 	mqttConnect();

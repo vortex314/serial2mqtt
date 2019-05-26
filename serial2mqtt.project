@@ -21,7 +21,6 @@
     <File Name="Timer.h"/>
     <File Name="Serial2Mqtt.cpp"/>
     <File Name="Serial2Mqtt.h"/>
-    <File Name="config.json"/>
     <File Name="Sys.cpp"/>
     <File Name="Config.h"/>
     <File Name="Config.cpp"/>
