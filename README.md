@@ -1,3 +1,7 @@
+# TL;DR
+Go to build directory, download .zip, unzip and update serial2mqtt.json to your needs.
+Arduino side sample code below. Enjoy ! 
+
 # serial2mqtt
 For a complete view : [with UML sequence diagrams](https://vortex314.github.io/Serial2Mqtt.html)
 
