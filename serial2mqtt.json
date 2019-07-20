@@ -1,13 +1,14 @@
 {
     "mqtt": {
-        "host": "limero.ddns.net",
+        "host": "pi2.local",
         "port": 1883
     },
     "serial": {
         "baudrate": 115200,
         "ports": [
             "/dev/ttyACM0"
-        ]
+        ],
+        "protocol":"jsonArray"
     },
     "programmer": {
         "file": "image.bin",

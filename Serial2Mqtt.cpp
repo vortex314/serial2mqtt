@@ -1,7 +1,6 @@
+
 #include "Serial2Mqtt.h"
 
-using std::string;
-using std::vector;
 
 typedef struct {
 	uint32_t baudrate;
@@ -36,7 +35,7 @@ const char* signalString[]= {   "PIPE_ERROR",
                                 "TIMEOUT"
                             } ;
 
-Serial2Mqtt::Serial2Mqtt() : _serialBuffer(10240) {
+Serial2Mqtt::Serial2Mqtt() : _serialBuffer(10240),_jsonDocument() {
 }
 
 Serial2Mqtt::~Serial2Mqtt() {
@@ -66,6 +65,12 @@ void Serial2Mqtt::init() {
 
 	_config.setNameSpace("serial");
 	_config.get("baudrate",_serialBaudrate,115200);
+	std::string protocol;
+	_config.get("protocol",protocol,"jsonObject");
+	_protocol=JSON_OBJECT;
+	if ( protocol=="jsonObject") _protocol=JSON_OBJECT;
+	if ( protocol=="jsonArray") _protocol=JSON_ARRAY;
+	if ( protocol=="protobuf") _protocol=PROTOBUF;
 
 	_config.setNameSpace("mqtt");
 	_config.get("port",_mqttPort,1883);
@@ -82,7 +87,8 @@ void Serial2Mqtt::init() {
 	_mqttSubscribedTo = "dst/"+_serial2mqttDevice+"/#";
 	_mqttProgrammerTopic = "dst/"+_serial2mqttDevice+"/serial2mqtt/flash";
 	_mqttClientId = _mqttDevice+std::to_string(getpid());
-	_config.get("willTopic",_mqttWillTopic,"src/"+_serial2mqttDevice+"/serial2mqtt/alive");
+	std::string willTopicDefault = "src/"+_serial2mqttDevice+"/serial2mqtt/alive";
+	_config.get("willTopic",_mqttWillTopic,willTopicDefault.c_str());
 
 
 
@@ -117,8 +123,6 @@ void Serial2Mqtt::run() {
 		if ( _serialConnected ) {
 			serialDisconnect();
 			WARN(" disconnecting serial no new data received in %d msec",5000);
-			sleep(5);
-			serialConnect();
 		}
 	});
 	mqttConnect();
@@ -374,28 +378,95 @@ std::vector<string> split(const string &text, char sep) {
 }
 
 
-void Serial2Mqtt::serialHandleLine(string& line) {
-//    INFO(" RXD %d bytes ",line.length());
-	std::vector<string> token;
-	/*	char cLine[line.length()+1];
-		strcpy(cLine,line.c_str());
-		token = split(cLine,',');*/
-	if ( line[0]=='{') {
 
-		try {
-			json args=json::parse(line);
-			DEBUG("%s %s",_serialPortShort.c_str(),args.dump().c_str());
-//	ParseCSV(line,token);
-//	for(uint32_t i=0; i<token.size(); i++)
-//		INFO(" token[%d] = %s",i,token[i].c_str());
-			if ( args.find("cmd") != args.end() ) {
-				string cmd = args["cmd"];
+unsigned short crc16(const unsigned char* data_p, unsigned char length) {
+	unsigned char x;
+	unsigned short crc = 0xFFFF;
+
+	while (length--) {
+		x = crc >> 8 ^ *data_p++;
+		x ^= x>>4;
+		crc = (crc << 8) ^ ((unsigned short)(x << 12)) ^ ((unsigned short)(x <<5)) ^ ((unsigned short)x);
+	}
+	return crc;
+}
+/*
+ * extract CRC and verify in syntax => ["ABCD",2,..]
+ */
+bool Serial2Mqtt::checkCrc(std::string& line) {
+	if ( line.length() < 9 ) return false;
+	std::string crcStr=line.substr(2,4);
+	uint32_t crcFound;
+	sscanf(crcStr.c_str(),"%4X",&crcFound);
+	std::string line2 = line.substr(0,2)+"0000"+line.substr(6,string::npos);
+	uint32_t crcCalc = crc16((uint8_t*)line2.data(),line2.length());
+	return crcCalc==crcFound;
+}
+
+void Serial2Mqtt::genCrc(std::string& line) {
+	uint32_t crcCalc = crc16((uint8_t*)line.data(),line.length());
+	char hexCrc[5];
+	sprintf(hexCrc,"%4.4X",crcCalc);
+	std::string lineCopy="[\"";
+	lineCopy +=hexCrc+line.substr(6,string::npos);
+	line=lineCopy.c_str();
+}
+
+/*
+ * JSON protocol : [CRC,CMD,TOPIC,MESSAGE,QOS,RETAIN]
+ * CMD : 0:PING,1:PUBLISH,2:PUBACK,3:SUBSCRIBE,4:SUBACK,...
+ * ping : ["0000",0,"someText"]
+ * publish : ["ABCD",1,"dst/topic1","message1",0,0]
+ * subscribe : ["ABCD",3,"dst/myTopic"]
+ *
+ */
+
+typedef enum {
+	PING=0,PUBLISH,PUBACK,SUBSCRIBE,SUBACK
+} CMD;
+
+void Serial2Mqtt::serialHandleLine(string& line) {
+	std::vector<string> token;
+	_jsonDocument.clear();
+	if ( _protocol==JSON_ARRAY && line.length()>2 &&  line[0]=='['  && line[line.length()-1]==']') {
+		deserializeJson(_jsonDocument,line);
+		if ( _jsonDocument.is<JsonArray>()) {
+			JsonArray array = _jsonDocument.as<JsonArray>();
+			int cmd=array[1];
+			if ( cmd==PING) {
+				DynamicJsonDocument doc(2038);
+				doc.add("0000");
+				doc.add(PING);
+				doc.add(array[2]);
+				std::string line;
+				serializeJson(doc,line);
+				genCrc(line);
+				serialTxd(line+"\r\n");
+			} else if ( cmd==PUBLISH ) {
+				std::string topic=array[2];
+				std::string message=array[3];
+				uint32_t qos=array[4];
+				bool retained =  array[5]==1;
+				mqttPublish(topic,message,qos,retained);
+				return;
+			} else if(cmd==SUBSCRIBE) {
+				std::string topic=array[2];
+				mqttSubscribe(topic);
+				return;
+			}
+		}
+	} else if ( _protocol==JSON_OBJECT && line.length()>2 &&  line[0]=='{'  && line[line.length()-1]=='}') {
+		deserializeJson(_jsonDocument,line);
+		if ( _jsonDocument.is<JsonObject>()) {
+			JsonObject json=_jsonDocument.as<JsonObject>();
+			if ( json.containsKey("cmd")) {
+				string cmd = json["cmd"];
 				if ( cmd.compare("MQTT-PUB")==0
-				        && args.find("topic")!=args.end()
-				        && args.find("message")!= args.end()) {
+				        && json.containsKey("topic")
+				        && json.containsKey("message")) {
 					int qos=0;
 					bool retained=false;
-					string topic=args["topic"];
+					string topic=json["topic"];
 					token = split(topic,'/');
 					if ( token[1].compare(_mqttDevice)!=0 ) {
 						WARN(" subscribed topic differ %s <> %s ",token[1].c_str(),_mqttDevice.c_str());
@@ -403,45 +474,64 @@ void Serial2Mqtt::serialHandleLine(string& line) {
 						_mqttSubscribedTo = "dst/"+_mqttDevice+"/#";
 						mqttSubscribe(_mqttSubscribedTo);
 					}
-					string message=args["message"];
+					string message=json["message"];
 					/*                    Bytes msg(1024);
 					                    msg.append((uint8_t*)message.c_str(),message.length());*/
 					mqttPublish(topic,message,qos,retained);
-				} else if ( cmd.compare("MQTT-SUB")==0 && args.find("topic")!=args.end() ) {
-					string topic=args["topic"];
+					return;
+				} else if ( cmd.compare("MQTT-SUB")==0 && json.containsKey("topic") ) {
+					string topic=json["topic"];
 					mqttSubscribe(topic);
+					return;
 				} else {
 					WARN(" invalid command from device : %s",line.c_str());
 				}
 			}
-		} catch(...) { // JSON Object parse failure
-//            INFO("PARSE FAILED : %s",line.c_str());
-			mqttPublish("src/"+_serial2mqttDevice+"/serial2mqtt/log",line,0,false);
 		}
-	} else { // no JSON object
-//        INFO("NO { FOUND : %s",line.c_str())
-		mqttPublish("src/"+_serial2mqttDevice+"/serial2mqtt/log",line,0,false);
 	}
+	fprintf(stdout,"%s\n",line.c_str());
+
+	mqttPublish("src/"+_serial2mqttDevice+"/serial2mqtt/log",line,0,false);
 }
 
 void Serial2Mqtt::serialPublish(string topic,Bytes message,int qos,bool retained) {
-	string line;
-	Str msg(1024);
-	msg.write( message.data(),0,message.length());
-	json out ;
-	out["cmd"]="MQTT-PUB";
-	out["topic"]=topic;
-	out["message"]=msg.c_str();
-	if ( qos ) out["qos"]=qos;
-	if ( retained ) out["retained"]=retained;
-	line = out.dump();
+	std::string line;
 
+	if ( _protocol==JSON_OBJECT ) {
+		string msg;
+		msg.assign((const char*)message.data(),0,message.length());
+		_jsonDocument.clear();
+		JsonObject out = _jsonDocument.to<JsonObject>();
+		out["cmd"]="MQTT-PUB";
+		out["topic"]=topic;
+		out["message"]=msg.c_str();
+		if ( qos ) out["qos"]=qos;
+		if ( retained ) out["retained"]=retained;
+		serializeJson(out,line);
+	} else if ( _protocol==JSON_ARRAY) {
+		string msg;
+		msg.assign((const char*)message.data(),0,message.length());
+		DynamicJsonDocument doc(2038);
+		doc.add("0000");
+		doc.add(1);
+		doc.add(topic);
+		doc.add(msg);
+		doc.add(0);
+		doc.add(0);
+		serializeJson(doc,line);
+		genCrc(line);
+	} else {
+		WARN(" invalid protocol found.");
+	}
+	serialTxd(line+"\r\n");
+	INFO(" TXD %s : %s ",_serialPort.c_str(),line.c_str());
+}
+
+void Serial2Mqtt::serialTxd(const string& line) {
 	int erc = write(_serialFd,line.c_str(),line.length());
 	if ( erc < 0 ) {
 		INFO("write() failed '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
 	}
-	write(_serialFd,"\n",1);// append a line feed for ingestion
-	INFO(" TXD %s : %s ",_serialPort.c_str(),line.c_str());
 }
 
 /*
@@ -576,7 +666,8 @@ void Serial2Mqtt::onSubscribeFailure(void* context, MQTTAsync_failureData* respo
 }
 
 void Serial2Mqtt::mqttPublish(string topic,string message,int qos,bool retained) {
-	Str msg(message.length()+2);
+	Bytes msg(1024);
+	DEBUG(" MQTT PUB : %s = %s ",topic.c_str(),message.c_str());
 	msg=message.c_str();
 	mqttPublish(topic,msg,qos,retained);
 }
