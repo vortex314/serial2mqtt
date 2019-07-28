@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
 	}
 
 	config.setNameSpace("serial");
-	JsonArray ports = config.root()["ports"].as<JsonArray>() ;
+	JsonArray ports = config.root()["serial"]["ports"].as<JsonArray>() ;
 //	JsonArray		ports = jsonDoc.as<JsonArray>();
 
 	if ( ports.isNull() ) {
