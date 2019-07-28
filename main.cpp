@@ -11,6 +11,18 @@ Log logger(2048);
 //Config config;
 #define MAX_PORT	20
 
+std::string logFile="";
+FILE* logFd=0;
+
+void myLogFunction(char* s,uint32_t length) {
+	fprintf(logFd,"%s\n",s);
+	fflush(logFd);
+	fprintf(stdout,"%s\r\n",s);
+
+}
+
+
+
 Serial2Mqtt serial2mqtt[MAX_PORT];
 
 int main(int argc, char **argv) {
@@ -23,6 +35,16 @@ int main(int argc, char **argv) {
 	INFO(" argv[0] : %s ",argv[0]);
 	config.loadFile("serial2mqtt.json");
 	overrideConfig(config,argc,argv);
+	if ( logFile.length()>0 ) {
+		INFO(" logging to file %s ", logFile.c_str());
+		logFd=fopen(logFile.c_str(),"w");
+		if ( logFd==NULL ) {
+			WARN(" open logfile %s failed : %d %s ",logFile.c_str(),errno, strerror(errno));
+		} else {
+			logger.setOutput(myLogFunction);
+		}
+	}
+
 	config.setNameSpace("serial");
 	JsonArray ports = config.root()["ports"].as<JsonArray>() ;
 //	JsonArray		ports = jsonDoc.as<JsonArray>();
@@ -38,6 +60,7 @@ int main(int argc, char **argv) {
 		INFO(" configuring port : %s",port.c_str());
 		serial2mqtt[i].setSerialPort(port.c_str());
 		serial2mqtt[i].setConfig(config);
+		serial2mqtt[i].setLogFd(logFd);
 		serial2mqtt[i].init();
 	}
 
@@ -59,7 +82,7 @@ int main(int argc, char **argv) {
 void overrideConfig(Config& config,int argc, char **argv) {
 	int  opt;
 
-	while ((opt = getopt(argc, argv, "f:m:")) != -1) {
+	while ((opt = getopt(argc, argv, "f:m:l:")) != -1) {
 		switch (opt) {
 			case 'm':
 				config.setNameSpace("mqtt");
@@ -68,8 +91,11 @@ void overrideConfig(Config& config,int argc, char **argv) {
 			case 'f':
 				config.loadFile(optarg);
 				break;
+			case 'l':
+				logFile=optarg;
+				break;
 			default: /* '?' */
-				fprintf(stderr, "Usage: %s [-f configFile] [-m mqttHost]\n",
+				fprintf(stderr, "Usage: %s [-f configFile] [-l logFile] [-m mqttHost]\n",
 				        argv[0]);
 				exit(EXIT_FAILURE);
 		}

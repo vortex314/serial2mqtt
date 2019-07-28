@@ -65,6 +65,7 @@ class Serial2Mqtt {
 			PROTOBUF
 		} Protocol;
 		Protocol _protocol;
+		FILE* _logFd;
 
 	public:
 		typedef enum {PIPE_ERROR,
@@ -99,6 +100,7 @@ class Serial2Mqtt {
 
 		void setConfig(Config config);
 		void setSerialPort(string port);
+		void setLogFd(FILE*);
 		Erc serialConnect();
 		void serialDisconnect();
 		void serialRxd();

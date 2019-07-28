@@ -57,6 +57,10 @@ void Serial2Mqtt::setSerialPort(string port) {
 	_serialPort=port;
 }
 
+void Serial2Mqtt::setLogFd(FILE* logFd) {
+	_logFd=logFd;
+}
+
 void Serial2Mqtt::init() {
 	_startTime = Sys::millis();
 	_config.setNameSpace("programmer");
@@ -490,6 +494,11 @@ void Serial2Mqtt::serialHandleLine(string& line) {
 		}
 	}
 	fprintf(stdout,"%s\n",line.c_str());
+	if ( _logFd != NULL ) 	{
+		fprintf(_logFd,"%s\n",line.c_str());
+		fflush(_logFd);
+	}
+
 
 	mqttPublish("src/"+_serial2mqttDevice+"/serial2mqtt/log",line,0,false);
 }
