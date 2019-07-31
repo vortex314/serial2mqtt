@@ -1,6 +1,6 @@
 {
     "mqtt": {
-        "host": "pi2.local",
+        "host": "limero.local",
         "port": 1883
     },
     "serial": {
