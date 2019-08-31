@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
 void overrideConfig(Config& config,int argc, char **argv) {
 	int  opt;
 
-	while ((opt = getopt(argc, argv, "f:m:l:")) != -1) {
+	while ((opt = getopt(argc, argv, "f:m:l:v:")) != -1) {
 		switch (opt) {
 			case 'm':
 				config.setNameSpace("mqtt");
@@ -98,11 +98,16 @@ void overrideConfig(Config& config,int argc, char **argv) {
 			case 'f':
 				config.loadFile(optarg);
 				break;
+			case 'v': {
+				char logLevel = optarg[0];
+				logger.setLogLevel(logLevel);
+				break;
+				}
 			case 'l':
 				logFile=optarg;
 				break;
 			default: /* '?' */
-				fprintf(stderr, "Usage: %s [-f configFile] [-l logFile] [-m mqttHost]\n",
+				fprintf(stderr, "Usage: %s [-v(TDIWE)] [-f configFile] [-l logFile] [-m mqttHost]\n",
 				        argv[0]);
 				exit(EXIT_FAILURE);
 		}

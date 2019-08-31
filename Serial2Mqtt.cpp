@@ -19,6 +19,7 @@ BAUDRATE BAUDRATE_TABLE[] = { { 50, B50 }, { 75, B75 }, { 110, B110 }, { 134, B1
 };
 
 const char* signalString[]= {   "PIPE_ERROR",
+								"SELECT_ERROR",
                                 "SERIAL_CONNECT",
                                 "SERIAL_DISCONNECT",
                                 "SERIAL_RXD",
@@ -34,6 +35,8 @@ const char* signalString[]= {   "PIPE_ERROR",
                                 "MQTT_ERROR",
                                 "TIMEOUT"
                             } ;
+                            
+
 
 #define USB() logger.application(_serialPort.c_str())
 
@@ -130,6 +133,7 @@ void Serial2Mqtt::run() {
 		if ( _serialConnected ) {
 			serialDisconnect();
 			WARN(" disconnecting serial no new data received in %d msec",5000);
+			serialConnect();
 		}
 	});
 	if ( _mqttConnectionState != MS_CONNECTING ) mqttConnect();
@@ -207,6 +211,7 @@ void Serial2Mqtt::run() {
 			}
 		}
 	}
+	WARN(" exited run loop !!");
 }
 
 
@@ -231,7 +236,7 @@ Serial2Mqtt::Signal Serial2Mqtt::waitSignal(uint32_t timeout) {
 	// Wait up to 1000 msec.
 	uint64_t delta = timeout;
 
-	tv.tv_sec = delta / 1000;
+	tv.tv_sec = 1;
 	tv.tv_usec = (delta * 1000) % 1000000;
 
 	// Watch serialFd and tcpFd  to see when it has input.
@@ -248,7 +253,7 @@ Serial2Mqtt::Signal Serial2Mqtt::waitSignal(uint32_t timeout) {
 	}
 	int maxFd = _serialFd < _signalFd[0] ? _signalFd[0] : _serialFd;
 	maxFd += 1;
-
+	
 	retval = select(maxFd, &rfds, NULL, &efds, &tv);
 
 	if(retval < 0) {
@@ -344,6 +349,7 @@ void Serial2Mqtt::serialDisconnect() {
 }
 
 void Serial2Mqtt::serialRxd() {
+	if( !_serialConnected ) return;
 	char buffer[1024];
 	int erc;
 	while(true) {
@@ -353,14 +359,18 @@ void Serial2Mqtt::serialRxd() {
 			for(int i=0; i<erc; i++)
 				_serialBuffer.write(buffer[i]);
 			if ( _serialBuffer.size()> 3000) _serialBuffer.clear();
+		} else if ( erc < 0 ) {
+			if ( errno == EAGAIN || errno==EWOULDBLOCK) return ;
+			DEBUG(" read returns %d => errno : %d = %s",erc,errno,strerror(errno));
+			signal(SERIAL_ERROR);
 		} else {
 			return;
 		}
-
 	}
 }
 
 bool Serial2Mqtt::serialGetLine(string& line) {
+	if ( !_serialConnected ) return false;
 	while(_serialBuffer.hasData()) {
 		char ch = _serialBuffer.read();
 		if ( ch=='\n' ) {
@@ -716,7 +726,7 @@ void Serial2Mqtt::mqttPublish(string topic,Bytes message,int qos,bool retained) 
 	MQTTAsync_responseOptions opts = MQTTAsync_responseOptions_initializer;
 	MQTTAsync_message pubmsg = MQTTAsync_message_initializer;
 
-//    INFO("mqttPublish %s",topic.c_str());
+ //   INFO("mqttPublish %s",topic.c_str());
 
 	int rc = E_OK;
 	opts.onSuccess = onPublishSuccess;
