@@ -44,7 +44,7 @@
       <Compiler Options="-g;-O0;-Wall;-std=c++0x" C_Options="-g;-O0;-Wall" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
         <IncludePath Value="."/>
         <IncludePath Value="../Common"/>
-        <IncludePath Value="../ArduinoJson"/>
+        <IncludePath Value="../ArduinoJson/src"/>
         <IncludePath Value="../paho.mqtt.c/src"/>
       </Compiler>
       <Linker Options="-l:libpaho-mqtt3c.a" Required="yes">

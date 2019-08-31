@@ -25,6 +25,11 @@ void myLogFunction(char* s,uint32_t length) {
 
 Serial2Mqtt serial2mqtt[MAX_PORT];
 
+void SetThreadName(std::thread* thread, const char* threadName) {
+	auto handle = thread->native_handle();
+	pthread_setname_np(handle,threadName);
+}
+
 int main(int argc, char **argv) {
 
 	std::thread threads[MAX_PORT];
@@ -69,6 +74,8 @@ int main(int argc, char **argv) {
 			INFO(" starting thread %d",i);
 			serial2mqtt[i].run();
 		});
+		std::string port= ports[i];
+		SetThreadName(&threads[i],port.substr(8).c_str());
 	}
 
 

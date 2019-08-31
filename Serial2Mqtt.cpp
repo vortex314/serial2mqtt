@@ -35,22 +35,20 @@ const char* signalString[]= {   "PIPE_ERROR",
                                 "TIMEOUT"
                             } ;
 
-Serial2Mqtt::Serial2Mqtt() : _serialBuffer(10240),_jsonDocument()
-{
-_mqttConnectionState=MS_DISCONNECTED;
-	}
+#define USB() logger.application(_serialPort.c_str())
 
-Serial2Mqtt::~Serial2Mqtt()
-{
+Serial2Mqtt::Serial2Mqtt() : _serialBuffer(10240),_jsonDocument() {
+	_mqttConnectionState=MS_DISCONNECTED;
 }
 
-void Serial2Mqtt::setConfig(Config config)
-{
+Serial2Mqtt::~Serial2Mqtt() {
+}
+
+void Serial2Mqtt::setConfig(Config config) {
 	_config=config;
 }
 
-int baudSymbol(uint32_t br)
-{
+int baudSymbol(uint32_t br) {
 	for (uint32_t i = 0; i < sizeof(BAUDRATE_TABLE) / sizeof(BAUDRATE); i++)
 		if (BAUDRATE_TABLE[i].baudrate == br)
 			return BAUDRATE_TABLE[i].symbol;
@@ -58,18 +56,15 @@ int baudSymbol(uint32_t br)
 	return B115200;
 }
 
-void Serial2Mqtt::setSerialPort(string port)
-{
+void Serial2Mqtt::setSerialPort(string port) {
 	_serialPort=port;
 }
 
-void Serial2Mqtt::setLogFd(FILE* logFd)
-{
+void Serial2Mqtt::setLogFd(FILE* logFd) {
 	_logFd=logFd;
 }
 
-void Serial2Mqtt::init()
-{
+void Serial2Mqtt::init() {
 	_startTime = Sys::millis();
 	_config.setNameSpace("programmer");
 	_config.get("file",_binFile,"image.binary");
@@ -101,21 +96,20 @@ void Serial2Mqtt::init()
 	std::string willTopicDefault = "src/"+_serial2mqttDevice+"/serial2mqtt/alive";
 	_config.get("willTopic",_mqttWillTopic,willTopicDefault.c_str());
 
+	if (pipe(_signalFd) < 0)   {
+		INFO("Failed to create pipe: %s (%d)", strerror(errno), errno);
+	}
 
-
-	if (pipe(_signalFd) < 0)        INFO("Failed to create pipe: %s (%d)", strerror(errno), errno);
-
-	if (fcntl(_signalFd[0], F_SETFL, O_NONBLOCK) < 0)
+	if (fcntl(_signalFd[0], F_SETFL, O_NONBLOCK) < 0) {
 		INFO("Failed to set pipe non-blocking mode: %s (%d)", strerror(errno), errno);
+	}
 }
 
-void Serial2Mqtt::threadFunction(void* pv)
-{
+void Serial2Mqtt::threadFunction(void* pv) {
 	run();
 }
 
-void Serial2Mqtt::run()
-{
+void Serial2Mqtt::run() {
 	string line;
 	Timer mqttConnectTimer;
 	Timer mqttPublishTimer;
@@ -143,80 +137,80 @@ void Serial2Mqtt::run()
 	while(true) {
 		while(true) {
 			Signal s = waitSignal(1000);
+
 			DEBUG("signal = %s",signalString[s]);
 			mqttConnectTimer.check();
 			serialTimer.check();
 			mqttPublishTimer.check();
 			switch(s) {
-			case TIMEOUT: {
-				if ( !_serialConnected) {
-					serialConnect();
-				}
-				break;
-			}
-			case SERIAL_RXD : {
-				serialRxd();
-				if ( serialGetLine(line)) {
-					serialTimer.atDelta(5000);
-					serialHandleLine(line);
-					line.clear();
-				}
-				break;
-			}
-			case SERIAL_ERROR : {
-				serialDisconnect();
-				break;
-			}
-			case MQTT_CONNECT_SUCCESS : {
-				INFO("MQTT_CONNECT_SUCCESS %s ",_serialPortShort.c_str());
-				_mqttConnected=true;
-				mqttSubscribe(_mqttSubscribedTo);
-				break;
-			}
-			case MQTT_CONNECT_FAIL : {
-				WARN("MQTT_CONNECT_FAIL %s ",_serialPortShort.c_str());
-				_mqttConnected=false;
-				break;
-			}
-			case MQTT_DISCONNECTED: {
-				WARN("MQTT_DISCONNECTED %s ",_serialPortShort.c_str());
-				_mqttConnected=false;
-				break;
-			}
-			case MQTT_SUBSCRIBE_SUCCESS: {
-				INFO("MQTT_SUBSCRIBE_SUCCESS %s ",_serialPortShort.c_str());
-				break;
-			}
-			case MQTT_SUBSCRIBE_FAIL: {
-				WARN("MQTT_SUBSCRIBE_FAIL %s ",_serialPortShort.c_str());
-				mqttDisconnect();
-				break;
-			}
-			case MQTT_ERROR : {
-				WARN("MQTT_ERROR %s ",_serialPortShort.c_str());
-				break;
-			}
-			case PIPE_ERROR : {
-				WARN("PIPE_ERROR %s ",_serialPortShort.c_str());
-				break;
-			}
-			case MQTT_PUBLISH_SUCCESS: {
-				break;
-			}
-			case MQTT_MESSAGE_RECEIVED: {
-				break;
-			}
-			default: {
-				WARN("received signal '%d for %s ",s,_serialPortShort.c_str());
-			}
+				case TIMEOUT: {
+						if ( !_serialConnected) {
+							serialConnect();
+						}
+						break;
+					}
+				case SERIAL_RXD : {
+						serialRxd();
+						if ( serialGetLine(line)) {
+							serialTimer.atDelta(5000);
+							serialHandleLine(line);
+							line.clear();
+						}
+						break;
+					}
+				case SERIAL_ERROR : {
+						serialDisconnect();
+						break;
+					}
+				case MQTT_CONNECT_SUCCESS : {
+						INFO("MQTT_CONNECT_SUCCESS %s ",_serialPortShort.c_str());
+						_mqttConnected=true;
+						mqttSubscribe(_mqttSubscribedTo);
+						break;
+					}
+				case MQTT_CONNECT_FAIL : {
+						WARN("MQTT_CONNECT_FAIL %s ",_serialPortShort.c_str());
+						_mqttConnected=false;
+						break;
+					}
+				case MQTT_DISCONNECTED: {
+						WARN("MQTT_DISCONNECTED %s ",_serialPortShort.c_str());
+						_mqttConnected=false;
+						break;
+					}
+				case MQTT_SUBSCRIBE_SUCCESS: {
+						INFO("MQTT_SUBSCRIBE_SUCCESS %s ",_serialPortShort.c_str());
+						break;
+					}
+				case MQTT_SUBSCRIBE_FAIL: {
+						WARN("MQTT_SUBSCRIBE_FAIL %s ",_serialPortShort.c_str());
+						mqttDisconnect();
+						break;
+					}
+				case MQTT_ERROR : {
+						WARN("MQTT_ERROR %s ",_serialPortShort.c_str());
+						break;
+					}
+				case PIPE_ERROR : {
+						WARN("PIPE_ERROR %s ",_serialPortShort.c_str());
+						break;
+					}
+				case MQTT_PUBLISH_SUCCESS: {
+						break;
+					}
+				case MQTT_MESSAGE_RECEIVED: {
+						break;
+					}
+				default: {
+						WARN("received signal '%d for %s ",s,_serialPortShort.c_str());
+					}
 			}
 		}
 	}
 }
 
 
-void Serial2Mqtt::signal(uint8_t m)
-{
+void Serial2Mqtt::signal(uint8_t m) {
 	if ( write(_signalFd[1],(void*)&m,1) < 1 ) {
 		INFO("Failed to write pipe: %s (%d)", strerror(errno), errno);
 	}
@@ -224,8 +218,7 @@ void Serial2Mqtt::signal(uint8_t m)
 }
 
 
-Serial2Mqtt::Signal Serial2Mqtt::waitSignal(uint32_t timeout)
-{
+Serial2Mqtt::Signal Serial2Mqtt::waitSignal(uint32_t timeout) {
 	Signal returnSignal=TIMEOUT;
 	uint8_t buffer;
 	fd_set rfds;
@@ -278,6 +271,7 @@ Serial2Mqtt::Signal Serial2Mqtt::waitSignal(uint32_t timeout)
 			returnSignal=PIPE_ERROR;
 		}
 	} else {
+
 		TRACE(" timeout %llu", Sys::millis());
 		returnSignal=TIMEOUT;
 	}
@@ -286,11 +280,10 @@ Serial2Mqtt::Signal Serial2Mqtt::waitSignal(uint32_t timeout)
 }
 
 
-Erc Serial2Mqtt::serialConnect()
-{
+Erc Serial2Mqtt::serialConnect() {
 	struct termios options;
-	INFO( "Connecting to '%s' ....", _serialPort.c_str());
 
+	INFO( "Connecting to '%s' ....", _serialPort.c_str());
 	_serialFd = ::open(_serialPort.c_str(), O_EXCL | O_RDWR | O_NOCTTY | O_NDELAY);
 
 	if (_serialFd == -1) {
@@ -299,11 +292,11 @@ Erc Serial2Mqtt::serialConnect()
 		_serialFd = 0;
 		return errno;
 	}
+
 	INFO( "open '%s' succeeded.fd=%d", _serialPort.c_str(),_serialFd);
 
 
 //	fcntl(_serialFd, F_SETFL, FNDELAY);
-
 	INFO("set baudrate to %d ", _serialBaudrate);
 
 	if ( tcgetattr(_serialFd, &options)<0)
@@ -322,13 +315,16 @@ Erc Serial2Mqtt::serialConnect()
 	options.c_cc[VEOL]='\n'; // add an additional EOL symbol
 	options.c_iflag |= IGNCR; // ignore carriage return
 //    cfmakeraw(&options);
-	if ( cfsetispeed(&options, baudSymbol(_serialBaudrate))<0)
+	if ( cfsetispeed(&options, baudSymbol(_serialBaudrate))<0) {
 		ERROR("cfsetispeed() failed '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
-	if ( cfsetospeed(&options, baudSymbol(_serialBaudrate))<0)
+	}
+	if ( cfsetospeed(&options, baudSymbol(_serialBaudrate))<0) {
 		ERROR("cfsetospeed() failed '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
+	}
 
-	if ( tcsetattr(_serialFd, TCSANOW, &options)<0)
+	if ( tcsetattr(_serialFd, TCSANOW, &options)<0) {
 		ERROR("tcsetattr() failed '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
+	}
 
 	/*    int status;
 	    if ( ioctl(_serialFd, TIOCMGET,&status )<0)
@@ -341,15 +337,13 @@ Erc Serial2Mqtt::serialConnect()
 	return E_OK;
 }
 
-void Serial2Mqtt::serialDisconnect()
-{
+void Serial2Mqtt::serialDisconnect() {
 	close(_serialFd);
 	_serialFd=0;
 	_serialConnected=false;
 }
 
-void Serial2Mqtt::serialRxd()
-{
+void Serial2Mqtt::serialRxd() {
 	char buffer[1024];
 	int erc;
 	while(true) {
@@ -366,8 +360,7 @@ void Serial2Mqtt::serialRxd()
 	}
 }
 
-bool Serial2Mqtt::serialGetLine(string& line)
-{
+bool Serial2Mqtt::serialGetLine(string& line) {
 	while(_serialBuffer.hasData()) {
 		char ch = _serialBuffer.read();
 		if ( ch=='\n' ) {
@@ -384,8 +377,7 @@ bool Serial2Mqtt::serialGetLine(string& line)
 	return false;
 }
 
-std::vector<string> split(const string &text, char sep)
-{
+std::vector<string> split(const string &text, char sep) {
 	std::vector<string> tokens;
 	std::size_t start = 0, end = 0;
 	while ((end = text.find(sep, start)) != string::npos) {
@@ -398,8 +390,7 @@ std::vector<string> split(const string &text, char sep)
 
 
 
-unsigned short crc16(const unsigned char* data_p, unsigned char length)
-{
+unsigned short crc16(const unsigned char* data_p, unsigned char length) {
 	unsigned char x;
 	unsigned short crc = 0xFFFF;
 
@@ -413,8 +404,7 @@ unsigned short crc16(const unsigned char* data_p, unsigned char length)
 /*
  * extract CRC and verify in syntax => ["ABCD",2,..]
  */
-bool Serial2Mqtt::checkCrc(std::string& line)
-{
+bool Serial2Mqtt::checkCrc(std::string& line) {
 	if ( line.length() < 9 ) return false;
 	std::string crcStr=line.substr(2,4);
 	uint32_t crcFound;
@@ -424,8 +414,7 @@ bool Serial2Mqtt::checkCrc(std::string& line)
 	return crcCalc==crcFound;
 }
 
-void Serial2Mqtt::genCrc(std::string& line)
-{
+void Serial2Mqtt::genCrc(std::string& line) {
 	uint32_t crcCalc = crc16((uint8_t*)line.data(),line.length());
 	char hexCrc[5];
 	sprintf(hexCrc,"%4.4X",crcCalc);
@@ -447,8 +436,7 @@ typedef enum {
 	PING=0,PUBLISH,PUBACK,SUBSCRIBE,SUBACK
 } CMD;
 
-void Serial2Mqtt::serialHandleLine(string& line)
-{
+void Serial2Mqtt::serialHandleLine(string& line) {
 	std::vector<string> token;
 	_jsonDocument.clear();
 	if ( _protocol==JSON_ARRAY && line.length()>2 &&  line[0]=='['  && line[line.length()-1]==']') {
@@ -485,8 +473,8 @@ void Serial2Mqtt::serialHandleLine(string& line)
 			if ( json.containsKey("cmd")) {
 				string cmd = json["cmd"];
 				if ( cmd.compare("MQTT-PUB")==0
-				     && json.containsKey("topic")
-				     && json.containsKey("message")) {
+				        && json.containsKey("topic")
+				        && json.containsKey("message")) {
 					int qos=0;
 					bool retained=false;
 					string topic=json["topic"];
@@ -522,8 +510,7 @@ void Serial2Mqtt::serialHandleLine(string& line)
 	mqttPublish("src/"+_serial2mqttDevice+"/serial2mqtt/log",line,0,false);
 }
 
-void Serial2Mqtt::serialPublish(string topic,Bytes message,int qos,bool retained)
-{
+void Serial2Mqtt::serialPublish(string topic,Bytes message,int qos,bool retained) {
 	std::string line;
 
 	if ( _protocol==JSON_OBJECT ) {
@@ -556,8 +543,7 @@ void Serial2Mqtt::serialPublish(string topic,Bytes message,int qos,bool retained
 	INFO(" TXD %s : %s ",_serialPort.c_str(),line.c_str());
 }
 
-void Serial2Mqtt::serialTxd(const string& line)
-{
+void Serial2Mqtt::serialTxd(const string& line) {
 	int erc = write(_serialFd,line.c_str(),line.length());
 	if ( erc < 0 ) {
 		INFO("write() failed '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
@@ -576,18 +562,17 @@ void Serial2Mqtt::serialTxd(const string& line)
 
  *
  */
- 	const char* mqttConnectionStates[]= {"MS_CONNECTED",
-	                                     "MS_DISCONNECTED",
-	                                     "MS_CONNECTING",
-	                                     "MS_DISCONNECTING"
-	                                    };
- void Serial2Mqtt::mqttConnectionState(MqttConnectionState st) {
-	 INFO(" MQTT connection state %s => %s ",mqttConnectionStates[_mqttConnectionState],mqttConnectionStates[st]);
-	 _mqttConnectionState=st;
- }
+const char* mqttConnectionStates[]= {"MS_CONNECTED",
+                                     "MS_DISCONNECTED",
+                                     "MS_CONNECTING",
+                                     "MS_DISCONNECTING"
+                                    };
+void Serial2Mqtt::mqttConnectionState(MqttConnectionState st) {
+	INFO(" MQTT connection state %s => %s ",mqttConnectionStates[_mqttConnectionState],mqttConnectionStates[st]);
+	_mqttConnectionState=st;
+}
 
-Erc Serial2Mqtt::mqttConnect()
-{
+Erc Serial2Mqtt::mqttConnect() {
 	string connection;
 	int rc;
 	if ( _mqttConnectionState==MS_CONNECTING || _mqttConnectionState==MS_CONNECTED) return E_OK;
@@ -622,8 +607,7 @@ Erc Serial2Mqtt::mqttConnect()
 	return E_OK;
 }
 
-void Serial2Mqtt::mqttDisconnect()
-{
+void Serial2Mqtt::mqttDisconnect() {
 	mqttConnectionState(MS_DISCONNECTING);
 	MQTTAsync_disconnectOptions disc_opts =
 	    MQTTAsync_disconnectOptions_initializer;
@@ -631,7 +615,7 @@ void Serial2Mqtt::mqttDisconnect()
 	disc_opts.context=this;
 	int rc = 0;
 	if ((rc = MQTTAsync_disconnect(_client, &disc_opts))
-	    != MQTTASYNC_SUCCESS) {
+	        != MQTTASYNC_SUCCESS) {
 		WARN("Failed to disconnect, return code %d", rc);
 		return;
 	}
@@ -640,8 +624,7 @@ void Serial2Mqtt::mqttDisconnect()
 	mqttConnectionState(MS_DISCONNECTED);
 }
 
-void Serial2Mqtt::mqttSubscribe(string topic)
-{
+void Serial2Mqtt::mqttSubscribe(string topic) {
 	int qos=0;
 	if ( _mqttConnectionState != MS_CONNECTED ) return;
 	MQTTAsync_responseOptions opts = MQTTAsync_responseOptions_initializer;
@@ -653,7 +636,7 @@ void Serial2Mqtt::mqttSubscribe(string topic)
 	int rc = E_OK;
 
 	if ((rc = MQTTAsync_subscribe(_client, topic.c_str(), qos, &opts))
-	    != MQTTASYNC_SUCCESS) {
+	        != MQTTASYNC_SUCCESS) {
 		ERROR("Failed to start subscribe, return code %d", rc);
 		signal(MQTT_SUBSCRIBE_FAIL);
 	} else {
@@ -661,15 +644,13 @@ void Serial2Mqtt::mqttSubscribe(string topic)
 	}
 }
 
-void Serial2Mqtt::onConnectionLost(void *context, char *cause)
-{
+void Serial2Mqtt::onConnectionLost(void *context, char *cause) {
 	Serial2Mqtt* me = (Serial2Mqtt*)context;
 //   me->mqttDisconnect();
 	me->signal(MQTT_DISCONNECTED);
 	me->mqttConnectionState(MS_DISCONNECTED);
 }
-int Serial2Mqtt::onMessage(void *context, char *topicName, int topicLen, MQTTAsync_message *message)
-{
+int Serial2Mqtt::onMessage(void *context, char *topicName, int topicLen, MQTTAsync_message *message) {
 	Serial2Mqtt* me = (Serial2Mqtt*)context;
 	Bytes msg((uint8_t*) message->payload, message->payloadlen);
 	string topic(topicName,topicLen);
@@ -687,55 +668,47 @@ int Serial2Mqtt::onMessage(void *context, char *topicName, int topicLen, MQTTAsy
 	return 1;
 }
 
-void Serial2Mqtt::onDeliveryComplete(void* context, MQTTAsync_token response)
-{
+void Serial2Mqtt::onDeliveryComplete(void* context, MQTTAsync_token response) {
 //    Serial2Mqtt* me = (Serial2Mqtt*)context;
 }
 
-void Serial2Mqtt::onDisconnect(void* context, MQTTAsync_successData* response)
-{
+void Serial2Mqtt::onDisconnect(void* context, MQTTAsync_successData* response) {
 	Serial2Mqtt* me = (Serial2Mqtt*)context;
 	me->signal(MQTT_DISCONNECTED);
 	me->mqttConnectionState(MS_DISCONNECTED);
 }
 
-void Serial2Mqtt::onConnectFailure(void* context, MQTTAsync_failureData* response)
-{
+void Serial2Mqtt::onConnectFailure(void* context, MQTTAsync_failureData* response) {
 	Serial2Mqtt* me = (Serial2Mqtt*)context;
 	me->signal(MQTT_CONNECT_FAIL);
 	me->mqttConnectionState(MS_DISCONNECTED);
 }
 
-void Serial2Mqtt::onConnectSuccess(void* context, MQTTAsync_successData* response)
-{
+void Serial2Mqtt::onConnectSuccess(void* context, MQTTAsync_successData* response) {
 	Serial2Mqtt* me = (Serial2Mqtt*)context;
 	me->signal(MQTT_CONNECT_SUCCESS);
 	me->mqttConnectionState(MS_CONNECTED);
 
 }
 
-void Serial2Mqtt::onSubscribeSuccess(void* context, MQTTAsync_successData* response)
-{
+void Serial2Mqtt::onSubscribeSuccess(void* context, MQTTAsync_successData* response) {
 	Serial2Mqtt* me = (Serial2Mqtt*)context;
 	me->signal(MQTT_SUBSCRIBE_SUCCESS);
 }
 
-void Serial2Mqtt::onSubscribeFailure(void* context, MQTTAsync_failureData* response)
-{
+void Serial2Mqtt::onSubscribeFailure(void* context, MQTTAsync_failureData* response) {
 	Serial2Mqtt* me = (Serial2Mqtt*)context;
 	me->signal(MQTT_SUBSCRIBE_FAIL);
 }
 
-void Serial2Mqtt::mqttPublish(string topic,string message,int qos,bool retained)
-{
+void Serial2Mqtt::mqttPublish(string topic,string message,int qos,bool retained) {
 	Bytes msg(1024);
 	DEBUG(" MQTT PUB : %s = %s ",topic.c_str(),message.c_str());
 	msg=message.c_str();
 	mqttPublish(topic,msg,qos,retained);
 }
 
-void Serial2Mqtt::mqttPublish(string topic,Bytes message,int qos,bool retained)
-{
+void Serial2Mqtt::mqttPublish(string topic,Bytes message,int qos,bool retained) {
 	if ( !_mqttConnected) {
 		return;
 	}
@@ -756,25 +729,22 @@ void Serial2Mqtt::mqttPublish(string topic,Bytes message,int qos,bool retained)
 	pubmsg.retained = retained;
 
 	if ((rc = MQTTAsync_sendMessage(_client, topic.c_str(), &pubmsg, &opts))
-	    != MQTTASYNC_SUCCESS) {
+	        != MQTTASYNC_SUCCESS) {
 		signal(MQTT_DISCONNECTED);
 		ERROR("MQTTAsync_sendMessage failed.");
 	}
 }
-void Serial2Mqtt::onPublishSuccess(void* context, MQTTAsync_successData* response)
-{
+void Serial2Mqtt::onPublishSuccess(void* context, MQTTAsync_successData* response) {
 	Serial2Mqtt* me = (Serial2Mqtt*)context;
 	me->signal(MQTT_PUBLISH_SUCCESS);
 }
-void Serial2Mqtt::onPublishFailure(void* context, MQTTAsync_failureData* response)
-{
+void Serial2Mqtt::onPublishFailure(void* context, MQTTAsync_failureData* response) {
 	Serial2Mqtt* me = (Serial2Mqtt*)context;
 	me->signal(MQTT_PUBLISH_FAIL);
 }
 
 
-void Serial2Mqtt::flashBin(Bytes& bytes)
-{
+void Serial2Mqtt::flashBin(Bytes& bytes) {
 	FILE *f = NULL;
 	INFO(" writing binary file %s ",_binFile.c_str());
 	/* open in read binary mode */
