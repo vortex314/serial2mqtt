@@ -56,7 +56,7 @@ class Serial2Mqtt
 	string _mqttProgrammerTopic;
 	uint64_t _startTime;
 
-	bool _mqttConnected=false;
+//	bool _mqttConnected=false;
 	string _mqttSubscribedTo;
 
 	Config _config;
