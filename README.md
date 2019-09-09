@@ -1,7 +1,3 @@
-# TL;DR
-Go to build directory, download .zip, unzip and update serial2mqtt.json to your needs.
-Arduino side sample code below. Enjoy ! 
-
 # serial2mqtt
 For a complete view : [with UML sequence diagrams](https://vortex314.github.io/Serial2Mqtt.html)
 
@@ -15,68 +11,66 @@ Also the concept behind is that a central PC or Raspberry PI can act as the inte
 ![enter image description here](http://drive.google.com/uc?export=view&id=1rGeHOaMEGLJJqxFsd5fnaAE7N1DHoJUI)
 
 Arduino Sample program to communicate with the serial2mqtt  gateway
-```
 
-#include <Arduino.h>
-#include <ArduinoJson.h>
+   
 
-class Mqtt {
-  public:
-    static String device;
-    static void publish( String topic, String message, int qos = 0, bool retained = false ) {
-      StaticJsonDocument<200> jsonBuffer;
-      JsonObject data = jsonBuffer.createNestedObject();
-      data["cmd"] = "MQTT-PUB";
-      data["topic"] = "src/" + device + "/" + topic;
-      data["message"] = message;
-      if ( qos != 0 ) data["qos"] = qos;
-      if ( retained) data["retained"] = retained;
-      String s;
-      serializeJson(data,s);
-      Serial.println(s);
+    #include <ArduinoJson.h>
+
+    class Mqtt {
+      public:
+        static String device;
+        static void publish( String topic, String message, int qos = 0, bool retained = false ) {
+          StaticJsonBuffer<200> jsonBuffer;
+          JsonObject& data = jsonBuffer.createObject();
+          data["cmd"] = "MQTT-PUB";
+          data["topic"] = "src/" + device + "/" + topic;
+          data["message"] = message;
+          if ( qos != 0 ) data["qos"] = qos;
+          if ( retained) data["retained"] = retained;
+          data.printTo(Serial);
+          Serial.println();
+        }
+        static void handleLine(String& line) {
+          StaticJsonBuffer<200> jsonBuffer;
+          JsonObject& root = jsonBuffer.parseObject(line);
+          onMqttMessage(root["topic"], root["message"], root["qos"], root["retained"]);
+        }
+    
+        static void onMqttMessage(String topic, String message, int qos, bool retained) {
+        // add your own subscriber here 
+          Serial.printf(" Mqtt Message arrived");
+        }
+    };
+    // create a name for this device
+    String Mqtt::device = "ESP32"-" + String((uint32_t)ESP.getEfuseMac(), HEX);
+    
+    void setup() {
+      Serial.begin(115200);
+      pinMode(LED_BUILTIN, OUTPUT);
+      while (!Serial) {
+        ; // wait for serial port to connect. Needed for native USB port only
+      }
     }
-    static void handleLine(String& line) {
-      StaticJsonDocument<200> jsonBuffer;
-      deserializeJson(jsonBuffer,line);
-      JsonObject root = jsonBuffer.as<JsonObject>();
-      onMqttMessage(root["topic"], root["message"], root["qos"], root["retained"]);
-    }
+    
+    String line;
+    void loop() {
+      while (Serial.available()) {
+        char ch = Serial.read();
+        if ( ch == '\r' || ch == '\n' ) {
+          Mqtt::handleLine(line);
+          line = "";
+        } else
+          line += ch;
+      }
+      digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
+      delay(100);                       // wait for a 0.1 second
+      digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
+      delay(100);                       // wait for a 0.1 second
+      Mqtt::publish( "system/upTime", String(millis(), 10), 0, false);
+      Mqtt::publish("system/host", Mqtt::device, 0, false);
+      Mqtt::publish("system/alive", "true", 0, false);
+      }
 
-    static void onMqttMessage(String topic, String message, int qos, bool retained) {
-    // add your own subscriber here 
-      Serial.printf(" Mqtt Message arrived");
-    }
-};
-// create a name for this device
-String Mqtt::device = "iot1" ;
-
-void setup() {
-  Serial.begin(115200);
-  pinMode(LED_BUILTIN, OUTPUT);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB port only
-  }
-}
-
-String line;
-void loop() {
-  while (Serial.available()) {
-    char ch = Serial.read();
-    if ( ch == '\r' || ch == '\n' ) {
-      Mqtt::handleLine(line);
-      line = "";
-    } else
-      line += ch;
-  }
-  digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(100);                       // wait for a 0.1 second
-  digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
-  delay(100);                       // wait for a 0.1 second
-  Mqtt::publish( "system/upTime", String(millis(), 10), 0, false);
-  Mqtt::publish("system/host", Mqtt::device, 0, false);
-  Mqtt::publish("system/alive", "true", 0, false);
-  }
-```
 
 ## Working assumptions and features
 - Topic Names 
@@ -85,8 +79,7 @@ Structure topic to and from  device :
 -- dst/DEVICE/SERVICE/PROPERTY
 -- src/DEVICE/SERVICE/PROPERTY
 -- if DEVICE is not known yet the serial2mqtt will subscribe to the dst/HOST.PORT/serial2mqtt/# , where PORT is for example ttyUSB0
-- Serial messages will be **BINARY** or **JSON**
--- BINARY format will be CBOR encoded in a SLIP envelope
+- Serial messages will be  **JSON** array or object
 -- JSON will be text delimited by newlines
 - Through the same communication, debugging logs can be handled without disturbing the mqtt flow. Any line that doesn't start with '{' or be a valid JSON is considered log.
 - the serial2mqtt establishes the client MQTT link and subscribes to dst/DEVICE/# when DEVICE is known. 
@@ -103,13 +96,25 @@ The serial2mqtt should be able to reset the device ( hard reset )
 - serial2mqtt should be able to program the device through the serial interface, for this purpose a third party app will be launched with the concerned serial port as argument.
 
 # Protocol
-## TEXT JSON
+## JSON TEXT
+### JSON ARRAY
+Example : ["0000",1,"mytopic","3.141592653"]
+```
+[<CRC>,<COMMAND>,<TOPIC>,<MESSAGE>,<QOS>,<RETAIN>] 
+* QOS and retain are optional
+<CRC> : can be checked or not, is calculated on the total JSON string based on the message containing "0000" as temporary CRC. When calculated is in HEX format.
+* COMMAND 0:PING,1:PUBLISH,2:PUBACK,3:SUBSCRIBE,4:SUBACK,...
+* ping : ["0000",0,"someText"]
+* publish : ["ABCD",1,"dst/topic1","message1",0,0]
+* subscribe : ["ABCD",3,"dst/myTopic"]
+* QOS : 0,1,2 : for QOS, default 0
+* RETAIN : 0 or 1 for true or false, default 0
+```
+### JSON OBJECT
+```
+    Example : { "cmd":"MQTT-PUB","topic":"src/device/service/property","message":"1234.66","qos":0,"retained":false }\n
+```
 
-    { "cmd":"MQTT-PUB","topic":"src/device/service/property","message":"1234.66","qos":0,"retained":false }\n
-
-## BINARY CBOR SLIP
-    <END><SLIP ENCODED MESSAGE><END>
-    <SLIP ENCODED MESSAGE> == <'M'><"PUB">,<qos Integer><retain boolean><topic string><message binary><CRC integer>
  ## CONNECTION SETUP
 ```mermaid
 sequenceDiagram
@@ -156,11 +161,11 @@ MQTT Broker ->> programmer CLI : logs
 deactivate serial2mqtt
 ```
 # Logging through serial2mqtt
-The micrcontroller will also log to the central logging system 
+Everything that serial2mqtt receives on the serial port is also send on a topic. 
 # Build instructions
  - use Codelite ( optional )
  - clone eclipse/paho.mqtt.c
- - clone nlohmann/json
+ - clone bblanchon/ArduinoJson
  - clone vortex314/Common 
  - install libssl-dev ( apt-get  install libssl-dev )
  - build static library in paho.mqtt.c by using makePaho.sh
@@ -201,6 +206,3 @@ To avoid concurrency issues , the callbacks of the mqtt threads are communicated
 The main threads waits on events : timeout of 1 sec, data on serial file-descriptor or pipe file-descriptor. 
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
-<!--stackedit_data:
-eyJoaXN0b3J5IjpbMTgwMjE5MTkwOV19
--->
