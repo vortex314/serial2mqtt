@@ -10,7 +10,7 @@ Also the concept behind is that a central PC or Raspberry PI can act as the inte
 
 ![enter image description here](http://drive.google.com/uc?export=view&id=1rGeHOaMEGLJJqxFsd5fnaAE7N1DHoJUI)
 
-Arduino Sample program to communicate with the serial2mqtt  gateway
+Arduino Sample program to communicate with the serial2mqtt  gateway , see : [enter link description here](https://github.com/vortex314/mqtt2serial)
 
    
 
@@ -214,5 +214,5 @@ The main threads waits on events : timeout of 1 sec, data on serial file-descrip
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTM4Nzg2NTIwNF19
+eyJoaXN0b3J5IjpbMTE5MTc4ODc2M119
 -->
