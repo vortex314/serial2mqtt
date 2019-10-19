@@ -10,77 +10,17 @@ Also the concept behind is that a central PC or Raspberry PI can act as the inte
 
 ![enter image description here](http://drive.google.com/uc?export=view&id=1rGeHOaMEGLJJqxFsd5fnaAE7N1DHoJUI)
 
-Arduino Sample program to communicate with the serial2mqtt  gateway , see : [enter link description here](https://github.com/vortex314/mqtt2serial)
+Arduino Sample program to communicate with the serial2mqtt  gateway , see : [Arduino device code](https://github.com/vortex314/mqtt2serial)
 
-   
-
-    #include <ArduinoJson.h>
-
-    class Mqtt {
-      public:
-        static String device;
-        static void publish( String topic, String message, int qos = 0, bool retained = false ) {
-          StaticJsonBuffer<200> jsonBuffer;
-          JsonObject& data = jsonBuffer.createObject();
-          data["cmd"] = "MQTT-PUB";
-          data["topic"] = "src/" + device + "/" + topic;
-          data["message"] = message;
-          if ( qos != 0 ) data["qos"] = qos;
-          if ( retained) data["retained"] = retained;
-          data.printTo(Serial);
-          Serial.println();
-        }
-        static void handleLine(String& line) {
-          StaticJsonBuffer<200> jsonBuffer;
-          JsonObject& root = jsonBuffer.parseObject(line);
-          onMqttMessage(root["topic"], root["message"], root["qos"], root["retained"]);
-        }
-    
-        static void onMqttMessage(String topic, String message, int qos, bool retained) {
-        // add your own subscriber here 
-          Serial.printf(" Mqtt Message arrived");
-        }
-    };
-    // create a name for this device
-    String Mqtt::device = "ESP32"-" + String((uint32_t)ESP.getEfuseMac(), HEX);
-    
-    void setup() {
-      Serial.begin(115200);
-      pinMode(LED_BUILTIN, OUTPUT);
-      while (!Serial) {
-        ; // wait for serial port to connect. Needed for native USB port only
-      }
-    }
-    
-    String line;
-    void loop() {
-      while (Serial.available()) {
-        char ch = Serial.read();
-        if ( ch == '\r' || ch == '\n' ) {
-          Mqtt::handleLine(line);
-          line = "";
-        } else
-          line += ch;
-      }
-      digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
-      delay(100);                       // wait for a 0.1 second
-      digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
-      delay(100);                       // wait for a 0.1 second
-      Mqtt::publish( "system/upTime", String(millis(), 10), 0, false);
-      Mqtt::publish("system/host", Mqtt::device, 0, false);
-      Mqtt::publish("system/alive", "true", 0, false);
-      }
-
-
-## Working assumptions and features
+   ## Working assumptions and features
 - Topic Names 
 --The design will take into account some assumptions about topic names and tree-structure to make it simple to use.
 Structure topic to and from  device :
 -- dst/DEVICE/SERVICE/PROPERTY
 -- src/DEVICE/SERVICE/PROPERTY
 -- if DEVICE is not known yet the serial2mqtt will subscribe to the dst/HOST.PORT/serial2mqtt/# , where PORT is for example ttyUSB0
-- Serial messages will be  **JSON** array or object**BINARY** or **JSON**
--- BINARY format will be CBOR encoded in a SLIP envelope
+- Serial messages will be  **JSON** array or object
+
 -- JSON will be text delimited by newlines
 - Through the same communication, debugging logs can be handled without disturbing the mqtt flow. Any line that doesn't start with '{' or be a valid JSON is considered log.
 - the serial2mqtt establishes the client MQTT link and subscribes to dst/DEVICE/# when DEVICE is known. 
@@ -99,7 +39,7 @@ The serial2mqtt should be able to reset the device ( hard reset )
 # Protocol
 ## JSON TEXT
 ### JSON ARRAY
-Example : ["0000",1,"mytopic","3.141592653"]
+Example : [1,"mytopic","3.141592653"]
 ```
 [<CRC>,<COMMAND>,<TOPIC>,<MESSAGE>,<QOS>,<RETAIN>] 
 * QOS and retain are optional
@@ -214,5 +154,5 @@ The main threads waits on events : timeout of 1 sec, data on serial file-descrip
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTE5MTc4ODc2M119
+eyJoaXN0b3J5IjpbLTI2OTU3Mjg0N119
 -->
