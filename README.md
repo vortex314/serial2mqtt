@@ -70,13 +70,13 @@ serial2mqtt-->>µC: open serial port tty
 serial2mqtt-->>MQTT Broker: connect(broker,port)
 MQTT Broker -->> serial2mqtt: connAck
 Note right of serial2mqtt: connect serial
-µC->> serial2mqtt: [1,"dst/DEVICE/+"]
+µC->> serial2mqtt: [0,"dst/DEVICE/+"]
 deactivate serial2mqtt
 activate serial2mqtt
 serial2mqtt-->>MQTT Broker: subscribe("dst/DEVICE/#")
 serial2mqtt-->>MQTT Broker: PUBLISH("src/DEVICE/SERVICE/PROP",...)
 deactivate serial2mqtt
-µC->> serial2mqtt: {"topic":"src/DEVICE/SERVICE/PROP1",...}
+µC->> serial2mqtt: [1,"src/DEVICE/SERVICE/PROP1",""]
 activate serial2mqtt
 serial2mqtt-->>MQTT Broker:  PUBLISH("src/DEVICE/SERVICE/PROP1",...)
 deactivate serial2mqtt
@@ -151,5 +151,5 @@ The main threads waits on events : timeout of 1 sec, data on serial file-descrip
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE4OTU0NTkwNjNdfQ==
+eyJoaXN0b3J5IjpbOTUyNzk4Mzc2XX0=
 -->
