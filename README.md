@@ -41,13 +41,12 @@ The serial2mqtt should be able to reset the device ( hard reset )
 ### JSON ARRAY
 Example : [1,"mytopic","3.141592653"]
 ```
-[<CRC>,<COMMAND>,<TOPIC>,<MESSAGE>,<QOS>,<RETAIN>] 
-* QOS and retain are optional
+[<COMMAND>,<TOPIC>,<MESSAGE>,<QOS>,<RETAIN>,<CRC>] 
+* QOS ,RETAIN, CRC  retain are optional
 <CRC> : can be checked or not, is calculated on the total JSON string based on the message containing "0000" as temporary CRC. When calculated is in HEX format.
-* COMMAND 0:PING,1:PUBLISH,2:PUBACK,3:SUBSCRIBE,4:SUBACK,...
-* ping : ["0000",0,"someText"]
-* publish : ["ABCD",1,"dst/topic1","message1",0,0]
-* subscribe : ["ABCD",3,"dst/myTopic"]
+* COMMAND 0:SUBSCRIBE,1:PUBLISH
+* publish : [1,"dst/topic1","message1",0,0]
+* subscribe : [0,"dst/myTopic/#"]
 * QOS : 0,1,2 : for QOS, default 0
 * RETAIN : 0 or 1 for true or false, default 0
 ```
@@ -154,5 +153,5 @@ The main threads waits on events : timeout of 1 sec, data on serial file-descrip
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTI2OTU3Mjg0N119
+eyJoaXN0b3J5IjpbMTY0NjU2ODM2NV19
 -->
