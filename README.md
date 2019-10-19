@@ -81,10 +81,17 @@ MQTT Broker-->>serial2mqtt: publish("dst/DEVICE/system/loopback","true")
 serial2mqtt-->>µC : [1,"dst/DEVICE/system/loopback","true"]
 deactivate serial2mqtt
 
+activate serial2mqtt
+µC->> serial2mqtt : [1,"dst/DEVICE/system/loopback","true"]
+serial2mqtt-->>MQTT Broker: publish("dst/DEVICE/system/loopback","true")
+MQTT Broker-->>serial2mqtt: publish("dst/DEVICE/system/loopback","true")
+serial2mqtt-->>µC : [1,"dst/DEVICE/system/loopback","true"]
+deactivate serial2mqtt
+
 Note right of µC: no more messages after 5 sec, 
 Note right of µC: serial2mqtt disconnects serial port and tries to reconnect. MQTT connection always open.
 serial2mqtt-->>µC: close serial port tty
-serial2mqtt-->>µC: open 
+serial2mqtt-->>µC: open serial port
 ```
 # Programming through serial2mqtt
 A command line utility will send a single mqtt request to the serial2mqtt gateway to program the microcontroller.
@@ -153,5 +160,5 @@ The main threads waits on events : timeout of 1 sec, data on serial file-descrip
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbODg3Nzc3MzA1XX0=
+eyJoaXN0b3J5IjpbLTIwODk2MDU1MzRdfQ==
 -->
