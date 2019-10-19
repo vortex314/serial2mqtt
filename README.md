@@ -7,7 +7,7 @@ riber functionality to all small micro controllers. Those with just a UART or US
 Example : a cheap STM32 board on ebay.
 ![Afbeeldingsresultaat voor stm32 maple mini](https://img.staticbg.com/thumb/view/oaupload/banggood/images/8F/4A/3db92309-2e0b-4e4d-b2f1-9b017877ff42.jpg )`{:height="24px" width="48px"}`
 
-<img src="https://img.staticbg.com/thumb/view/oaupload/banggood/images/8F/4A/3db92309-2e0b-4e4d-b2f1-9b017877ff42.jpg " width="200">
+<img src="https://img.staticbg.com/thumb/view/oaupload/banggood/images/8F/4A/3db92309-2e0b-4e4d-b2f1-9b017877ff42.jpg " width="300">
 
 ![Afbeeldingsresultaat voor lm4f120h5qr](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSrCMlaYevJNoWyIXyfdzTFL8nwC8WI-fKORO-c50cjDWjGZCqmZA)![Afbeeldingsresultaat voor ebay stm32](http://www.rogerclark.net/wp-content/uploads/2014/11/STM32Mini-300x300.jpg)
 This program will act as a full MQTT Client gateway and make integration as simple as possible.
@@ -166,5 +166,5 @@ The main threads waits on events : timeout of 1 sec, data on serial file-descrip
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTEwMzM1NDk2M119
+eyJoaXN0b3J5IjpbLTMyNDY1NTM0OF19
 -->
