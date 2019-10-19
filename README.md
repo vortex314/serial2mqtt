@@ -5,7 +5,7 @@ Arduino Sample program to communicate with the serial2mqtt  gateway , see : [Ard
 MQTT for all micro-controllers ! The purpose is to offer MQTT publisher/subscriber functionality to all small micro controllers. Those with just a UART or USB interface.
 Example : some cheap STM32 board on eBay.
 
-<img src="https://github.com/vortex314/mqtt2serial/raw/master/doc/stellaris.jpeg" width="200" title="Stellaris Launchpad 5$"><img src="https://github.com/vortex314/mqtt2serial/raw/master/doc/maple.jpg" width="200" title="Maple mini 4$"><img src="https://github.com/vortex314/mqtt2serial/raw/master/doc/bluepill.jpg" width="200" title="STM32F103C8T6 2$">
+<img src="https://github.com/vortex314/mqtt2serial/raw/master/doc/stellaris.jpeg" width="200" title="Stellaris Launchpad 5$"><img src="https://github.com/vortex314/mqtt2serial/raw/master/doc/maple.jpg" width="200" title="Maple mini 4$"><img src="https://github.com/vortex314/mqtt2serial/raw/master/doc/es.jpg" width="200" title="STM32F103C8T6 2$">
 
 This program will act as a full MQTT Client gateway and make integration as simple as possible.
 This was created because Ethernet or WiFi is still absent in most ( cheap ) controllers .
@@ -163,5 +163,5 @@ The main threads waits on events : timeout of 1 sec, data on serial file-descrip
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTQ0OTU1Njg4Nl19
+eyJoaXN0b3J5IjpbODAwOTc2MDQ3LC00NDk1NTY4ODZdfQ==
 -->
