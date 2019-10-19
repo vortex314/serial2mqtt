@@ -121,7 +121,7 @@ Everything that serial2mqtt receives on the serial port is also send on a topic.
 # Build instructions
  - use Codelite ( optional )
  - clone eclipse/paho.mqtt.c
- - clone bblanchon/ArduinoJnlohmann/json
+ - clone bblanchon/Arduinojson
  - clone vortex314/Common 
  - install libssl-dev ( apt-get  install libssl-dev )
  - build static library in paho.mqtt.c by using makePaho.sh
@@ -162,6 +162,3 @@ To avoid concurrency issues , the callbacks of the mqtt threads are communicated
 The main threads waits on events : timeout of 1 sec, data on serial file-descriptor or pipe file-descriptor. 
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
-<!--stackedit_data:
-eyJoaXN0b3J5IjpbMjkzNDI3MDg4XX0=
--->
