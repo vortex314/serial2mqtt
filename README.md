@@ -8,7 +8,7 @@ Example : a cheap STM32 board on ebay.
 
 <img src="https://github.com/vortex314/serial2mqtt/raw/master/doc/stellaris.jpeg" width="300">
 <img src="https://github.com/vortex314/serial2mqtt/raw/master/doc/maple.jpeg" width="300">
-<img src="https://github.com/vortex314/serial2mqtt/raw/master/doc/bluepill.jpeg" width="300">
+<img src="https://github.com/vortex314/serial2mqtt/raw/master/doc/bluepill.jpg" width="300">
 
 This program will act as a full MQTT Client gateway and make integration as simple as possible.
 This was created because Ethernet or WiFi is still absent in most ( cheap ) controllers .
@@ -166,5 +166,5 @@ The main threads waits on events : timeout of 1 sec, data on serial file-descrip
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE3Njk1OTUyNTddfQ==
+eyJoaXN0b3J5IjpbNjQ4OTc3NzUyXX0=
 -->
