@@ -5,7 +5,6 @@ Arduino Sample program to communicate with the serial2mqtt  gateway , see : [Ard
 MQTT for all micro-controllers ! The purpose is to offer MQTT publisher/subsc
 riber functionality to all small micro controllers. Those with just a UART or USB interface.
 Example : a cheap STM32 board on ebay.
-![Afbeeldingsresultaat voor stm32 maple mini](https://img.staticbg.com/thumb/view/oaupload/banggood/images/8F/4A/3db92309-2e0b-4e4d-b2f1-9b017877ff42.jpg )`{:height="24px" width="48px"}`
 
 <img src="https://img.staticbg.com/thumb/view/oaupload/banggood/images/8F/4A/3db92309-2e0b-4e4d-b2f1-9b017877ff42.jpg " width="300">
 
@@ -166,5 +165,5 @@ The main threads waits on events : timeout of 1 sec, data on serial file-descrip
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTMyNDY1NTM0OF19
+eyJoaXN0b3J5IjpbMTUzMjUyMjkzMl19
 -->
