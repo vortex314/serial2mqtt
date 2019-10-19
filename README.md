@@ -58,9 +58,7 @@ TEXT JSON
 
     { "cmd":"MQTT-PUB","topic":"src/device/service/property","message":"1234.66","qos":0,"retained":false }\n
 
-## BINARY CBOR SLIP
-    <END><SLIP ENCODED MESSAGE><END>
-    <SLIP ENCODED MESSAGE> == <'M'><"PUB">,<qos Integer><retain boolean><topic string><message binary><CRC integer>
+
  ## CONNECTION SETUP
 ```mermaid
 sequenceDiagram
@@ -68,11 +66,11 @@ participant µC
 participant serial2mqtt
 participant MQTT Broker
 activate serial2mqtt
-serial2mqtt-->>µC: CONNECT
-serial2mqtt-->>MQTT Broker: CONNECT(broker,port)
-MQTT Broker -->> serial2mqtt: CONNACK
+serial2mqtt-->>µC: open serial port tty
+serial2mqtt-->>MQTT Broker: connect(broker,port)
+MQTT Broker -->> serial2mqtt: connAck
 Note right of serial2mqtt: connect serial
-µC->> serial2mqtt: {"topic":"src/DEVICE/SERVICE/PROP",...}
+µC->> serial2mqtt: [1,c":"src/DEVICE/SERVICE/PROP",...}
 deactivate serial2mqtt
 activate serial2mqtt
 serial2mqtt-->>MQTT Broker: SUBSCRIBE("dst/DEVICE/#")
@@ -153,5 +151,5 @@ The main threads waits on events : timeout of 1 sec, data on serial file-descrip
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTY0NjU2ODM2NV19
+eyJoaXN0b3J5IjpbMTUzMzM5OTQ5M119
 -->
