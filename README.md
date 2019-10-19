@@ -6,8 +6,8 @@ MQTT for all micro-controllers ! The purpose is to offer MQTT publisher/subscrib
 Example : some cheap STM32 board on eBay.
 
 <img src="https://github.com/vortex314/mqtt2serial/raw/master/doc/stellaris.jpeg" width="300" title="Stellaris Launchpad 5$">
-<img src="https://github.com/vortex314/mqtt2serial/raw/master/doc/maple.jpg" width="300" title="Stellaris Launchpad 5$">
-<img src="https://github.com/vortex314/mqtt2serial/raw/master/doc/bluepill.jpg" width="300">
+<img src="https://github.com/vortex314/mqtt2serial/raw/master/doc/maple.jpg" width="300" title="Maple mini 4$">
+<img src="https://github.com/vortex314/mqtt2serial/raw/master/doc/bluepill.jpg" width="300" title="STM32F103C8T6 2$">
 
 This program will act as a full MQTT Client gateway and make integration as simple as possible.
 This was created because Ethernet or WiFi is still absent in most ( cheap ) controllers .
@@ -165,5 +165,5 @@ The main threads waits on events : timeout of 1 sec, data on serial file-descrip
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNDIxNTY4NjQyXX0=
+eyJoaXN0b3J5IjpbLTc2MTYyNTQ5MV19
 -->
