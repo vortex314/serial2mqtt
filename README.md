@@ -54,6 +54,10 @@ Example : [1,"mytopic","3.141592653"]
 * QOS : 0,1,2 : for QOS, default 0
 * RETAIN : 0 or 1 for true or false, default 0
 ```
+``
+- Example publish : [1,"myTopicPi","3.141592653"]
+Example subscribe : [0,"myTopics/#"]
+``
 ### JSON OBJECT
 ```
     Example : { "cmd":"MQTT-PUB","topic":"src/device/service/property","message":"1234.66","qos":0,"retained":false }\n
@@ -164,5 +168,5 @@ The main threads waits on events : timeout of 1 sec, data on serial file-descrip
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTUxNDA1NjcwNSwtNDQ5NTU2ODg2XX0=
+eyJoaXN0b3J5IjpbLTE2MjAxNTg3OTMsLTQ0OTU1Njg4Nl19
 -->
