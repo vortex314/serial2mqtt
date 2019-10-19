@@ -33,10 +33,10 @@ void SetThreadName(std::thread* thread, const char* threadName) {
 int main(int argc, char **argv) {
 
 	std::thread threads[MAX_PORT];
-	StaticJsonDocument<2014> jsonDoc;
+	StaticJsonDocument<10240> jsonDoc;
 
 	Sys::init();
-	INFO("version : " __DATE__ " " __TIME__ "\n");
+	INFO("build : " __DATE__ " " __TIME__ );
 	INFO(" argv[0] : %s ",argv[0]);
 	config.loadFile("serial2mqtt.json");
 	overrideConfig(config,argc,argv);
@@ -99,9 +99,9 @@ void overrideConfig(Config& config,int argc, char **argv) {
 				config.loadFile(optarg);
 				break;
 			case 'v': {
-				char logLevel = optarg[0];
-				logger.setLogLevel(logLevel);
-				break;
+					char logLevel = optarg[0];
+					logger.setLogLevel(logLevel);
+					break;
 				}
 			case 'l':
 				logFile=optarg;
