@@ -162,3 +162,6 @@ To avoid concurrency issues , the callbacks of the mqtt threads are communicated
 The main threads waits on events : timeout of 1 sec, data on serial file-descriptor or pipe file-descriptor. 
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
+<!--stackedit_data:
+eyJoaXN0b3J5IjpbLTEzMTc4ODMyODZdfQ==
+-->
