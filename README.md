@@ -1,7 +1,8 @@
 # serial2mqtt
 For a complete view : [with UML sequence diagrams](https://vortex314.github.io/serial2mqtt.html)
 Arduino Sample program to communicate with the serial2mqtt  gateway , see : [Arduino device code](https://github.com/vortex314/mqtt2serial)
-Most simple example : 
+
+Most simple example : publish  
 ```
 #include  <Arduino.h>
 void  setup() {
@@ -176,3 +177,6 @@ To avoid concurrency issues , the callbacks of the mqtt threads are communicated
 The main threads waits on events : timeout of 1 sec, data on serial file-descriptor or pipe file-descriptor. 
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
+<!--stackedit_data:
+eyJoaXN0b3J5IjpbMTY0NDE1MTc0NV19
+-->
