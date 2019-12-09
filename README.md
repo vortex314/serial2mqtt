@@ -1,15 +1,25 @@
 # serial2mqtt
-For a complete view : [with UML sequence diagrams](https://vortex314.github.io/Serial2Mqtt.html)
+For a complete view : [with UML sequence diagrams](https://vortex314.github.io/serial2mqtt.html)
 Arduino Sample program to communicate with the serial2mqtt  gateway , see : [Arduino device code](https://github.com/vortex314/mqtt2serial)
 
-MQTT for all micro-controllers ! The purpose is to offer MQTT publisher/subsc
-riber functionality to all small micro controllers. Those with just a UART or USB interface.
-Example : a cheap STM32 board on ebay.
-![Afbeeldingsresultaat voor stm32 maple mini](https://img.staticbg.com/thumb/view/oaupload/banggood/images/8F/4A/3db92309-2e0b-4e4d-b2f1-9b017877ff42.jpg )`{:height="24px" width="48px"}`
+Most simple example : publish uptime to MQTT via serial line. 
+```
+#include  <Arduino.h>
+void  setup() {
+Serial.begin(115200);
+}
+void  loop() {
+Serial.println("[1,\"src/myTopic/time\","+String(millis())+"]");
+delay(100);
+}
+```
 
-<img src="https://img.staticbg.com/thumb/view/oaupload/banggood/images/8F/4A/3db92309-2e0b-4e4d-b2f1-9b017877ff42.jpg " width="300">
+MQTT for all micro-controllers ! The purpose is to offer MQTT publisher/subscriber functionality to all small micro controllers. Those with just a UART or USB interface.
+Example : some cheap STM32 board on eBay. 
 
-![Afbeeldingsresultaat voor lm4f120h5qr](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSrCMlaYevJNoWyIXyfdzTFL8nwC8WI-fKORO-c50cjDWjGZCqmZA)![Afbeeldingsresultaat voor ebay stm32](http://www.rogerclark.net/wp-content/uploads/2014/11/STM32Mini-300x300.jpg)
+<img src="https://github.com/vortex314/mqtt2serial/raw/master/doc/stellaris.jpeg" width="200" title="Stellaris Launchpad 5$"><img src="https://github.com/vortex314/mqtt2serial/raw/master/doc/maple.jpg" width="200" title="Maple mini 4$"><img src="https://github.com/vortex314/mqtt2serial/raw/master/doc/esp32.jpg" width="200" title="ESP32 6$"><img src="https://github.com/vortex314/mqtt2serial/raw/master/doc/bluepill.jpg" width="200" title="STM32F103C8T6 2$">
+I know the ESP32 is capable of Wifi and MQTT on TCP/IP , but in my case it was used for its PWM capabilities and enclosed in a metal box. 
+
 This program will act as a full MQTT Client gateway and make integration as simple as possible.
 This was created because Ethernet or WiFi is still absent in most ( cheap ) controllers .
 Also the concept behind is that a central PC or Raspberry PI can act as the intelligent mind behind commodity components.
@@ -56,6 +66,8 @@ Example : [1,"mytopic","3.141592653"]
 * QOS : 0,1,2 : for QOS, default 0
 * RETAIN : 0 or 1 for true or false, default 0
 ```
+- Example publish : [1,"myTopicPi","3.141592653"]
+- Example subscribe : [0,"myTopics/#"]
 ### JSON OBJECT
 ```
     Example : { "cmd":"MQTT-PUB","topic":"src/device/service/property","message":"1234.66","qos":0,"retained":false }\n
@@ -124,7 +136,7 @@ Everything that serial2mqtt receives on the serial port is also send on a topic.
 # Build instructions
  - use Codelite ( optional )
  - clone eclipse/paho.mqtt.c
- - clone bblanchon/ArduinoJnlohmann/json
+ - clone bblanchon/Arduinojson
  - clone vortex314/Common 
  - install libssl-dev ( apt-get  install libssl-dev )
  - build static library in paho.mqtt.c by using makePaho.sh
@@ -166,5 +178,5 @@ The main threads waits on events : timeout of 1 sec, data on serial file-descrip
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTMyNDY1NTM0OF19
+eyJoaXN0b3J5IjpbNTUzNjc2MDc0XX0=
 -->
