@@ -111,12 +111,18 @@ void Serial2Mqtt::threadFunction(void* pv) { run(); }
 void Serial2Mqtt::run() {
 	string line;
 	Timer mqttConnectTimer;
+	Timer serialConnectTimer;
 	Timer mqttPublishTimer;
 	Timer serialTimer;
 
 	mqttConnectTimer.atInterval(2000).doThis([this]() {
 		if(_mqttConnectionState != MS_CONNECTING) {
 			mqttConnect();
+		}
+	});
+	serialConnectTimer.atInterval(5000).doThis([this]() {
+		if(!_serialConnected) {
+			serialConnect();
 		}
 	});
 	mqttPublishTimer.atInterval(1000).doThis([this]() {
@@ -142,10 +148,11 @@ void Serial2Mqtt::run() {
 			mqttConnectTimer.check();
 			serialTimer.check();
 			mqttPublishTimer.check();
+			serialConnectTimer.check();
 			switch(s) {
 				case TIMEOUT: {
 						if(!_serialConnected) {
-							serialConnect();
+							//						serialConnect();
 						}
 						break;
 					}

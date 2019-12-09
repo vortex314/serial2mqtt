@@ -6,14 +6,13 @@
     "serial": {
         "baudrate": 115200,
         "ports": [
-            "/dev/ttyUSB0",
-            "/dev/ttyACM0",
-            "/dev/ttyACM2"
+		"/dev/ttyUSB0",
+		"/dev/ttyUSB1",
+		"/dev/ttyUSB2",
+		"/dev/ttyACM0",
+		"/dev/ttyACM1",
+		"/dev/ttyACM2"
         ],
-		"protocol":"jsonArray"
-    },
-    "programmer": {
-        "file": "image.bin",
-        "exec" :"python /home/lieven/esp/esp-idf/components/esptool_py/esptool/esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 921600 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 /home/lieven/workspace/vertx-esp32/build/bootloader/bootloader.bin 0x10000 /home/lieven/workspace/vertx-esp32/build/vertx-esp32.bin 0x8000 /home/lieven/workspace/vertx-esp32/build/partitions_singleapp.bin "
+	"protocol":"jsonArray"
     }
 }
