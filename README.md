@@ -1,6 +1,8 @@
 # serial2mqtt
 For a complete view : [with UML sequence diagrams](https://vortex314.github.io/serial2mqtt.html)
 Arduino Sample program to communicate with the serial2mqtt  gateway , see : [Arduino device code](https://github.com/vortex314/mqtt2serial)
+```
+```
 
 MQTT for all micro-controllers ! The purpose is to offer MQTT publisher/subscriber functionality to all small micro controllers. Those with just a UART or USB interface.
 Example : some cheap STM32 board on eBay. 
@@ -166,5 +168,5 @@ The main threads waits on events : timeout of 1 sec, data on serial file-descrip
 The mqtt event of received message is handled directly by writing the message on the serial port.
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTMyMjM0NjYzNF19
+eyJoaXN0b3J5IjpbLTIwNzY1MzA0ODYsMTMyMjM0NjYzNF19
 -->
