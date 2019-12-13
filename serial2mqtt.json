@@ -6,22 +6,8 @@
     "serial": {
         "baudrate": 115200,
         "ports": [
-<<<<<<< HEAD
-		"/dev/ttyUSB0",
-		"/dev/ttyUSB1",
-		"/dev/ttyUSB2",
-		"/dev/ttyACM0",
-		"/dev/ttyACM1",
-		"/dev/ttyACM2"
+		"/dev/ttyUSB1"
         ],
 	"protocol":"jsonArray"
-=======
-            "/dev/ttyACM0",
-	"/dev/ttyACM1",
-	"/dev/ttyACM2",
-            "/dev/ttyACM3"
-        ],
-		"protocol":"jsonArray"
->>>>>>> 88d21139b0c22f089ebf74925b28e4d5ac540b91
     }
 }
