@@ -6,7 +6,8 @@
     "serial": {
         "baudrate": 115200,
         "ports": [
-		"/dev/ttyUSB1"
+		"/dev/ttyUSB0",
+		"/dev/ttyACM0"
         ],
 	"protocol":"jsonArray"
     }
