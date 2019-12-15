@@ -5,15 +5,15 @@
 ## Debug
 ProjectName            :=serial2mqtt
 ConfigurationName      :=Debug
-WorkspacePath          :=/home/lieven/workspace
+WorkspacePath          :=/home/lieven/workspace/codelite
 ProjectPath            :=/home/lieven/workspace/serial2mqtt
 IntermediateDirectory  :=./Debug
 OutDir                 := $(IntermediateDirectory)
 CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
-User                   :=Lieven
-Date                   :=14/12/19
+User                   :=lieven
+Date                   :=15/12/19
 CodeLitePath           :=/home/lieven/.codelite
 LinkerName             :=/usr/bin/g++
 SharedObjectLinkerName :=/usr/bin/g++ -shared -fPIC
