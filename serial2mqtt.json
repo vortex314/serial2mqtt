@@ -7,7 +7,8 @@
         "baudrate": 115200,
         "ports": [
 		"/dev/ttyUSB0",
-		"/dev/ttyACM0"
+		"/dev/ttyACM0",
+		"/dev/ttyUSB1"
         ],
 	"protocol":"jsonArray"
     }
