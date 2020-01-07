@@ -43,9 +43,7 @@ class Serial2Mqtt {
 		// MQTT
 		StaticJsonDocument<2048> _jsonDocument;
 
-		string _mqttHost;
-		string _mqttClientId;
-		uint16_t _mqttPort;
+		string _mqttConnection;
 		uint32_t _mqttKeepAliveInterval;
 		string _mqttWillMessage;
 		std::string _mqttWillTopic;
