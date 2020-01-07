@@ -43,6 +43,7 @@ class Serial2Mqtt {
 		// MQTT
 		StaticJsonDocument<2048> _jsonDocument;
 
+		string _mqttClientId;
 		string _mqttConnection;
 		uint32_t _mqttKeepAliveInterval;
 		string _mqttWillMessage;
