@@ -81,8 +81,7 @@ void Serial2Mqtt::init() {
 	if(crc == "off") _crc = CRC_OFF;
 
 	_config.setNameSpace("mqtt");
-	_config.get("port", _mqttPort, 1883);
-	_config.get("host", _mqttHost, "test.mosquitto.org");
+	_config.get("connection", _mqttConnection, "tcp://test.mosquitto.org:1883");
 	_config.get("keepAliveInterval", _mqttKeepAliveInterval, 5);
 	_config.get("willMessage", _mqttWillMessage, "false");
 	_mqttWillQos = 0;
@@ -562,18 +561,15 @@ void Serial2Mqtt::mqttConnectionState(MqttConnectionState st) {
 }
 
 Erc Serial2Mqtt::mqttConnect() {
-	string connection;
 	int rc;
 	if(_mqttConnectionState == MS_CONNECTING || _mqttConnectionState == MS_CONNECTED) return E_OK;
 
 	MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
 	MQTTAsync_willOptions will_opts = MQTTAsync_willOptions_initializer;
 
-	connection = "tcp://" + _mqttHost + ":";
-	connection += std::to_string(_mqttPort);
-	INFO(" MQTT connecting %s ... for %s ", connection.c_str(), _serialPortShort.c_str());
+	INFO(" MQTT connecting %s ... for %s ", _mqttConnection.c_str(), _serialPortShort.c_str());
 	mqttConnectionState(MS_CONNECTING);
-	MQTTAsync_create(&_client, connection.c_str(), _mqttClientId.c_str(), MQTTCLIENT_PERSISTENCE_NONE, NULL);
+	MQTTAsync_create(&_client, _mqttConnection.c_str(), _mqttClientId.c_str(), MQTTCLIENT_PERSISTENCE_NONE, NULL);
 
 	MQTTAsync_setCallbacks(_client, this, onConnectionLost, onMessage, onDeliveryComplete); // TODO add ondelivery
 
