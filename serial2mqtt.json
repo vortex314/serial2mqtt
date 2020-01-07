@@ -1,7 +1,6 @@
 {
     "mqtt": {
-        "host": "pi3.local",
-        "port": 1883
+        "connection": "tcp://test.mosquitto.org:1883"
     },
     "serial": {
         "baudrate": 115200,
