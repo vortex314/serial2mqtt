@@ -1,14 +1,11 @@
 {
     "mqtt": {
-        "host": "localhost",
-        "port": 1883
+        "connection": "tcp://test.mosquitto.org:1883"
     },
     "serial": {
         "baudrate": 115200,
         "ports": [
-		"/dev/ttyUSB0",
-		"/dev/ttyUSB1",
-		"/dev/ttyUSB2"
+		"/dev/ttyUSB0"
         ],
 	"protocol":"jsonArray"
     }
