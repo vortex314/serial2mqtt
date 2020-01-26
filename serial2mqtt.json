@@ -1,14 +1,14 @@
 {
     "mqtt": {
-        "host": "pi3.local",
+        "host": "localhost",
         "port": 1883
     },
     "serial": {
         "baudrate": 115200,
         "ports": [
 		"/dev/ttyUSB0",
-		"/dev/ttyACM0",
-		"/dev/ttyUSB1"
+		"/dev/ttyUSB1",
+		"/dev/ttyUSB2"
         ],
 	"protocol":"jsonArray"
     }
