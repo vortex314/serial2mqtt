@@ -60,7 +60,7 @@ int main(int argc, char **argv)
         if ( logFd==NULL ) {
             WARN(" open logfile %s failed : %d %s ",logFile.c_str(),errno, strerror(errno));
         } else {
-            logger.setOutput(myLogFunction);
+            logger.writer(myLogFunction);
         }
     }
 
