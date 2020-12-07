@@ -92,9 +92,11 @@ void Serial2Mqtt::init() {
 	_mqttDevice = _serial2mqttDevice;
 	_mqttSubscribedTo = "dst/" + _serial2mqttDevice + "/#";
 	_mqttProgrammerTopic = "dst/" + _serial2mqttDevice + "/serial2mqtt/flash";
-	_mqttClientId = _mqttDevice + std::to_string(getpid());
+	_config.get("clientId", _mqttClientId, (_mqttDevice + std::to_string(getpid())).c_str());
 	std::string willTopicDefault = "src/" + _serial2mqttDevice + "/serial2mqtt/alive";
 	_config.get("willTopic", _mqttWillTopic, willTopicDefault.c_str());
+	_config.get("user", _mqttUser, "");
+	_config.get("password", _mqttPassword, "");
 
 	if(pipe(_signalFd) < 0) {
 		INFO("Failed to create pipe: %s (%d)", strerror(errno), errno);
@@ -583,6 +585,10 @@ Erc Serial2Mqtt::mqttConnect() {
 	will_opts.qos = _mqttWillQos;
 	will_opts.retained = _mqttWillRetained;
 	conn_opts.will = &will_opts;
+	if (_mqttUser.length() > 0) {
+		conn_opts.username = _mqttUser.c_str();
+		conn_opts.password = _mqttPassword.c_str();
+	}
 	if((rc = MQTTAsync_connect(_client, &conn_opts)) != MQTTASYNC_SUCCESS) {
 		WARN("Failed to start connect, return code %d", rc);
 		return E_NOT_FOUND;
