@@ -40,11 +40,11 @@ Timer& Timer::doThis(TimerHandler action){
 void Timer::check(){
 //    INFO(" %lld %lld ",_expiresOn,Sys::millis());
     if ( _expiresOn < Sys::millis() && _active ) {
-        _action();
         if ( _repeat ) {
             _expiresOn=Sys::millis()+_interval;
         } else {
             _active=false;
         }
+        _action();
     }
 }

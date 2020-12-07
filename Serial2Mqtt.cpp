@@ -121,9 +121,10 @@ void Serial2Mqtt::run() {
 			mqttConnect();
 		}
 	});
-	serialConnectTimer.atInterval(5000).doThis([this]() {
+	serialConnectTimer.atInterval(5000).doThis([this, &serialTimer]() {
 		if(!_serialConnected) {
 			serialConnect();
+			serialTimer.atDelta(5000);
 		}
 	});
 	mqttPublishTimer.atInterval(1000).doThis([this]() {
@@ -132,11 +133,12 @@ void Serial2Mqtt::run() {
 		mqttPublish("src/" + _serial2mqttDevice + "/system/upTime", sUpTime, 0, 0);
 		mqttPublish("src/" + _serial2mqttDevice + "/serial2mqtt/device", _mqttDevice, 0, 0);
 	});
-	serialTimer.atDelta(5000).doThis([this]() {
+	serialTimer.atDelta(5000).doThis([this, &serialTimer]() {
 		if(_serialConnected) {
 			serialDisconnect();
 			WARN(" disconnecting serial no new data received in %d msec", 5000);
 			serialConnect();
+			serialTimer.atDelta(5000);
 		}
 	});
 	if(_mqttConnectionState != MS_CONNECTING) mqttConnect();
