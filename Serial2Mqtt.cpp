@@ -36,6 +36,8 @@ const char* signalString[] = {"PIPE_ERROR",
                               "TIMEOUT"
                              };
 
+const char *cmdString[] = {"MQTT-SUB", "MQTT-PUB", "MQTT-CONN", "MQTT-DISC"};
+
 #define USB() logger.application(_serialPort.c_str())
 
 Serial2Mqtt::Serial2Mqtt()
@@ -119,6 +121,7 @@ void Serial2Mqtt::run() {
 	Timer serialConnectTimer;
 	Timer mqttPublishTimer;
 	Timer serialTimer;
+	Bytes nullmsg(NULL, 0);
 
 	mqttConnectTimer.atInterval(_mqttReconnectInterval).doThis([this]() {
 		if(_mqttConnectionState != MS_CONNECTING) {
@@ -192,11 +195,13 @@ void Serial2Mqtt::run() {
 					}
 				case MQTT_DISCONNECTED: {
 						WARN("MQTT_DISCONNECTED %s ", _serialPortShort.c_str());
+						serialPublish(DISCONNECT, "", nullmsg, 0, false);
 						mqttConnectionState(MS_DISCONNECTED);
 						break;
 					}
 				case MQTT_SUBSCRIBE_SUCCESS: {
 						INFO("MQTT_SUBSCRIBE_SUCCESS %s ", _serialPortShort.c_str());
+						serialPublish(CONNECT, _mqttDevice, nullmsg, 0, false);
 						break;
 					}
 				case MQTT_SUBSCRIBE_FAIL: {
@@ -446,15 +451,13 @@ void Serial2Mqtt::genCrc(std::string& line) {
 }
 
 /*
- * JSON protocol : [CRC,CMD,TOPIC,MESSAGE,QOS,RETAIN]
- * CMD : 0:PING,1:PUBLISH,2:PUBACK,3:SUBSCRIBE,4:SUBACK,...
- * ping : ["0000",0,"someText"]
- * publish : ["ABCD",1,"dst/topic1","message1",0,0]
- * subscribe : ["ABCD",3,"dst/myTopic"]
- *
+ * JSON protocol : [CMD,TOPIC,MESSAGE,QOS,RETAIN,CRC]
+ * CMD : 0:SUBSCRIBE,1:PUBLISH,2:CONNECT,3:DISCONNECT
+ * subscribe : [0,"dst/myTopic","ABCD"]
+ * publish : [1,"dst/topic1","message1",0,0,"ABCD"]
+ * connect : [2,"device","","ABCD"]
+ * disconnect : [3,"","","ABCD"]
  */
-
-typedef enum { SUBSCRIBE = 0, PUBLISH} CMD;
 
 void Serial2Mqtt::serialHandleLine(string& line) {
 	std::vector<string> token;
@@ -520,7 +523,7 @@ void Serial2Mqtt::serialHandleLine(string& line) {
 	mqttPublish("src/" + _serial2mqttDevice + "/serial2mqtt/log", line, 0, false);
 }
 
-void Serial2Mqtt::serialPublish(string topic, Bytes message, int qos, bool retained) {
+void Serial2Mqtt::serialPublish(CMD command, string topic, Bytes message, int qos, bool retained) {
 	std::string line;
 
 	if(_protocol == JSON_OBJECT) {
@@ -528,7 +531,7 @@ void Serial2Mqtt::serialPublish(string topic, Bytes message, int qos, bool retai
 		msg.assign((const char*)message.data(), 0, message.length());
 		_jsonDocument.clear();
 		JsonObject out = _jsonDocument.to<JsonObject>();
-		out["cmd"] = "MQTT-PUB";
+		out["cmd"] = cmdString[command];
 		out["topic"] = topic;
 		out["message"] = msg.c_str();
 		if(qos) out["qos"] = qos;
@@ -538,7 +541,7 @@ void Serial2Mqtt::serialPublish(string topic, Bytes message, int qos, bool retai
 		string msg;
 		msg.assign((const char*)message.data(), 0, message.length());
 		DynamicJsonDocument doc(2038);
-		doc.add(1);
+		doc.add(command);
 		doc.add(topic);
 		doc.add(msg);
 		if ( qos) doc.add(qos);
@@ -665,7 +668,7 @@ int Serial2Mqtt::onMessage(void* context, char* topicName, int topicLen, MQTTAsy
 		INFO(" flash image received , saved to %s", me->_binFile.c_str());
 		me->flashBin(msg);
 	} else {
-		me->serialPublish(topic, msg, message->qos, message->retained);
+		me->serialPublish(PUBLISH, topic, msg, message->qos, message->retained);
 	}
 
 	MQTTAsync_freeMessage(&message);

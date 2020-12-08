@@ -108,6 +108,7 @@ class Serial2Mqtt {
 		              TIMEOUT
 		             } Signal;
 
+		typedef enum { SUBSCRIBE = 0, PUBLISH, CONNECT, DISCONNECT} CMD;
 
 
 
@@ -128,7 +129,7 @@ class Serial2Mqtt {
 		void serialRxd();
 		bool serialGetLine(string& line);
 		void serialHandleLine(string& line);
-		void serialPublish(string topic,Bytes message,int qos,bool retained);
+		void serialPublish(CMD command,string topic,Bytes message,int qos,bool retained);
 		void serialTxd(const string& line);
 		void flashBin(Bytes& msg);
 //	void serialMqttPublish(string topic,Bytes message,int qos,bool retained);
