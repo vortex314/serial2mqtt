@@ -364,6 +364,8 @@ void Serial2Mqtt::serialRxd() {
 			DEBUG(" read returns %d => errno : %d = %s", erc, errno, strerror(errno));
 			signal(SERIAL_ERROR);
 		} else {
+			DEBUG("EOF received on the serial connection");
+			signal(SERIAL_ERROR);
 			return;
 		}
 	}
