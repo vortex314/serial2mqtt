@@ -139,14 +139,17 @@ void Serial2Mqtt::run() {
 	});
 	serialTimer.atDelta(_serialIdleTimeout).doThis([this, &serialTimer]() {
 		if(_serialConnected) {
+			WARN(" disconnecting serial no new data received in %d msec", _serialIdleTimeout);
 			serialDisconnect();
-			WARN(" disconnecting serial no new data received in %d msec", 5000);
 			serialConnect();
 			serialTimer.atDelta(_serialIdleTimeout);
 		}
 	});
 	if(_mqttConnectionState != MS_CONNECTING) mqttConnect();
-	serialConnect();
+	if (serialConnect() != E_OK && _serialReconnectInterval < 1) {
+		WARN("serial reconnection disabled, exiting now");
+		exit(1);
+	}
 	while(true) {
 		while(true) {
 			Signal s = waitSignal(1000);
@@ -351,6 +354,11 @@ void Serial2Mqtt::serialDisconnect() {
 	close(_serialFd);
 	_serialFd = 0;
 	_serialConnected = false;
+
+	if (_serialReconnectInterval < 1) {
+		WARN("serial reconnection disabled, exiting now");
+		exit(1);
+	}
 }
 
 void Serial2Mqtt::serialRxd() {
@@ -568,6 +576,11 @@ const char* mqttConnectionStates[] = {"MS_CONNECTED", "MS_DISCONNECTED", "MS_CON
 void Serial2Mqtt::mqttConnectionState(MqttConnectionState st) {
 	INFO(" MQTT connection state %s => %s ", mqttConnectionStates[_mqttConnectionState], mqttConnectionStates[st]);
 	_mqttConnectionState = st;
+
+	if (st == MS_DISCONNECTED && _mqttReconnectInterval < 1) {
+		WARN("MQTT reconnection disabled, exiting now");
+		exit(1);
+	}
 }
 
 Erc Serial2Mqtt::mqttConnect() {
