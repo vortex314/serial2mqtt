@@ -40,6 +40,8 @@ class Serial2Mqtt {
 		CircBuf _serialBuffer;
 		string _binFile;
 		string _programCommand;
+		uint64_t _serialReconnectInterval;
+		uint64_t _serialIdleTimeout;
 		// MQTT
 		StaticJsonDocument<2048> _jsonDocument;
 
@@ -54,6 +56,8 @@ class Serial2Mqtt {
 		string _mqttProgrammerTopic;
 		string _mqttUser;
 		string _mqttPassword;
+		uint64_t _mqttReconnectInterval;
+		uint64_t _mqttPublishInterval;
 		uint64_t _startTime;
 
 //	bool _mqttConnected=false;

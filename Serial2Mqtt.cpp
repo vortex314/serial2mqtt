@@ -79,6 +79,8 @@ void Serial2Mqtt::init() {
 	_crc = CRC_OFF;
 	if(crc == "on") _crc = CRC_ON;
 	if(crc == "off") _crc = CRC_OFF;
+	_config.get("reconnectInterval", _serialReconnectInterval, 5000);
+	_config.get("idleTimeout", _serialIdleTimeout, 5000);
 
 	_config.setNameSpace("mqtt");
 	_config.get("connection", _mqttConnection, "tcp://test.mosquitto.org:1883");
@@ -97,6 +99,8 @@ void Serial2Mqtt::init() {
 	_config.get("willTopic", _mqttWillTopic, willTopicDefault.c_str());
 	_config.get("user", _mqttUser, "");
 	_config.get("password", _mqttPassword, "");
+	_config.get("reconnectInterval", _mqttReconnectInterval, 2000);
+	_config.get("publishInterval", _mqttPublishInterval, 1000);
 
 	if(pipe(_signalFd) < 0) {
 		INFO("Failed to create pipe: %s (%d)", strerror(errno), errno);
@@ -116,33 +120,36 @@ void Serial2Mqtt::run() {
 	Timer mqttPublishTimer;
 	Timer serialTimer;
 
-	mqttConnectTimer.atInterval(2000).doThis([this]() {
+	mqttConnectTimer.atInterval(_mqttReconnectInterval).doThis([this]() {
 		if(_mqttConnectionState != MS_CONNECTING) {
 			mqttConnect();
 		}
 	});
-	serialConnectTimer.atInterval(5000).doThis([this, &serialTimer]() {
+	serialConnectTimer.atInterval(_serialReconnectInterval).doThis([this, &serialTimer]() {
 		if(!_serialConnected) {
 			serialConnect();
-			serialTimer.atDelta(5000);
+			serialTimer.atDelta(_serialIdleTimeout);
 		}
 	});
-	mqttPublishTimer.atInterval(1000).doThis([this]() {
+	mqttPublishTimer.atInterval(_mqttPublishInterval).doThis([this]() {
 		std::string sUpTime = std::to_string((Sys::millis() - _startTime) / 1000);
 		mqttPublish("src/" + _serial2mqttDevice + "/serial2mqtt/alive", "true", 0, 0);
 		mqttPublish("src/" + _serial2mqttDevice + "/system/upTime", sUpTime, 0, 0);
 		mqttPublish("src/" + _serial2mqttDevice + "/serial2mqtt/device", _mqttDevice, 0, 0);
 	});
-	serialTimer.atDelta(5000).doThis([this, &serialTimer]() {
+	serialTimer.atDelta(_serialIdleTimeout).doThis([this, &serialTimer]() {
 		if(_serialConnected) {
+			WARN(" disconnecting serial no new data received in %d msec", _serialIdleTimeout);
 			serialDisconnect();
-			WARN(" disconnecting serial no new data received in %d msec", 5000);
 			serialConnect();
-			serialTimer.atDelta(5000);
+			serialTimer.atDelta(_serialIdleTimeout);
 		}
 	});
 	if(_mqttConnectionState != MS_CONNECTING) mqttConnect();
-	serialConnect();
+	if (serialConnect() != E_OK && _serialReconnectInterval < 1) {
+		WARN("serial reconnection disabled, exiting now");
+		exit(1);
+	}
 	while(true) {
 		while(true) {
 			Signal s = waitSignal(1000);
@@ -162,7 +169,7 @@ void Serial2Mqtt::run() {
 				case SERIAL_RXD: {
 						serialRxd();
 						if(serialGetLine(line)) {
-							serialTimer.atDelta(5000);
+							serialTimer.atDelta(_serialIdleTimeout);
 							serialHandleLine(line);
 							line.clear();
 						}
@@ -347,6 +354,11 @@ void Serial2Mqtt::serialDisconnect() {
 	close(_serialFd);
 	_serialFd = 0;
 	_serialConnected = false;
+
+	if (_serialReconnectInterval < 1) {
+		WARN("serial reconnection disabled, exiting now");
+		exit(1);
+	}
 }
 
 void Serial2Mqtt::serialRxd() {
@@ -364,6 +376,8 @@ void Serial2Mqtt::serialRxd() {
 			DEBUG(" read returns %d => errno : %d = %s", erc, errno, strerror(errno));
 			signal(SERIAL_ERROR);
 		} else {
+			DEBUG("EOF received on the serial connection");
+			signal(SERIAL_ERROR);
 			return;
 		}
 	}
@@ -562,6 +576,11 @@ const char* mqttConnectionStates[] = {"MS_CONNECTED", "MS_DISCONNECTED", "MS_CON
 void Serial2Mqtt::mqttConnectionState(MqttConnectionState st) {
 	INFO(" MQTT connection state %s => %s ", mqttConnectionStates[_mqttConnectionState], mqttConnectionStates[st]);
 	_mqttConnectionState = st;
+
+	if (st == MS_DISCONNECTED && _mqttReconnectInterval < 1) {
+		WARN("MQTT reconnection disabled, exiting now");
+		exit(1);
+	}
 }
 
 Erc Serial2Mqtt::mqttConnect() {
