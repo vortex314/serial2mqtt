@@ -57,7 +57,19 @@ int baudSymbol(uint32_t br) {
 	return B115200;
 }
 
-void Serial2Mqtt::setSerialPort(string port) { _serialPort = port; }
+void Serial2Mqtt::setSerialPort(string port) {
+	_serialPort = port;
+	if (_serialPort.find("/dev/tty") == 0) {
+		_serialPortShort = _serialPort.substr(8);
+	} else {
+		size_t pos =_serialPort.rfind('/');
+		if (pos == string::npos) {
+		    _serialPortShort = _serialPort;
+		} else {
+		    _serialPortShort = _serialPort.substr(pos + 1);
+		}
+	}
+}
 
 void Serial2Mqtt::setLogFd(FILE* logFd) { _logFd = logFd; }
 
@@ -90,7 +102,6 @@ void Serial2Mqtt::init() {
 	_config.get("willMessage", _mqttWillMessage, "false");
 	_mqttWillQos = 0;
 	_mqttWillRetained = false;
-	_serialPortShort = _serialPort.substr(8, _serialPort.length() - 8);
 	_serial2mqttDevice = Sys::hostname();
 	_serial2mqttDevice += "." + _serialPortShort;
 	_mqttDevice = _serial2mqttDevice;
@@ -304,53 +315,93 @@ Erc Serial2Mqtt::serialConnect() {
 	struct termios options;
 
 	INFO("Connecting to '%s' ....", _serialPort.c_str());
-	_serialFd = ::open(_serialPort.c_str(), O_EXCL | O_RDWR | O_NOCTTY | O_NDELAY);
 
-	if(_serialFd == -1) {
-		ERROR("connect: Unable to open '%s' errno : %d : %s ", _serialPort.c_str(), errno, strerror(errno));
-		_serialFd = 0;
-		return errno;
+	if (_serialPort.find("tcp://") == 0) {
+		char host[_serialPort.length()];
+		char port[_serialPort.length()];
+		char term;
+		struct addrinfo hints = {.ai_family = AF_UNSPEC, .ai_socktype = SOCK_STREAM}, *addresses, *ai;
+		int err;
+
+		if (sscanf(_serialPort.c_str() + 6, "[%[^]]]:%s %c", host, port, &term) == 2) {
+			// IPv6 numeric format, e.g.: tcp://[::1]:1111
+		} else if (sscanf(_serialPort.c_str() + 6, "%[^:]:%s %c", host, port, &term) == 2) {
+			// IPv4 numeric format or name, e.g.: tcp://foo.bar:1111
+		} else {
+			ERROR("unable to parse tcp address '%s'", _serialPort.c_str());
+			return EINVAL;
+		}
+		if ((err = getaddrinfo(host, port, &hints, &addresses)) != 0) {
+			ERROR("unable to resolve tcp address '%s': %s", _serialPort.c_str(), gai_strerror(err));
+			return EINVAL;
+		}
+		for (ai = addresses; ai != NULL; ai = ai->ai_next) {
+			_serialFd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
+			if (_serialFd < 0) {
+				continue;
+			}
+			if (connect(_serialFd, ai->ai_addr, ai->ai_addrlen) == 0) {
+				INFO("open '%s' succeeded.fd=%d", _serialPort.c_str(), _serialFd);
+				break;
+			}
+			err = errno;
+			close(_serialFd);
+		}
+		freeaddrinfo(addresses);
+		if (ai == NULL) {
+			_serialFd = 0;
+			ERROR("connect: '%s' errno : %d : %s", _serialPort.c_str(), err, strerror(err));
+			return err;
+		}
+	} else {
+		_serialFd = ::open(_serialPort.c_str(), O_EXCL | O_RDWR | O_NOCTTY | O_NDELAY);
+
+		if(_serialFd == -1) {
+			ERROR("connect: Unable to open '%s' errno : %d : %s ", _serialPort.c_str(), errno, strerror(errno));
+			_serialFd = 0;
+			return errno;
+		}
+
+		INFO("open '%s' succeeded.fd=%d", _serialPort.c_str(), _serialFd);
+
+		//	fcntl(_serialFd, F_SETFL, FNDELAY);
+		INFO("set baudrate to %d ", _serialBaudrate);
+
+		if(tcgetattr(_serialFd, &options) < 0)
+			ERROR("tcgetattr() failed '%s' errno : %d : %s ", _serialPort.c_str(), errno, strerror(errno));
+
+		options.c_cflag |= (CLOCAL | CREAD);
+		options.c_cflag &= ~PARENB;
+		options.c_cflag &= ~CSTOPB;
+		options.c_cflag &= ~CSIZE;
+		options.c_cflag &= ~HUPCL; // avoid DTR drop at close time
+		options.c_cflag |= CS8;
+		options.c_cflag &= ~CRTSCTS; /* Disable hardware flow control */
+
+		//	options.c_lflag &= ~(ECHO | ISIG); // no echo, signal
+		options.c_lflag = ICANON;  // wait full line
+		options.c_cc[VEOL] = '\n'; // add an additional EOL symbol
+		options.c_iflag |= IGNCR;  // ignore carriage return
+		//    cfmakeraw(&options);
+		if(cfsetispeed(&options, baudSymbol(_serialBaudrate)) < 0) {
+			ERROR("cfsetispeed() failed '%s' errno : %d : %s ", _serialPort.c_str(), errno, strerror(errno));
+		}
+		if(cfsetospeed(&options, baudSymbol(_serialBaudrate)) < 0) {
+			ERROR("cfsetospeed() failed '%s' errno : %d : %s ", _serialPort.c_str(), errno, strerror(errno));
+		}
+
+		if(tcsetattr(_serialFd, TCSANOW, &options) < 0) {
+			ERROR("tcsetattr() failed '%s' errno : %d : %s ", _serialPort.c_str(), errno, strerror(errno));
+		}
+
+		/*    int status;
+		    if ( ioctl(_serialFd, TIOCMGET,&status )<0)
+			ERROR("ioctl()<0 '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
+		    status |= TIOCM_DTR | TIOCM_RTS;
+		    if ( ioctl( _serialFd, TIOCMSET, &status )<0)
+			ERROR("ioctl()<0 '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
+		*/
 	}
-
-	INFO("open '%s' succeeded.fd=%d", _serialPort.c_str(), _serialFd);
-
-	//	fcntl(_serialFd, F_SETFL, FNDELAY);
-	INFO("set baudrate to %d ", _serialBaudrate);
-
-	if(tcgetattr(_serialFd, &options) < 0)
-		ERROR("tcgetattr() failed '%s' errno : %d : %s ", _serialPort.c_str(), errno, strerror(errno));
-
-	options.c_cflag |= (CLOCAL | CREAD);
-	options.c_cflag &= ~PARENB;
-	options.c_cflag &= ~CSTOPB;
-	options.c_cflag &= ~CSIZE;
-	options.c_cflag &= ~HUPCL; // avoid DTR drop at close time
-	options.c_cflag |= CS8;
-	options.c_cflag &= ~CRTSCTS; /* Disable hardware flow control */
-
-	//	options.c_lflag &= ~(ECHO | ISIG); // no echo, signal
-	options.c_lflag = ICANON;  // wait full line
-	options.c_cc[VEOL] = '\n'; // add an additional EOL symbol
-	options.c_iflag |= IGNCR;  // ignore carriage return
-	//    cfmakeraw(&options);
-	if(cfsetispeed(&options, baudSymbol(_serialBaudrate)) < 0) {
-		ERROR("cfsetispeed() failed '%s' errno : %d : %s ", _serialPort.c_str(), errno, strerror(errno));
-	}
-	if(cfsetospeed(&options, baudSymbol(_serialBaudrate)) < 0) {
-		ERROR("cfsetospeed() failed '%s' errno : %d : %s ", _serialPort.c_str(), errno, strerror(errno));
-	}
-
-	if(tcsetattr(_serialFd, TCSANOW, &options) < 0) {
-		ERROR("tcsetattr() failed '%s' errno : %d : %s ", _serialPort.c_str(), errno, strerror(errno));
-	}
-
-	/*    int status;
-	    if ( ioctl(_serialFd, TIOCMGET,&status )<0)
-	        ERROR("ioctl()<0 '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
-	    status |= TIOCM_DTR | TIOCM_RTS;
-	    if ( ioctl( _serialFd, TIOCMSET, &status )<0)
-	        ERROR("ioctl()<0 '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
-	*/
 	_serialConnected = true;
 	return E_OK;
 }

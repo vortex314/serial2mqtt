@@ -88,8 +88,7 @@ int main(int argc, char **argv)
             INFO(" starting thread %d",i);
             serial2mqtt[i].run();
         });
-        std::string port= ports[i];
-        SetThreadName(&threads[i],port.substr(8).c_str());
+        SetThreadName(&threads[i],serial2mqtt[i].getSerialPortShort().c_str());
     }
 
 
