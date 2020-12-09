@@ -60,7 +60,7 @@ Example : [1,"mytopic","3.141592653"]
 [<COMMAND>,<TOPIC>,<MESSAGE>,<QOS>,<RETAIN>,<CRC>] 
 * QOS ,RETAIN, CRC  retain are optional
 <CRC> : can be checked or not, is calculated on the total JSON string based on the message containing "0000" as temporary CRC. When calculated is in HEX format.
-* COMMAND 0:SUBSCRIBE,1:PUBLISH
+* COMMAND 0:SUBSCRIBE,1:PUBLISH,2:MQTT-CONN,3:MQTT-DISC
 * publish : [1,"dst/topic1","message1",0,0]
 * subscribe : [0,"dst/myTopic/#"]
 * QOS : 0,1,2 : for QOS, default 0
@@ -88,6 +88,7 @@ activate serial2mqtt
 serial2mqtt-->>µC: open serial port tty
 serial2mqtt-->>MQTT Broker: connect(broker,port)
 MQTT Broker -->> serial2mqtt: connAck
+serial2mqtt-->>µC: [2,"DEVICE",0]
 µC->> serial2mqtt: [0,"dst/DEVICE/+"]
 µC->> serial2mqtt : [1,"dst/DEVICE/system/loopback","true"]
 deactivate serial2mqtt
@@ -110,6 +111,13 @@ Note right of µC: no more messages after 5 sec,
 Note right of µC: serial2mqtt disconnects serial port and tries to reconnect. MQTT connection always open.
 serial2mqtt-->>µC: close serial port tty
 serial2mqtt-->>µC: open serial port
+
+when serial2mqtt gets diconnected from the MQTT broker:
+MQTT Broker-->>serial2mqtt: disconnects
+serial2mqtt-->>µC: [3,"",""]
+serial2mqtt-->>MQTT Broker: connect(broker,port)
+MQTT Broker -->> serial2mqtt: connAck
+serial2mqtt-->>µC: [2,"DEVICE",0]
 ```
 # Programming through serial2mqtt
 A command line utility will send a single mqtt request to the serial2mqtt gateway to program the microcontroller.
@@ -164,7 +172,7 @@ Everything that serial2mqtt receives on the serial port is also send on a topic.
  -- s2m -f file.bin -m test.mosquitto.org -t pi1-USB0
  -- s2m -f file.bin -m test.mosquitto.org -t steer.USB0
  - Both lines have the same destination, logical and physical destination , if steer device is connected to pi1 host.
- - add other MQTT config params in config file : user, pswd, clientId
+ - add other MQTT config params in config file : user, password, clientId - DONE
  - test with Maple Mini
  -   add static topic through config : "src/DEVICE/serial2mqtt/board" "ESP32-Nodemcu" , which will be published every 5 seconds
  - add "MQTT-SUB" command to give micro-controller control over topic subscription.
