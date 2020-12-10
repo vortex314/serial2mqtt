@@ -18,6 +18,7 @@
 #include <asm-generic/ioctls.h>
 #include <sys/ioctl.h>
 #include <Timer.h>
+#include <netdb.h>
 
 using namespace std;
 
@@ -121,6 +122,7 @@ class Serial2Mqtt {
 		Signal waitSignal(uint32_t timeout);
 
 
+		const string& getSerialPortShort(void) const { return _serialPortShort; }
 		void setConfig(Config config);
 		void setSerialPort(string port);
 		void setLogFd(FILE*);
