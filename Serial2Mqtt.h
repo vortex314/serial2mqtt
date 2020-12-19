@@ -8,6 +8,7 @@
 #include <Erc.h>
 #include <Bytes.h>
 #include <vector>
+#include <map>
 #include "Config.h"
 #include "CircBuf.h"
 #include <unistd.h>
@@ -19,6 +20,7 @@
 #include <sys/ioctl.h>
 #include <Timer.h>
 #include <netdb.h>
+#include <fstream>
 
 using namespace std;
 
@@ -63,6 +65,10 @@ class Serial2Mqtt {
 
 //	bool _mqttConnected=false;
 		string _mqttSubscribedTo;
+		string _mqttLocalPersistenceDir;
+		string _mqttLocalPersistenceFile;
+		vector<string> _mqttLocalPersistenceFilters;
+		map<string, Bytes> _mqttLocalPersistenceMessages;
 
 		Config _config;
 
