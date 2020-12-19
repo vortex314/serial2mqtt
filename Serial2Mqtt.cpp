@@ -195,6 +195,7 @@ void Serial2Mqtt::run() {
 					}
 				case MQTT_CONNECT_SUCCESS: {
 						INFO("MQTT_CONNECT_SUCCESS %s ", _serialPortShort.c_str());
+						serialPublish(CONNECT, _mqttDevice, nullmsg, 0, false);
 						mqttConnectionState(MS_CONNECTED);
 						mqttSubscribe(_mqttSubscribedTo);
 						break;
@@ -212,7 +213,6 @@ void Serial2Mqtt::run() {
 					}
 				case MQTT_SUBSCRIBE_SUCCESS: {
 						INFO("MQTT_SUBSCRIBE_SUCCESS %s ", _serialPortShort.c_str());
-						serialPublish(CONNECT, _mqttDevice, nullmsg, 0, false);
 						break;
 					}
 				case MQTT_SUBSCRIBE_FAIL: {
@@ -403,6 +403,12 @@ Erc Serial2Mqtt::serialConnect() {
 		*/
 	}
 	_serialConnected = true;
+
+	if (_mqttConnectionState == MS_CONNECTED) {
+		Bytes nullmsg(NULL, 0);
+		serialPublish(CONNECT, _mqttDevice, nullmsg, 0, false);
+	}
+
 	return E_OK;
 }
 
