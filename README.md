@@ -158,7 +158,8 @@ Everything that serial2mqtt receives on the serial port is also send on a topic.
     unzip serial2mqtt.`arch`.zip
     mv Debug/serial2mqtt.`arch` serial2mqtt
     
-    
+# Configuration
+See [Configuring serial2mqtt](doc/CONFIGURATION.md) for details.
     
 
 # Tested
