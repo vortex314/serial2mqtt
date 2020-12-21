@@ -73,6 +73,42 @@ void Serial2Mqtt::setSerialPort(string port) {
 
 void Serial2Mqtt::setLogFd(FILE* logFd) { _logFd = logFd; }
 
+static bool mqttFilterValidate(const char *filter)
+{
+	switch (filter[0]) {
+	case '\0':
+		return false;
+	case '#':
+		return filter[1] == '\0';
+	case '+':
+		if (filter[1] == '\0')
+			return true;
+		if (filter[1] != '/')
+			return false;
+		break;
+	}
+
+	for (;;) {
+		++filter;
+		switch (filter[0]) {
+		case '\0':
+			return true;
+		case '#':
+			return filter[-1] == '/' && filter[1] == '\0';
+		case '+':
+			if (filter[-1] != '/')
+				return false;
+			if (filter[1] == '\0')
+				return true;
+			if (filter[1] != '/')
+				return false;
+			break;
+		default:
+			break;
+		}
+	}
+}
+
 void Serial2Mqtt::init() {
 	_startTime = Sys::millis();
 	_config.setNameSpace("programmer");
@@ -114,6 +150,21 @@ void Serial2Mqtt::init() {
 	_config.get("password", _mqttPassword, "");
 	_config.get("reconnectInterval", _mqttReconnectInterval, 2000);
 	_config.get("publishInterval", _mqttPublishInterval, 1000);
+	_config.get("localPersistenceDir", _mqttLocalPersistenceDir, "");
+	JsonArray filters = config.root()["mqtt"]["localPersistenceFilters"].as<JsonArray>();
+	if (!filters.isNull()) {
+		for (JsonArray::iterator it = filters.begin(); it != filters.end(); ++it) {
+			const char *filter = it->as<const char *>();
+			if (mqttFilterValidate(filter)) {
+				_mqttLocalPersistenceFilters.push_back(filter);
+			} else {
+				WARN("localPersistenceFilter %s invalid, skipping", filter);
+			}
+		}
+	}
+	if (_mqttLocalPersistenceDir.length() > 0) {
+		_mqttLocalPersistenceFile = _mqttLocalPersistenceDir + "/local_persistence." + _serialPortShort;
+	}
 
 	if(pipe(_signalFd) < 0) {
 		INFO("Failed to create pipe: %s (%d)", strerror(errno), errno);
@@ -133,6 +184,34 @@ void Serial2Mqtt::run() {
 	Timer mqttPublishTimer;
 	Timer serialTimer;
 	Bytes nullmsg(NULL, 0);
+
+	if (_mqttLocalPersistenceFile.length() > 0) {
+		ifstream smf(_mqttLocalPersistenceFile);
+		DynamicJsonDocument doc(1 * 1024 * 1024);
+		DeserializationError error = deserializeJson(doc, smf);
+		if (error == DeserializationError::Ok) {
+			if (!doc.is<JsonObject>()) {
+				error = DeserializationError::InvalidInput;
+			}
+		}
+		if (error == DeserializationError::Ok) {
+			for (JsonPair p: doc.as<JsonObject>()) {
+				if (!p.value().is<string>()) {
+					error = DeserializationError::InvalidInput;
+					break;
+				}
+				string message = p.value().as<string>();
+				Bytes data(reinterpret_cast<uint8_t *>(const_cast<char *>(message.c_str())), message.length());
+				_mqttLocalPersistenceMessages.emplace(p.key().c_str(), data);
+			}
+		}
+		if (error == DeserializationError::Ok) {
+			INFO("%d entries loaded from local persistence file %s", _mqttLocalPersistenceMessages.size(), _mqttLocalPersistenceFile.c_str());
+		} else {
+			_mqttLocalPersistenceMessages.clear();
+			ERROR("unable to load local persistence file %s", _mqttLocalPersistenceFile.c_str());
+		}
+	}
 
 	mqttConnectTimer.atInterval(_mqttReconnectInterval).doThis([this]() {
 		if(_mqttConnectionState != MS_CONNECTING) {
@@ -195,6 +274,7 @@ void Serial2Mqtt::run() {
 					}
 				case MQTT_CONNECT_SUCCESS: {
 						INFO("MQTT_CONNECT_SUCCESS %s ", _serialPortShort.c_str());
+						serialPublish(CONNECT, _mqttDevice, nullmsg, 0, false);
 						mqttConnectionState(MS_CONNECTED);
 						mqttSubscribe(_mqttSubscribedTo);
 						break;
@@ -212,7 +292,6 @@ void Serial2Mqtt::run() {
 					}
 				case MQTT_SUBSCRIBE_SUCCESS: {
 						INFO("MQTT_SUBSCRIBE_SUCCESS %s ", _serialPortShort.c_str());
-						serialPublish(CONNECT, _mqttDevice, nullmsg, 0, false);
 						break;
 					}
 				case MQTT_SUBSCRIBE_FAIL: {
@@ -403,6 +482,15 @@ Erc Serial2Mqtt::serialConnect() {
 		*/
 	}
 	_serialConnected = true;
+
+	if (_mqttConnectionState == MS_CONNECTED) {
+		Bytes nullmsg(NULL, 0);
+		serialPublish(CONNECT, _mqttDevice, nullmsg, 0, false);
+	}
+	for (map<string, Bytes>::iterator lpmi = _mqttLocalPersistenceMessages.begin(); lpmi != _mqttLocalPersistenceMessages.end(); ++lpmi) {
+		serialPublish(PUBLISH, lpmi->first, lpmi->second, 0, true);
+	}
+
 	return E_OK;
 }
 
@@ -637,6 +725,34 @@ void Serial2Mqtt::mqttConnectionState(MqttConnectionState st) {
 	}
 }
 
+static bool mqttTopicMatch(const string& filter, const string& topic)
+{
+	int i, j;
+
+	// this algorithm doesn't handle topic or filter problems
+	i = 0;
+	j = 0;
+	for (;;) {
+		switch (filter[i]) {
+		case '\0':
+			return topic[j] == '\0';
+		case '#':
+			return true;
+		case '+':
+			i++;
+			while (topic[j] != '\0' && topic[j] != '/')
+				j++;
+			break;
+		default:
+			if (filter[i] != topic[j])
+				return false;
+			i++;
+			j++;
+			break;
+		}
+	}
+}
+
 Erc Serial2Mqtt::mqttConnect() {
 	int rc;
 	if(_mqttConnectionState == MS_CONNECTING || _mqttConnectionState == MS_CONNECTED) return E_OK;
@@ -688,6 +804,13 @@ void Serial2Mqtt::mqttDisconnect() {
 
 void Serial2Mqtt::mqttSubscribe(string topic) {
 	int qos = 0;
+
+	for (map<string, Bytes>::iterator lpmi = _mqttLocalPersistenceMessages.begin(); lpmi != _mqttLocalPersistenceMessages.end(); ++lpmi) {
+		if (mqttTopicMatch(topic, lpmi->first)) {
+			serialPublish(PUBLISH, lpmi->first, lpmi->second, 0, true);
+		}
+	}
+
 	if(_mqttConnectionState != MS_CONNECTED) return;
 	MQTTAsync_responseOptions opts = MQTTAsync_responseOptions_initializer;
 	INFO("Subscribing to topic %s for client %s using QoS%d", topic.c_str(), _mqttClientId.c_str(), qos);
@@ -719,6 +842,42 @@ int Serial2Mqtt::onMessage(void* context, char* topicName, int topicLen, MQTTAsy
 		INFO(" flash image received , saved to %s", me->_binFile.c_str());
 		me->flashBin(msg);
 	} else {
+		for (vector<string>::iterator it = me->_mqttLocalPersistenceFilters.begin(); it != me->_mqttLocalPersistenceFilters.end(); ++it) {
+			if (mqttTopicMatch(*it, topic)) {
+				bool modified = false;
+				try {
+					Bytes& b = me->_mqttLocalPersistenceMessages.at(topic);
+					if (msg.length() > 0) {
+						if (msg.length() != b.length() || memcmp(msg.data(), b.data(), b.length() != 0)) {
+							me->_mqttLocalPersistenceMessages.erase(topic);
+							me->_mqttLocalPersistenceMessages.emplace(topic, msg);
+							modified = true;
+						}
+					} else {
+						me->_mqttLocalPersistenceMessages.erase(topic);
+						modified = true;
+					}
+				} catch (...) {
+					if (msg.length() > 0) {
+						me->_mqttLocalPersistenceMessages.emplace(topic, msg);
+						modified = true;
+					}
+				}
+				if (modified && me->_mqttLocalPersistenceFile.length() > 0) {
+					ofstream smf(me->_mqttLocalPersistenceFile);
+					DynamicJsonDocument doc(1 * 1024 * 1024);
+					string b;
+					doc.to<JsonObject>();
+					for (map<string, Bytes>::iterator lpmi = me->_mqttLocalPersistenceMessages.begin(); lpmi != me->_mqttLocalPersistenceMessages.end(); ++lpmi) {
+						b.assign(reinterpret_cast<char*>(lpmi->second.data()), lpmi->second.length());
+						doc[lpmi->first] = b;
+					}
+					serializeJson(doc, smf);
+					INFO("%d entries saved to local persistence file %s", me->_mqttLocalPersistenceMessages.size(), me->_mqttLocalPersistenceFile.c_str());
+				}
+				break;
+			}
+		}
 		me->serialPublish(PUBLISH, topic, msg, message->qos, message->retained);
 	}
 
