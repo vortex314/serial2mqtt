@@ -160,6 +160,7 @@ void Serial2Mqtt::init()
 	_logProtocol = conf["log"]["protocol"] | false;
 	_logDebug = conf["log"]["debug"] | true;
 	_logUseColors = conf["log"]["useColors"] | true;
+	
 	if (_logUseColors == false)
 	{
 		_colorBlue = "";
@@ -758,7 +759,8 @@ void Serial2Mqtt::serialHandleLine(string &line)
 		deserializeJson(_jsonDocument, line);
 		if (_jsonDocument.is<JsonArray>())
 		{
-			fprintf(stdout, "%s\n", (_colorGreen + line + _colorDefault).c_str());
+			if (_logProtocol)
+				fprintf(stdout, "%s\n", (_colorGreen + line + _colorDefault).c_str());
 			JsonArray array = _jsonDocument.as<JsonArray>();
 			int cmd = array[0];
 			if (cmd == PUBLISH)
@@ -784,7 +786,8 @@ void Serial2Mqtt::serialHandleLine(string &line)
 	}
 	else if (_protocol == JSON_OBJECT && line.length() > 2 && line[0] == '{' && line[line.length() - 1] == '}')
 	{
-		fprintf(stdout, "%s\n", (_colorGreen + line + _colorDefault).c_str());
+		if (_logProtocol)
+			fprintf(stdout, "%s\n", (_colorGreen + line + _colorDefault).c_str());
 		deserializeJson(_jsonDocument, line);
 		if (_jsonDocument.is<JsonObject>())
 		{
@@ -824,7 +827,8 @@ void Serial2Mqtt::serialHandleLine(string &line)
 			}
 		}
 	}
-	fprintf(stdout, "%s\n", (_colorBlue + line + _colorDefault).c_str());
+	if (_logDebug)
+		fprintf(stdout, "%s\n", (_colorBlue + line + _colorDefault).c_str());
 	if (_logFd != NULL)
 	{
 		fprintf(_logFd, "%s\n", line.c_str());
@@ -881,7 +885,8 @@ void Serial2Mqtt::serialPublish(CMD command, string topic, Bytes message, int qo
 
 void Serial2Mqtt::serialTxd(const string &line)
 {
-	fprintf(stdout, "%s", (_colorOrange + line + _colorDefault).c_str());
+	if (_logProtocol)
+		fprintf(stdout, "%s", (_colorOrange + line + _colorDefault).c_str());
 
 	int erc = write(_serialFd, line.c_str(), line.length());
 	if (erc < 0)

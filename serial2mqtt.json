@@ -7,11 +7,11 @@
         "ports": [
 		"/dev/ttyACM0"
         ],
-    "protocol":"jsonArray",
+    "protocol":"jsonArray"
+    },
     "log" : {
         "protocol":true,
         "debug":true,
         "useColors":true
-    }
     }
 }
