@@ -194,7 +194,7 @@ The mqtt event of received message is handled directly by writing the message on
     }
 ```
 As it it is difficult to debug your implementation of the prorocol on the Arduino, hereby a view what is on the serial line.
-![Alt text](doc/colorLog.png?raw=true "Title")
+![Alt text](doc/colorLogs.png?raw=true "Title")
 
 <!--stackedit_data:
 eyJoaXN0b3J5IjpbNTUzNjc2MDc0XX0=
