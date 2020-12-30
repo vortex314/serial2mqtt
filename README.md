@@ -185,6 +185,16 @@ The main thread waits for events and handle these primarily. 2 timers in this th
 To avoid concurrency issues , the callbacks of the mqtt threads are communicated back by writing an event code on a pipe. 
 The main threads waits on events : timeout of 1 sec, data on serial file-descriptor or pipe file-descriptor. 
 The mqtt event of received message is handled directly by writing the message on the serial port.
+# Update 30 Dec 2020 : added colorcoding log of protocol and Arduino debug output.
+```
+    "log" : {
+        "protocol":true,
+        "debug":true,
+        "useColors":true
+    }
+```
+As it it is difficult to debug your implementation of the prorocol on the Arduino, hereby a view what is on the serial line.
+![Alt text](doc/colorLog.png?raw=true "Title")
 
 <!--stackedit_data:
 eyJoaXN0b3J5IjpbNTUzNjc2MDc0XX0=

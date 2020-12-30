@@ -24,146 +24,156 @@
 
 using namespace std;
 
+class Serial2Mqtt
+{
 
+	string _serial2mqttDevice; // <host>.USBx
+	MQTTAsync_token _deliveredtoken;
+	MQTTAsync _client;
+	int _signalFd[2]; // pipe fd to wakeup in select
+	// SERIAL
+	string _serialPort;		 // /dev/ttyUSB0
+	string _serialPortShort; // USB0
+	int _serialBaudrate;
+	int _serialFd = 0;
+	bool _serialConnected = false;
+	string _serialLine;
+	CircBuf _serialBuffer;
+	string _binFile;
+	string _programCommand;
+	uint64_t _serialReconnectInterval;
+	uint64_t _serialIdleTimeout;
+	// MQTT
+	StaticJsonDocument<2048> _jsonDocument;
 
+	string _mqttClientId;
+	string _mqttConnection;
+	uint32_t _mqttKeepAliveInterval;
+	string _mqttWillMessage;
+	std::string _mqttWillTopic;
+	uint16_t _mqttWillQos;
+	bool _mqttWillRetained;
+	string _mqttDevice;
+	string _mqttProgrammerTopic;
+	string _mqttUser;
+	string _mqttPassword;
+	uint64_t _mqttReconnectInterval;
+	uint64_t _mqttPublishInterval;
+	uint64_t _startTime;
 
-class Serial2Mqtt {
+	//	bool _mqttConnected=false;
+	string _mqttSubscribedTo;
+	string _mqttLocalPersistenceDir;
+	string _mqttLocalPersistenceFile;
+	vector<string> _mqttLocalPersistenceFilters;
+	map<string, Bytes> _mqttLocalPersistenceMessages;
 
-		string _serial2mqttDevice; // <host>.USBx
-		MQTTAsync_token _deliveredtoken;
-		MQTTAsync _client;
-		int _signalFd[2];   // pipe fd to wakeup in select
-		// SERIAL
-		string _serialPort;    // /dev/ttyUSB0
-		string _serialPortShort; // USB0
-		int _serialBaudrate;
-		int _serialFd=0;
-		bool _serialConnected=false;
-		string _serialLine;
-		CircBuf _serialBuffer;
-		string _binFile;
-		string _programCommand;
-		uint64_t _serialReconnectInterval;
-		uint64_t _serialIdleTimeout;
-		// MQTT
-		StaticJsonDocument<2048> _jsonDocument;
+	bool _logProtocol;
+	bool _logDebug;
+	bool _logUseColors;
+	string _colorOrange = "\033[33m";
+	string _colorGreen = "\033[32m";
+	string _colorBlue = "\033[34m";
+	string _colorDefault = "\033[39m";
 
-		string _mqttClientId;
-		string _mqttConnection;
-		uint32_t _mqttKeepAliveInterval;
-		string _mqttWillMessage;
-		std::string _mqttWillTopic;
-		uint16_t _mqttWillQos;
-		bool _mqttWillRetained;
-		string _mqttDevice;
-		string _mqttProgrammerTopic;
-		string _mqttUser;
-		string _mqttPassword;
-		uint64_t _mqttReconnectInterval;
-		uint64_t _mqttPublishInterval;
-		uint64_t _startTime;
+	Config _config;
 
-//	bool _mqttConnected=false;
-		string _mqttSubscribedTo;
-		string _mqttLocalPersistenceDir;
-		string _mqttLocalPersistenceFile;
-		vector<string> _mqttLocalPersistenceFilters;
-		map<string, Bytes> _mqttLocalPersistenceMessages;
+	typedef enum
+	{
+		JSON_OBJECT,
+		JSON_ARRAY,
+		PROTOBUF
+	} Protocol;
+	Protocol _protocol;
 
-		Config _config;
+	typedef enum
+	{
+		CRC_ON,
+		CRC_OFF
+	} Crc;
+	Crc _crc;
 
-		typedef enum {
-			JSON_OBJECT,
-			JSON_ARRAY,
-			PROTOBUF
-		} Protocol;
-		Protocol _protocol;
+	FILE *_logFd;
+	typedef enum
+	{
+		MS_CONNECTED,
+		MS_DISCONNECTED,
+		MS_CONNECTING,
+		MS_DISCONNECTING
+	} MqttConnectionState;
+	MqttConnectionState _mqttConnectionState;
 
-		typedef enum {
-			CRC_ON,
-			CRC_OFF
-		} Crc;
-		Crc _crc;
+public:
+	typedef enum
+	{
+		PIPE_ERROR = 0,
+		SELECT_ERROR,
+		SERIAL_CONNECT,
+		SERIAL_DISCONNECT,
+		SERIAL_RXD,
+		SERIAL_ERROR,
+		MQTT_CONNECT_SUCCESS,
+		MQTT_CONNECT_FAIL,
+		MQTT_SUBSCRIBE_SUCCESS,
+		MQTT_SUBSCRIBE_FAIL,
+		MQTT_PUBLISH_SUCCESS,
+		MQTT_PUBLISH_FAIL,
+		MQTT_DISCONNECTED,
+		MQTT_MESSAGE_RECEIVED,
+		MQTT_ERROR,
+		TIMEOUT
+	} Signal;
 
-		FILE* _logFd;
-		typedef enum {
-			MS_CONNECTED,
-			MS_DISCONNECTED,
-			MS_CONNECTING,
-			MS_DISCONNECTING
-		} MqttConnectionState;
-		MqttConnectionState _mqttConnectionState;
+	typedef enum
+	{
+		SUBSCRIBE = 0,
+		PUBLISH,
+		CONNECT,
+		DISCONNECT
+	} CMD;
 
+	Serial2Mqtt();
+	~Serial2Mqtt();
+	void init();
+	void run();
+	void threadFunction(void *);
+	void signal(uint8_t s);
+	Signal waitSignal(uint32_t timeout);
 
+	const string &getSerialPortShort(void) const { return _serialPortShort; }
+	void setConfig(Config config);
+	void setSerialPort(string port);
+	void setLogFd(FILE *);
+	Erc serialConnect();
+	void serialDisconnect();
+	void serialRxd();
+	bool serialGetLine(string &line);
+	void serialHandleLine(string &line);
+	void serialPublish(CMD command, string topic, Bytes message, int qos, bool retained);
+	void serialTxd(const string &line);
+	void flashBin(Bytes &msg);
+	//	void serialMqttPublish(string topic,Bytes message,int qos,bool retained);
 
-	public:
-		typedef enum {PIPE_ERROR=0,
-		              SELECT_ERROR,
-		              SERIAL_CONNECT,
-		              SERIAL_DISCONNECT,
-		              SERIAL_RXD,
-		              SERIAL_ERROR,
-		              MQTT_CONNECT_SUCCESS,
-		              MQTT_CONNECT_FAIL,
-		              MQTT_SUBSCRIBE_SUCCESS,
-		              MQTT_SUBSCRIBE_FAIL,
-		              MQTT_PUBLISH_SUCCESS,
-		              MQTT_PUBLISH_FAIL,
-		              MQTT_DISCONNECTED,
-		              MQTT_MESSAGE_RECEIVED,
-		              MQTT_ERROR,
-		              TIMEOUT
-		             } Signal;
+	Erc mqttConnect();
+	void mqttDisconnect();
+	void mqttPublish(string topic, Bytes message, int qos, bool retained);
+	void mqttPublish(string topic, string message, int qos, bool retained);
+	void mqttSubscribe(string topic);
 
-		typedef enum { SUBSCRIBE = 0, PUBLISH, CONNECT, DISCONNECT} CMD;
+	static void onConnectionLost(void *context, char *cause);
+	static int onMessage(void *context, char *topicName, int topicLen, MQTTAsync_message *message);
+	static void onDisconnect(void *context, MQTTAsync_successData *response);
+	static void onConnectFailure(void *context, MQTTAsync_failureData *response);
+	static void onConnectSuccess(void *context, MQTTAsync_successData *response);
+	static void onSubscribeSuccess(void *context, MQTTAsync_successData *response);
+	static void onSubscribeFailure(void *context, MQTTAsync_failureData *response);
+	static void onPublishSuccess(void *context, MQTTAsync_successData *response);
+	static void onPublishFailure(void *context, MQTTAsync_failureData *response);
+	static void onDeliveryComplete(void *context, MQTTAsync_token response);
 
-
-
-		Serial2Mqtt();
-		~Serial2Mqtt();
-		void init();
-		void run();
-		void threadFunction(void*);
-		void signal(uint8_t s);
-		Signal waitSignal(uint32_t timeout);
-
-
-		const string& getSerialPortShort(void) const { return _serialPortShort; }
-		void setConfig(Config config);
-		void setSerialPort(string port);
-		void setLogFd(FILE*);
-		Erc serialConnect();
-		void serialDisconnect();
-		void serialRxd();
-		bool serialGetLine(string& line);
-		void serialHandleLine(string& line);
-		void serialPublish(CMD command,string topic,Bytes message,int qos,bool retained);
-		void serialTxd(const string& line);
-		void flashBin(Bytes& msg);
-//	void serialMqttPublish(string topic,Bytes message,int qos,bool retained);
-
-
-		Erc mqttConnect();
-		void mqttDisconnect();
-		void mqttPublish(string topic,Bytes message,int qos,bool retained);
-		void mqttPublish(string topic,string message,int qos,bool retained);
-		void mqttSubscribe(string topic);
-
-		static void onConnectionLost(void *context, char *cause);
-		static int onMessage(void *context, char *topicName, int topicLen, MQTTAsync_message *message);
-		static void onDisconnect(void* context, MQTTAsync_successData* response);
-		static void onConnectFailure(void* context, MQTTAsync_failureData* response);
-		static void onConnectSuccess(void* context, MQTTAsync_successData* response);
-		static void onSubscribeSuccess(void* context, MQTTAsync_successData* response);
-		static void onSubscribeFailure(void* context, MQTTAsync_failureData* response);
-		static void onPublishSuccess(void* context, MQTTAsync_successData* response);
-		static void onPublishFailure(void* context, MQTTAsync_failureData* response);
-		static void onDeliveryComplete(void* context, MQTTAsync_token response);
-
-		void genCrc(std::string& line) ;
-		bool checkCrc(std::string& line);
-		void mqttConnectionState(MqttConnectionState);
-
+	void genCrc(std::string &line);
+	bool checkCrc(std::string &line);
+	void mqttConnectionState(MqttConnectionState);
 };
 
 #endif // SERIAL2MQTT_H
