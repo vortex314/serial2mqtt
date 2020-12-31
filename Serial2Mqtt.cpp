@@ -1128,8 +1128,8 @@ int Serial2Mqtt::onMessage(void *context, char *topicName, int topicLen, MQTTAsy
 				break;
 			}
 		}
-		me->serialPublish(PUBLISH, topic, msg, message->qos, message->retained);
 #endif
+		me->serialPublish(PUBLISH, topic, msg, message->qos, message->retained);
 	}
 
 	MQTTAsync_freeMessage(&message);
