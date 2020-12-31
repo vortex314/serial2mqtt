@@ -71,6 +71,8 @@ class Serial2Mqtt
 	bool _logProtocol;
 	bool _logDebug;
 	bool _logUseColors;
+	bool _logMqtt;
+	bool _logProgram;
 	string _colorOrange = "\033[33m";
 	string _colorGreen = "\033[32m";
 	string _colorBlue = "\033[34m";

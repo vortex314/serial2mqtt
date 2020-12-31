@@ -160,7 +160,9 @@ void Serial2Mqtt::init()
 	_logProtocol = conf["log"]["protocol"] | false;
 	_logDebug = conf["log"]["debug"] | true;
 	_logUseColors = conf["log"]["useColors"] | true;
-	
+	_logMqtt = conf["log"]["mqtt"] | false;
+	_logProgram = conf["log"]["program"] | false;
+
 	if (_logUseColors == false)
 	{
 		_colorBlue = "";
@@ -575,8 +577,10 @@ Erc Serial2Mqtt::serialConnect()
 		options.c_cflag &= ~CRTSCTS; /* Disable hardware flow control */
 
 		//	options.c_lflag &= ~(ECHO | ISIG); // no echo, signal
-		options.c_lflag = ICANON;  // wait full line
+		options.c_lflag = 0;  // wait full line, was ICANON
 		options.c_cc[VEOL] = '\n'; // add an additional EOL symbol
+		options.c_cc[VTIME] =0;
+		options.c_cc[VMIN]=1;
 		options.c_iflag |= IGNCR;  // ignore carriage return
 		//    cfmakeraw(&options);
 		if (cfsetispeed(&options, baudSymbol(_serialBaudrate)) < 0)
@@ -588,7 +592,7 @@ Erc Serial2Mqtt::serialConnect()
 			ERROR("cfsetospeed() failed '%s' errno : %d : %s ", _serialPort.c_str(), errno, strerror(errno));
 		}
 
-		if (tcsetattr(_serialFd, TCSANOW, &options) < 0)
+		if (tcsetattr(_serialFd, TCSANOW, &options) < 0) 
 		{
 			ERROR("tcsetattr() failed '%s' errno : %d : %s ", _serialPort.c_str(), errno, strerror(errno));
 		}
@@ -759,8 +763,10 @@ void Serial2Mqtt::serialHandleLine(string &line)
 		deserializeJson(_jsonDocument, line);
 		if (_jsonDocument.is<JsonArray>())
 		{
-			if (_logProtocol)
+			if (_logProtocol) {
 				fprintf(stdout, "%s\n", (_colorGreen + line + _colorDefault).c_str());
+				fflush(stdout);
+			}
 			JsonArray array = _jsonDocument.as<JsonArray>();
 			int cmd = array[0];
 			if (cmd == PUBLISH)
@@ -786,8 +792,10 @@ void Serial2Mqtt::serialHandleLine(string &line)
 	}
 	else if (_protocol == JSON_OBJECT && line.length() > 2 && line[0] == '{' && line[line.length() - 1] == '}')
 	{
-		if (_logProtocol)
+		if (_logProtocol) {
 			fprintf(stdout, "%s\n", (_colorGreen + line + _colorDefault).c_str());
+			fflush(stdout);
+		};
 		deserializeJson(_jsonDocument, line);
 		if (_jsonDocument.is<JsonObject>())
 		{
@@ -834,8 +842,8 @@ void Serial2Mqtt::serialHandleLine(string &line)
 		fprintf(_logFd, "%s\n", line.c_str());
 		fflush(_logFd);
 	}
-
-	mqttPublish("src/" + _serial2mqttDevice + "/serial2mqtt/log", line, 0, false);
+	if (_logMqtt)
+		mqttPublish("src/" + _serial2mqttDevice + "/serial2mqtt/log", line, 0, false);
 }
 
 void Serial2Mqtt::serialPublish(CMD command, string topic, Bytes message, int qos, bool retained)
@@ -885,14 +893,17 @@ void Serial2Mqtt::serialPublish(CMD command, string topic, Bytes message, int qo
 
 void Serial2Mqtt::serialTxd(const string &line)
 {
-	if (_logProtocol)
+	if (_logProtocol) {
 		fprintf(stdout, "%s", (_colorOrange + line + _colorDefault).c_str());
+		fflush(stdout);
+	}
 
 	int erc = write(_serialFd, line.c_str(), line.length());
 	if (erc < 0)
 	{
 		INFO("write() failed '%s' errno : %d : %s ", _serialPort.c_str(), errno, strerror(errno));
 	}
+	fsync(_serialFd);
 }
 
 /*
@@ -1049,6 +1060,8 @@ int Serial2Mqtt::onMessage(void *context, char *topicName, int topicLen, MQTTAsy
 	Serial2Mqtt *me = (Serial2Mqtt *)context;
 	Bytes msg((uint8_t *)message->payload, message->payloadlen);
 	string topic(topicName, topicLen);
+	string m((char*)message->payload, message->payloadlen);
+	INFO("MQTT RXD %s : %s  ",topic.c_str(),m.c_str());
 
 	if (topic.compare(me->_mqttProgrammerTopic) == 0)
 	{
