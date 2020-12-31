@@ -208,7 +208,9 @@ void Serial2Mqtt::init()
 			const char *filter = it->as<const char *>();
 			if (mqttFilterValidate(filter))
 			{
+#ifndef __arm__
 				_mqttLocalPersistenceFilters.push_back(filter);
+#endif
 			}
 			else
 			{
@@ -242,7 +244,7 @@ void Serial2Mqtt::run()
 	Timer mqttPublishTimer;
 	Timer serialTimer;
 	Bytes nullmsg(NULL, 0);
-
+#ifndef __arm__
 	if (_mqttLocalPersistenceFile.length() > 0)
 	{
 		ifstream smf(_mqttLocalPersistenceFile);
@@ -279,7 +281,7 @@ void Serial2Mqtt::run()
 			ERROR("unable to load local persistence file %s", _mqttLocalPersistenceFile.c_str());
 		}
 	}
-
+#endif
 	mqttConnectTimer.atInterval(_mqttReconnectInterval).doThis([this]() {
 		if (_mqttConnectionState != MS_CONNECTING)
 		{
@@ -577,11 +579,11 @@ Erc Serial2Mqtt::serialConnect()
 		options.c_cflag &= ~CRTSCTS; /* Disable hardware flow control */
 
 		//	options.c_lflag &= ~(ECHO | ISIG); // no echo, signal
-		options.c_lflag = 0;  // wait full line, was ICANON
+		options.c_lflag = 0;	   // wait full line, was ICANON
 		options.c_cc[VEOL] = '\n'; // add an additional EOL symbol
-		options.c_cc[VTIME] =0;
-		options.c_cc[VMIN]=1;
-		options.c_iflag |= IGNCR;  // ignore carriage return
+		options.c_cc[VTIME] = 0;
+		options.c_cc[VMIN] = 1;
+		options.c_iflag |= IGNCR; // ignore carriage return
 		//    cfmakeraw(&options);
 		if (cfsetispeed(&options, baudSymbol(_serialBaudrate)) < 0)
 		{
@@ -592,7 +594,7 @@ Erc Serial2Mqtt::serialConnect()
 			ERROR("cfsetospeed() failed '%s' errno : %d : %s ", _serialPort.c_str(), errno, strerror(errno));
 		}
 
-		if (tcsetattr(_serialFd, TCSANOW, &options) < 0) 
+		if (tcsetattr(_serialFd, TCSANOW, &options) < 0)
 		{
 			ERROR("tcsetattr() failed '%s' errno : %d : %s ", _serialPort.c_str(), errno, strerror(errno));
 		}
@@ -612,10 +614,12 @@ Erc Serial2Mqtt::serialConnect()
 		Bytes nullmsg(NULL, 0);
 		serialPublish(CONNECT, _mqttDevice, nullmsg, 0, false);
 	}
+#ifndef __arm__
 	for (map<string, Bytes>::iterator lpmi = _mqttLocalPersistenceMessages.begin(); lpmi != _mqttLocalPersistenceMessages.end(); ++lpmi)
 	{
 		serialPublish(PUBLISH, lpmi->first, lpmi->second, 0, true);
 	}
+#endif
 
 	return E_OK;
 }
@@ -763,7 +767,8 @@ void Serial2Mqtt::serialHandleLine(string &line)
 		deserializeJson(_jsonDocument, line);
 		if (_jsonDocument.is<JsonArray>())
 		{
-			if (_logProtocol) {
+			if (_logProtocol)
+			{
 				fprintf(stdout, "%s\n", (_colorGreen + line + _colorDefault).c_str());
 				fflush(stdout);
 			}
@@ -792,7 +797,8 @@ void Serial2Mqtt::serialHandleLine(string &line)
 	}
 	else if (_protocol == JSON_OBJECT && line.length() > 2 && line[0] == '{' && line[line.length() - 1] == '}')
 	{
-		if (_logProtocol) {
+		if (_logProtocol)
+		{
 			fprintf(stdout, "%s\n", (_colorGreen + line + _colorDefault).c_str());
 			fflush(stdout);
 		};
@@ -893,7 +899,8 @@ void Serial2Mqtt::serialPublish(CMD command, string topic, Bytes message, int qo
 
 void Serial2Mqtt::serialTxd(const string &line)
 {
-	if (_logProtocol) {
+	if (_logProtocol)
+	{
 		fprintf(stdout, "%s", (_colorOrange + line + _colorDefault).c_str());
 		fflush(stdout);
 	}
@@ -930,7 +937,7 @@ void Serial2Mqtt::mqttConnectionState(MqttConnectionState st)
 		exit(1);
 	}
 }
-
+#ifndef __arm__
 static bool mqttTopicMatch(const string &filter, const string &topic)
 {
 	int i, j;
@@ -960,6 +967,7 @@ static bool mqttTopicMatch(const string &filter, const string &topic)
 		}
 	}
 }
+#endif
 
 Erc Serial2Mqtt::mqttConnect()
 {
@@ -1019,7 +1027,7 @@ void Serial2Mqtt::mqttDisconnect()
 void Serial2Mqtt::mqttSubscribe(string topic)
 {
 	int qos = 0;
-
+#ifndef __arm__
 	for (map<string, Bytes>::iterator lpmi = _mqttLocalPersistenceMessages.begin(); lpmi != _mqttLocalPersistenceMessages.end(); ++lpmi)
 	{
 		if (mqttTopicMatch(topic, lpmi->first))
@@ -1027,7 +1035,7 @@ void Serial2Mqtt::mqttSubscribe(string topic)
 			serialPublish(PUBLISH, lpmi->first, lpmi->second, 0, true);
 		}
 	}
-
+#endif
 	if (_mqttConnectionState != MS_CONNECTED)
 		return;
 	MQTTAsync_responseOptions opts = MQTTAsync_responseOptions_initializer;
@@ -1060,8 +1068,8 @@ int Serial2Mqtt::onMessage(void *context, char *topicName, int topicLen, MQTTAsy
 	Serial2Mqtt *me = (Serial2Mqtt *)context;
 	Bytes msg((uint8_t *)message->payload, message->payloadlen);
 	string topic(topicName, topicLen);
-	string m((char*)message->payload, message->payloadlen);
-	INFO("MQTT RXD %s : %s  ",topic.c_str(),m.c_str());
+	string m((char *)message->payload, message->payloadlen);
+	INFO("MQTT RXD %s : %s  ", topic.c_str(), m.c_str());
 
 	if (topic.compare(me->_mqttProgrammerTopic) == 0)
 	{
@@ -1070,6 +1078,8 @@ int Serial2Mqtt::onMessage(void *context, char *topicName, int topicLen, MQTTAsy
 	}
 	else
 	{
+#ifndef __arm__
+
 		for (vector<string>::iterator it = me->_mqttLocalPersistenceFilters.begin(); it != me->_mqttLocalPersistenceFilters.end(); ++it)
 		{
 			if (mqttTopicMatch(*it, topic))
@@ -1119,6 +1129,7 @@ int Serial2Mqtt::onMessage(void *context, char *topicName, int topicLen, MQTTAsy
 			}
 		}
 		me->serialPublish(PUBLISH, topic, msg, message->qos, message->retained);
+#endif
 	}
 
 	MQTTAsync_freeMessage(&message);

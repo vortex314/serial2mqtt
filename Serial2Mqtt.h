@@ -65,8 +65,10 @@ class Serial2Mqtt
 	string _mqttSubscribedTo;
 	string _mqttLocalPersistenceDir;
 	string _mqttLocalPersistenceFile;
+#ifndef __arm__
 	vector<string> _mqttLocalPersistenceFilters;
 	map<string, Bytes> _mqttLocalPersistenceMessages;
+#endif
 
 	bool _logProtocol;
 	bool _logDebug;
