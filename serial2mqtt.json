@@ -5,7 +5,8 @@
     "serial": {
         "baudrate": 115200,
         "ports": [
-		"/dev/ttyACM0"
+        "/dev/ttyACM0",
+        "/dev/ttyACM1"
         ],
     "protocol":"jsonArray"
     },

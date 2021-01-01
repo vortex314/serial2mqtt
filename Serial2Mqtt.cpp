@@ -165,10 +165,10 @@ void Serial2Mqtt::init()
 
 	if (_logUseColors == false)
 	{
-		_colorBlue = "";
+		_colorDebug = "";
 		_colorDefault = "";
-		_colorBlue = "";
-		_colorOrange = "";
+		_colorDebug = "";
+		_colorTxd = "";
 	}
 
 	std::string crc;
@@ -225,12 +225,12 @@ void Serial2Mqtt::init()
 
 	if (pipe(_signalFd) < 0)
 	{
-		INFO("Failed to create pipe: %s (%d)", strerror(errno), errno);
+		WARN("Failed to create pipe: %s (%d)", strerror(errno), errno);
 	}
 
 	if (fcntl(_signalFd[0], F_SETFL, O_NONBLOCK) < 0)
 	{
-		INFO("Failed to set pipe non-blocking mode: %s (%d)", strerror(errno), errno);
+		WARN("Failed to set pipe non-blocking mode: %s (%d)", strerror(errno), errno);
 	}
 }
 
@@ -769,7 +769,7 @@ void Serial2Mqtt::serialHandleLine(string &line)
 		{
 			if (_logProtocol)
 			{
-				fprintf(stdout, "%s\n", (_colorGreen + line + _colorDefault).c_str());
+				fprintf(stdout, "%s\n", (_colorRxd + line + _colorDefault).c_str());
 				fflush(stdout);
 			}
 			JsonArray array = _jsonDocument.as<JsonArray>();
@@ -799,7 +799,7 @@ void Serial2Mqtt::serialHandleLine(string &line)
 	{
 		if (_logProtocol)
 		{
-			fprintf(stdout, "%s\n", (_colorGreen + line + _colorDefault).c_str());
+			fprintf(stdout, "%s\n", (_colorRxd + line + _colorDefault).c_str());
 			fflush(stdout);
 		};
 		deserializeJson(_jsonDocument, line);
@@ -842,7 +842,7 @@ void Serial2Mqtt::serialHandleLine(string &line)
 		}
 	}
 	if (_logDebug)
-		fprintf(stdout, "%s\n", (_colorBlue + line + _colorDefault).c_str());
+		fprintf(stdout, "%s\n", (_colorDebug + line + _colorDefault).c_str());
 	if (_logFd != NULL)
 	{
 		fprintf(_logFd, "%s\n", line.c_str());
@@ -901,7 +901,7 @@ void Serial2Mqtt::serialTxd(const string &line)
 {
 	if (_logProtocol)
 	{
-		fprintf(stdout, "%s", (_colorOrange + line + _colorDefault).c_str());
+		fprintf(stdout, "%s", (_colorTxd + line + _colorDefault).c_str());
 		fflush(stdout);
 	}
 
@@ -1052,6 +1052,7 @@ void Serial2Mqtt::mqttSubscribe(string topic)
 	}
 	else
 	{
+		if ( _logMqtt )
 		INFO(" subscribe send ");
 	}
 }
@@ -1069,6 +1070,7 @@ int Serial2Mqtt::onMessage(void *context, char *topicName, int topicLen, MQTTAsy
 	Bytes msg((uint8_t *)message->payload, message->payloadlen);
 	string topic(topicName, topicLen);
 	string m((char *)message->payload, message->payloadlen);
+	if ( me->_logMqtt )
 	INFO("MQTT RXD %s : %s  ", topic.c_str(), m.c_str());
 
 	if (topic.compare(me->_mqttProgrammerTopic) == 0)
@@ -1178,7 +1180,7 @@ void Serial2Mqtt::onSubscribeFailure(void *context, MQTTAsync_failureData *respo
 void Serial2Mqtt::mqttPublish(string topic, string message, int qos, bool retained)
 {
 	Bytes msg(1024);
-	DEBUG(" MQTT PUB : %s = %s ", topic.c_str(), message.c_str());
+	if ( _logMqtt ) INFO(" MQTT TXD : %s = %s ", topic.c_str(), message.c_str());
 	msg = message.c_str();
 	mqttPublish(topic, msg, qos, retained);
 }
