@@ -208,9 +208,7 @@ void Serial2Mqtt::init()
 			const char *filter = it->as<const char *>();
 			if (mqttFilterValidate(filter))
 			{
-#ifndef __arm__
 				_mqttLocalPersistenceFilters.push_back(filter);
-#endif
 			}
 			else
 			{
@@ -244,7 +242,6 @@ void Serial2Mqtt::run()
 	Timer mqttPublishTimer;
 	Timer serialTimer;
 	Bytes nullmsg(NULL, 0);
-#ifndef __arm__
 	if (_mqttLocalPersistenceFile.length() > 0)
 	{
 		ifstream smf(_mqttLocalPersistenceFile);
@@ -281,7 +278,6 @@ void Serial2Mqtt::run()
 			ERROR("unable to load local persistence file %s", _mqttLocalPersistenceFile.c_str());
 		}
 	}
-#endif
 	mqttConnectTimer.atInterval(_mqttReconnectInterval).doThis([this]() {
 		if (_mqttConnectionState != MS_CONNECTING)
 		{
@@ -614,12 +610,10 @@ Erc Serial2Mqtt::serialConnect()
 		Bytes nullmsg(NULL, 0);
 		serialPublish(CONNECT, _mqttDevice, nullmsg, 0, false);
 	}
-#ifndef __arm__
 	for (map<string, Bytes>::iterator lpmi = _mqttLocalPersistenceMessages.begin(); lpmi != _mqttLocalPersistenceMessages.end(); ++lpmi)
 	{
 		serialPublish(PUBLISH, lpmi->first, lpmi->second, 0, true);
 	}
-#endif
 
 	return E_OK;
 }
@@ -937,7 +931,6 @@ void Serial2Mqtt::mqttConnectionState(MqttConnectionState st)
 		exit(1);
 	}
 }
-#ifndef __arm__
 static bool mqttTopicMatch(const string &filter, const string &topic)
 {
 	int i, j;
@@ -967,7 +960,6 @@ static bool mqttTopicMatch(const string &filter, const string &topic)
 		}
 	}
 }
-#endif
 
 Erc Serial2Mqtt::mqttConnect()
 {
@@ -1027,7 +1019,6 @@ void Serial2Mqtt::mqttDisconnect()
 void Serial2Mqtt::mqttSubscribe(string topic)
 {
 	int qos = 0;
-#ifndef __arm__
 	for (map<string, Bytes>::iterator lpmi = _mqttLocalPersistenceMessages.begin(); lpmi != _mqttLocalPersistenceMessages.end(); ++lpmi)
 	{
 		if (mqttTopicMatch(topic, lpmi->first))
@@ -1035,7 +1026,6 @@ void Serial2Mqtt::mqttSubscribe(string topic)
 			serialPublish(PUBLISH, lpmi->first, lpmi->second, 0, true);
 		}
 	}
-#endif
 	if (_mqttConnectionState != MS_CONNECTED)
 		return;
 	MQTTAsync_responseOptions opts = MQTTAsync_responseOptions_initializer;
@@ -1080,7 +1070,6 @@ int Serial2Mqtt::onMessage(void *context, char *topicName, int topicLen, MQTTAsy
 	}
 	else
 	{
-#ifndef __arm__
 
 		for (vector<string>::iterator it = me->_mqttLocalPersistenceFilters.begin(); it != me->_mqttLocalPersistenceFilters.end(); ++it)
 		{
@@ -1130,7 +1119,6 @@ int Serial2Mqtt::onMessage(void *context, char *topicName, int topicLen, MQTTAsy
 				break;
 			}
 		}
-#endif
 		me->serialPublish(PUBLISH, topic, msg, message->qos, message->retained);
 	}
 
