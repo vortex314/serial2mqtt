@@ -180,6 +180,7 @@ void Serial2Mqtt::init()
 		_crc = CRC_OFF;
 	_config.get("reconnectInterval", _serialReconnectInterval, 5000);
 	_config.get("idleTimeout", _serialIdleTimeout, 5000);
+	_config.get("silentInterval", _serialSilentInterval, 0);
 
 	_config.setNameSpace("mqtt");
 	_config.get("connection", _mqttConnection, "tcp://test.mosquitto.org:1883");
@@ -354,7 +355,8 @@ void Serial2Mqtt::run()
 			case MQTT_CONNECT_SUCCESS:
 			{
 				INFO("MQTT_CONNECT_SUCCESS %s ", _serialPortShort.c_str());
-				serialPublish(CONNECT, _mqttDevice, nullmsg, 0, false);
+				if (_serialConnected)
+					serialPublish(CONNECT, _mqttDevice, nullmsg, 0, false);
 				mqttConnectionState(MS_CONNECTED);
 				mqttSubscribe(_mqttSubscribedTo);
 				break;
@@ -603,6 +605,13 @@ Erc Serial2Mqtt::serialConnect()
 		    if ( ioctl( _serialFd, TIOCMSET, &status )<0)
 			ERROR("ioctl()<0 '%s' errno : %d : %s ",_serialPort.c_str(), errno, strerror(errno));
 		*/
+
+		if (_serialSilentInterval > 0)
+		{
+			INFO("silent interval started for %lu msec", _serialSilentInterval);
+			Sys::delay(_serialSilentInterval);
+			tcflush(_serialFd, TCIOFLUSH);
+		}
 	}
 	_serialConnected = true;
 
@@ -1143,14 +1152,12 @@ void Serial2Mqtt::onConnectFailure(void *context, MQTTAsync_failureData *respons
 {
 	Serial2Mqtt *me = (Serial2Mqtt *)context;
 	me->signal(MQTT_CONNECT_FAIL);
-	me->mqttConnectionState(MS_DISCONNECTED);
 }
 
 void Serial2Mqtt::onConnectSuccess(void *context, MQTTAsync_successData *response)
 {
 	Serial2Mqtt *me = (Serial2Mqtt *)context;
 	me->signal(MQTT_CONNECT_SUCCESS);
-	me->mqttConnectionState(MS_CONNECTED);
 }
 
 void Serial2Mqtt::onSubscribeSuccess(void *context, MQTTAsync_successData *response)
