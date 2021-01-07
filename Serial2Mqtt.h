@@ -43,6 +43,7 @@ class Serial2Mqtt
 	string _programCommand;
 	uint64_t _serialReconnectInterval;
 	uint64_t _serialIdleTimeout;
+	uint32_t _serialSilentInterval;
 	// MQTT
 	StaticJsonDocument<2048> _jsonDocument;
 
