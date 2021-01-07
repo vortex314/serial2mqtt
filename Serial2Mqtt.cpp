@@ -337,11 +337,12 @@ void Serial2Mqtt::run()
 			case SERIAL_RXD:
 			{
 				serialRxd();
-				if (serialGetLine(line))
+				while (serialGetLine(line))
 				{
 					serialTimer.atDelta(_serialIdleTimeout);
 					serialHandleLine(line);
 					line.clear();
+					serialRxd();
 				}
 				break;
 			}
@@ -635,18 +636,17 @@ void Serial2Mqtt::serialRxd()
 {
 	if (!_serialConnected)
 		return;
+	size_t space;
 	char buffer[1024];
 	int erc;
-	while (true)
+	while ((space = _serialBuffer.space()) > 0)
 	{
-		erc = read(_serialFd, buffer, sizeof(buffer) - 2);
+		erc = read(_serialFd, buffer, min(space, sizeof(buffer)));
 		if (erc > 0)
 		{
 			//			INFO(" read() = %d bytes",erc);
 			for (int i = 0; i < erc; i++)
 				_serialBuffer.write(buffer[i]);
-			if (_serialBuffer.size() > 3000)
-				_serialBuffer.clear();
 		}
 		else if (erc < 0)
 		{
