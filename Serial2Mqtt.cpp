@@ -648,7 +648,7 @@ void Serial2Mqtt::serialRxd()
 	size_t space;
 	char buffer[1024];
 	int erc;
-	while ((space = _serialBuffer.space()) > 0)
+	while (_serialBuffer.size() < 1024 ) // just a magic limit to avoid memory overflow for nonsense
 	{
 		erc = read(_serialFd, buffer, min(space, sizeof(buffer)));
 		if (erc > 0)

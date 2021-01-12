@@ -5,16 +5,15 @@
     "serial": {
         "baudrate": 115200,
         "ports": [
-        "/dev/ttyACM0",
-        "/dev/ttyACM1"
-        ],
-    "protocol":"jsonArray"
+            "/dev/ttyACM0"
+       ],
+        "protocol": "jsonArray"
     },
-    "log" : {
-        "protocol":true,
-        "debug":true,
-        "useColors":true,
-        "mqtt":false,
-        "program":false
+    "log": {
+        "protocol": true,
+        "debug": true,
+        "useColors": true,
+        "mqtt": false,
+        "program": false
     }
 }
