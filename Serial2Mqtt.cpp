@@ -583,6 +583,7 @@ Erc Serial2Mqtt::serialConnect()
 		options.c_cc[VTIME] = 0;
 		options.c_cc[VMIN] = 1;
 		options.c_iflag |= IGNCR; // ignore carriage return
+		options.c_oflag &= ~(ONLCR | OCRNL | ONOCR | ONLRET); // our output is CR-LF terminated properly
 		//    cfmakeraw(&options);
 		if (cfsetispeed(&options, baudSymbol(_serialBaudrate)) < 0)
 		{
