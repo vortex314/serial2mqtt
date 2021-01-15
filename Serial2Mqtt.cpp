@@ -903,16 +903,33 @@ void Serial2Mqtt::serialPublish(CMD command, string topic, Bytes message, int qo
 
 void Serial2Mqtt::serialTxd(const string &line)
 {
+	const char	*buf;
+	size_t		len;
+
 	if (_logProtocol)
 	{
 		fprintf(stdout, "%s", (_colorTxd + line + _colorDefault).c_str());
 		fflush(stdout);
 	}
 
-	int erc = write(_serialFd, line.c_str(), line.length());
-	if (erc < 0)
+	buf = line.c_str();
+	len = line.length();
+	while (len > 0)
 	{
-		INFO("write() failed '%s' errno : %d : %s ", _serialPort.c_str(), errno, strerror(errno));
+		int erc = write(_serialFd, buf, len);
+		if (erc >= 0)
+		{
+			buf += erc;
+			len -= erc;
+		}
+		else if (errno == EAGAIN || errno == EWOULDBLOCK)
+		{
+			tcdrain(_serialFd);
+		}
+		else
+		{
+			INFO("write() failed '%s' errno : %d : %s ", _serialPort.c_str(), errno, strerror(errno));
+		}
 	}
 	fsync(_serialFd);
 }
