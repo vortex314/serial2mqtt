@@ -354,7 +354,7 @@ void Serial2Mqtt::run()
 			}
 			case MQTT_CONNECT_SUCCESS:
 			{
-				INFO("MQTT_CONNECT_SUCCESS %s", _serialPortShort.c_str());
+				INFO("MQTT_CONNECT_SUCCESS");
 				if (_serialConnected)
 					serialPublish(CONNECT, _mqttDevice, nullmsg, 0, false);
 				mqttConnectionState(MS_CONNECTED);
@@ -363,36 +363,36 @@ void Serial2Mqtt::run()
 			}
 			case MQTT_CONNECT_FAIL:
 			{
-				WARN("MQTT_CONNECT_FAIL %s", _serialPortShort.c_str());
+				WARN("MQTT_CONNECT_FAIL");
 				mqttConnectionState(MS_DISCONNECTED);
 				break;
 			}
 			case MQTT_DISCONNECTED:
 			{
-				WARN("MQTT_DISCONNECTED %s", _serialPortShort.c_str());
+				WARN("MQTT_DISCONNECTED");
 				serialPublish(DISCONNECT, "", nullmsg, 0, false);
 				mqttConnectionState(MS_DISCONNECTED);
 				break;
 			}
 			case MQTT_SUBSCRIBE_SUCCESS:
 			{
-				INFO("MQTT_SUBSCRIBE_SUCCESS %s", _serialPortShort.c_str());
+				INFO("MQTT_SUBSCRIBE_SUCCESS");
 				break;
 			}
 			case MQTT_SUBSCRIBE_FAIL:
 			{
-				WARN("MQTT_SUBSCRIBE_FAIL %s", _serialPortShort.c_str());
+				WARN("MQTT_SUBSCRIBE_FAIL");
 				mqttDisconnect();
 				break;
 			}
 			case MQTT_ERROR:
 			{
-				WARN("MQTT_ERROR %s", _serialPortShort.c_str());
+				WARN("MQTT_ERROR");
 				break;
 			}
 			case PIPE_ERROR:
 			{
-				WARN("PIPE_ERROR %s", _serialPortShort.c_str());
+				WARN("PIPE_ERROR");
 				break;
 			}
 			case MQTT_PUBLISH_SUCCESS:
@@ -405,7 +405,7 @@ void Serial2Mqtt::run()
 			}
 			default:
 			{
-				WARN("received signal [%d] %s for %s", s, signalString[s], _serialPortShort.c_str());
+				WARN("received signal [%d] %s", s, signalString[s]);
 			}
 			}
 		}
@@ -693,7 +693,7 @@ bool Serial2Mqtt::serialGetLine(string &line)
 			if (line.length() > 1024)
 			{
 				line.clear();
-				WARN("%s buffer garbage  > 1024 flushed", _serialPortShort.c_str());
+				WARN("buffer garbage  > 1024 flushed");
 			}
 			line += ch;
 		}
@@ -997,7 +997,7 @@ Erc Serial2Mqtt::mqttConnect()
 	MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
 	MQTTAsync_willOptions will_opts = MQTTAsync_willOptions_initializer;
 
-	INFO("MQTT connecting %s ... for %s", _mqttConnection.c_str(), _serialPortShort.c_str());
+	INFO("MQTT connecting %s", _mqttConnection.c_str());
 	mqttConnectionState(MS_CONNECTING);
 	MQTTAsync_create(&_client, _mqttConnection.c_str(), _mqttClientId.c_str(), MQTTCLIENT_PERSISTENCE_NONE, NULL);
 
