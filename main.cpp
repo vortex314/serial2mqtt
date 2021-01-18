@@ -45,20 +45,20 @@ int main(int argc, char **argv)
     INFO("build : " __DATE__ " " __TIME__ );
     char cwd[256];
     getcwd(cwd,sizeof(cwd));
-    INFO("current directory : %s ",cwd);
+    INFO("current directory : %s",cwd);
     if ( argc > 1 ) {
-        INFO(" loading config file : %s ",argv[1]);
+        INFO("loading config file : %s",argv[1]);
         config.loadFile(argv[1]);
     } else {
-        INFO(" load default config : %s",DEFAULT_CONFIG);
+        INFO("load default config : %s",DEFAULT_CONFIG);
         config.loadFile(DEFAULT_CONFIG);
     }
     overrideConfig(config,argc,argv);
     if ( logFile.length()>0 ) {
-        INFO(" logging to file %s ", logFile.c_str());
+        INFO("logging to file %s", logFile.c_str());
         logFd=fopen(logFile.c_str(),"w");
         if ( logFd==NULL ) {
-            WARN(" open logfile %s failed : %d %s ",logFile.c_str(),errno, strerror(errno));
+            WARN("open logfile %s failed : %d %s",logFile.c_str(),errno, strerror(errno));
         } else {
             logger.writer(myLogFunction);
         }
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
 
     for(uint32_t i=0; i<ports.size(); i++) {
         std::string port=ports[i];
-        INFO(" configuring port : %s",port.c_str());
+        INFO("configuring port : %s",port.c_str());
         serial2mqtt[i].setSerialPort(port.c_str());
         serial2mqtt[i].setConfig(config);
         serial2mqtt[i].setLogFd(logFd);
@@ -84,8 +84,9 @@ int main(int argc, char **argv)
     }
 
     for(uint32_t i=0; i<ports.size(); i++) {
-        threads[i] = std::thread([=]() {
-            INFO(" starting thread %d",i);
+        threads[i] = std::thread([=]()
+	{
+            INFO("starting thread %d",i);
             serial2mqtt[i].run();
         });
         SetThreadName(&threads[i],serial2mqtt[i].getSerialPortShort().c_str());

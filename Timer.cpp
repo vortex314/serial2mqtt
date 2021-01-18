@@ -47,7 +47,7 @@ Timer& Timer::doThis(TimerHandler action){
 }
 
 void Timer::check(){
-//    INFO(" %lld %lld ",_expiresOn,Sys::millis());
+//    INFO("%lld %lld",_expiresOn,Sys::millis());
     if ( _expiresOn < Sys::millis() && _active ) {
         if ( _repeat ) {
             _expiresOn=Sys::millis()+_interval;
