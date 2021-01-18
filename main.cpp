@@ -84,7 +84,8 @@ int main(int argc, char **argv)
     }
 
     for(uint32_t i=0; i<ports.size(); i++) {
-        threads[i] = std::thread([=]() {
+        threads[i] = std::thread([=]()
+	{
             INFO("starting thread %d",i);
             serial2mqtt[i].run();
         });

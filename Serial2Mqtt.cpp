@@ -279,26 +279,30 @@ void Serial2Mqtt::run()
 			ERROR("unable to load local persistence file %s", _mqttLocalPersistenceFile.c_str());
 		}
 	}
-	mqttConnectTimer.atInterval(_mqttReconnectInterval).doThis([this]() {
+	mqttConnectTimer.atInterval(_mqttReconnectInterval).doThis([this]()
+	{
 		if (_mqttConnectionState != MS_CONNECTING)
 		{
 			mqttConnect();
 		}
 	});
-	serialConnectTimer.atInterval(_serialReconnectInterval).doThis([this, &serialTimer]() {
+	serialConnectTimer.atInterval(_serialReconnectInterval).doThis([this, &serialTimer]()
+	{
 		if (!_serialConnected)
 		{
 			serialConnect();
 			serialTimer.atDelta(_serialIdleTimeout);
 		}
 	});
-	mqttPublishTimer.atInterval(_mqttPublishInterval).doThis([this]() {
+	mqttPublishTimer.atInterval(_mqttPublishInterval).doThis([this]()
+	{
 		std::string sUpTime = std::to_string((Sys::millis() - _startTime) / 1000);
 		mqttPublish("src/" + _serial2mqttDevice + "/serial2mqtt/alive", "true", 0, 0);
 		mqttPublish("src/" + _serial2mqttDevice + "/system/upTime", sUpTime, 0, 0);
 		mqttPublish("src/" + _serial2mqttDevice + "/serial2mqtt/device", _mqttDevice, 0, 0);
 	});
-	serialTimer.atDelta(_serialIdleTimeout).doThis([this, &serialTimer]() {
+	serialTimer.atDelta(_serialIdleTimeout).doThis([this, &serialTimer]()
+	{
 		if (_serialConnected)
 		{
 			WARN("disconnecting serial no new data received in %d msec", _serialIdleTimeout);
