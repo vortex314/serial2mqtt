@@ -537,6 +537,7 @@ Erc Serial2Mqtt::serialConnect()
 			if (connect(_serialFd, ai->ai_addr, ai->ai_addrlen) == 0)
 			{
 				INFO("open '%s' succeeded.fd=%d", _serialPort.c_str(), _serialFd);
+				fcntl(_serialFd, F_SETFL, fcntl(_serialFd, F_GETFL, 0) | FNDELAY);
 				break;
 			}
 			err = errno;
