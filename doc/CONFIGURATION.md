@@ -1,7 +1,8 @@
 # Configuring serial2mqtt
 Most of the serial2mqtt options can be set from its configuration file. The configuration is in JSON format, and unless specified, located in the current directory named `serial2mqtt.json`. The whole file is a JSON object, built from the following groups:
 * `serial` for serial port related parameters,
-* `mqtt` for MQTT related parameters, and
+* `mqtt` for MQTT related parameters,
+* `log` for logging parameters, and
 * `programmer`
 
 ## The `serial` group
@@ -60,3 +61,11 @@ Here's an example:
         "localPersistenceDir": "/var/serial2mqtt",
         "localPersistenceFilters": ["hvac/controller/+/set"]
 ```
+
+## The `log` group
+The log group configures how to handle logging:
+* `protocol` controls whether the serial protocol logging is enabled or disabled, default value is `false`.
+* `debug` controls whether debug logging is enabled or disabled, default value is `true`.
+* `mqtt` controls whether MQTT related logging is enabled or disabled, default value is `false`.
+* `program` controls whether the MCU firmware programming logging is enabled or disabled, default value is `false`.
+* `useColors` controls whether the logging messages are colored or not. Default value is `true`.

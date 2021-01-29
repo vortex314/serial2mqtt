@@ -87,8 +87,9 @@ participant MQTT Broker
 activate serial2mqtt
 serial2mqtt-->>µC: open serial port tty
 serial2mqtt-->>MQTT Broker: connect(broker,port)
+serial2mqtt-->>µC: [1,"SOMETHING","SOMETHING",0,1]   replaying saved local persistence messages even before the MQTT connection establishment
 MQTT Broker -->> serial2mqtt: connAck
-serial2mqtt-->>µC: [2,"DEVICE",0]
+serial2mqtt-->>µC: [2,"DEVICE",""]
 µC->> serial2mqtt: [0,"dst/DEVICE/+"]
 µC->> serial2mqtt : [1,"dst/DEVICE/system/loopback","true"]
 deactivate serial2mqtt
@@ -117,7 +118,7 @@ MQTT Broker-->>serial2mqtt: disconnects
 serial2mqtt-->>µC: [3,"",""]
 serial2mqtt-->>MQTT Broker: connect(broker,port)
 MQTT Broker -->> serial2mqtt: connAck
-serial2mqtt-->>µC: [2,"DEVICE",0]
+serial2mqtt-->>µC: [2,"DEVICE",""]
 ```
 # Programming through serial2mqtt
 A command line utility will send a single mqtt request to the serial2mqtt gateway to program the microcontroller.
