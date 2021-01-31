@@ -5,8 +5,9 @@
     "serial": {
         "baudrate": 115200,
         "ports": [
-            "/dev/ttyUSB0"
-       ],
+            "/dev/ttyUSB0",
+            "/dev/ttyUSB1"
+        ],
         "protocol": "jsonArray"
     },
     "log": {
@@ -15,8 +16,8 @@
         "useColors": true,
         "mqtt": false,
         "program": false,
-        "level":"I",
-        "file":"log.serial2mqtt.",
-        "console":true
+        "level": "I",
+        "file": "log.serial2mqtt.",
+        "console": true
     }
 }

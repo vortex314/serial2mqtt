@@ -54,6 +54,11 @@ const char *signalString[] = {"PIPE_ERROR",
 
 const char *cmdString[] = {"MQTT-SUB", "MQTT-PUB", "MQTT-CONN", "MQTT-DISC"};
 
+void logRaw(const std::string line)
+{
+	logger.writer()((char *)line.c_str(), line.size());
+}
+
 #define USB() logger.application(_serialPort.c_str())
 
 Serial2Mqtt::Serial2Mqtt()
@@ -772,8 +777,7 @@ void Serial2Mqtt::serialHandleLine(string &line)
 		{
 			if (_logProtocol)
 			{
-				fprintf(stdout, "%s\n", (_colorRxd + line + _colorDefault).c_str());
-				fflush(stdout);
+				logRaw (_colorRxd + line + _colorDefault);
 			}
 			JsonArray array = _jsonDocument.as<JsonArray>();
 			int cmd = array[0];
@@ -802,8 +806,7 @@ void Serial2Mqtt::serialHandleLine(string &line)
 	{
 		if (_logProtocol)
 		{
-			fprintf(stdout, "%s\n", (_colorRxd + line + _colorDefault).c_str());
-			fflush(stdout);
+			logRaw (_colorRxd + line + _colorDefault);
 		};
 		deserializeJson(_jsonDocument, line);
 		if (_jsonDocument.is<JsonObject>())
@@ -845,11 +848,7 @@ void Serial2Mqtt::serialHandleLine(string &line)
 		}
 	}
 	if (_logDebug)
-	{
-		std::string line;
-		string_format(line, "%s\n", (_colorDebug + line + _colorDefault).c_str());
-		logger.writer()((char*)line.c_str(),line.size());
-	}
+		logRaw(_colorDebug + line + _colorDefault);
 	if (_logMqtt)
 		mqttPublish("src/" + _serial2mqttDevice + "/serial2mqtt/log", line, 0, false);
 }
@@ -895,7 +894,7 @@ void Serial2Mqtt::serialPublish(CMD command, string topic, Bytes message, int qo
 	{
 		WARN("invalid protocol found.");
 	}
-	serialTxd(line + "\r\n");
+	serialTxd(line + "\n");
 	DEBUG("To Serial %s : %s", _serialPort.c_str(), line.c_str());
 }
 
@@ -905,10 +904,7 @@ void Serial2Mqtt::serialTxd(const string &line)
 	size_t len;
 
 	if (_logProtocol)
-	{
-		fprintf(stdout, "%s", (_colorTxd + line + _colorDefault).c_str());
-		fflush(stdout);
-	}
+		logRaw(_colorTxd + line + _colorDefault);
 
 	buf = line.c_str();
 	len = line.length();

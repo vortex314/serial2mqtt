@@ -9,8 +9,8 @@ class LogFile
   FILE *_fp = 0;
 
   std::string _prefix = "LogFile";
-  const int _max_no = 5;
-  const int _max_log_size = 4 * 1024 * 1024;
+  int _max_no = 5;
+  int _max_log_size = 4 * 1024 * 1024;
   std::string _postfix = ".log";
   bool _console = false;
 
@@ -20,4 +20,6 @@ public:
   void prefix(const char *prf);
   void console(bool);
   void append(const char *line, uint32_t length);
+  void count(uint32_t);
+  void limit(uint32_t);
 };
