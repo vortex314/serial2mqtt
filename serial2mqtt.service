@@ -1,0 +1,17 @@
+; deployment config
+; please adapt for your environment the ExecStart and Workingdirectory
+[Unit]
+Description=Wiring MQTT topics together
+After=network.target
+StartLimitIntervalSec=0
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+User=root
+Group=root
+ExecStart=/home/lieven/workspace/serial2mqtt/Debug/serial2mqtt
+WorkingDirectory=/home/lieven/workspace/serial2mqtt
+
+[Install]
+WantedBy=multi-user.target

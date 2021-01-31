@@ -60,7 +60,7 @@ AS       := /usr/bin/as
 ## User defined environment variables
 ##
 CodeLiteDir:=/usr/share/codelite
-Objects0=$(IntermediateDirectory)/Serial2Mqtt.cpp$(ObjectSuffix) $(IntermediateDirectory)/main.cpp$(ObjectSuffix) $(IntermediateDirectory)/Sys.cpp$(ObjectSuffix) $(IntermediateDirectory)/Timer.cpp$(ObjectSuffix) 
+Objects0=$(IntermediateDirectory)/Serial2Mqtt.cpp$(ObjectSuffix) $(IntermediateDirectory)/main.cpp$(ObjectSuffix) $(IntermediateDirectory)/Sys.cpp$(ObjectSuffix) $(IntermediateDirectory)/Timer.cpp$(ObjectSuffix)  $(IntermediateDirectory)/LogFile.cpp$(ObjectSuffix)
 
 
 
@@ -78,7 +78,7 @@ $(OutputFile): $(IntermediateDirectory)/.d $(Objects)
 	@echo $(Objects0)  > $(ObjectsFileList)
 	$(LinkerName) $(OutputSwitch)$(OutputFile) @$(ObjectsFileList) $(LibPath) $(Libs) $(LinkOptions)
 
-PostBuild:
+PostBuild: all
 	@echo Executing Post Build commands ...
 	cp Debug/serial2mqtt Debug/serial2mqtt.`arch`
 	zip -r build/serial2mqtt.`arch`.zip Debug/serial2mqtt.`arch`
@@ -129,6 +129,14 @@ $(IntermediateDirectory)/Timer.cpp$(DependSuffix): Timer.cpp
 
 $(IntermediateDirectory)/Timer.cpp$(PreprocessSuffix): Timer.cpp
 	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Timer.cpp$(PreprocessSuffix) Timer.cpp
+
+$(IntermediateDirectory)/LogFile.cpp$(ObjectSuffix): LogFile.cpp $(IntermediateDirectory)/LogFile.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "LogFile.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/LogFile.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/LogFile.cpp$(DependSuffix): LogFile.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/LogFile.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/LogFile.cpp$(DependSuffix) -MM LogFile.cpp
+
+$(IntermediateDirectory)/LogFile.cpp$(PreprocessSuffix): LogFile.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/LogFile.cpp$(PreprocessSuffix) LogFile.cpp
 
 
 -include $(IntermediateDirectory)/*$(DependSuffix)

@@ -14,6 +14,9 @@
         "debug": true,
         "useColors": true,
         "mqtt": false,
-        "program": false
+        "program": false,
+        "level":"I",
+        "file":"log.serial2mqtt.",
+        "console":true
     }
 }

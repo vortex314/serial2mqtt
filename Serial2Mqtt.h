@@ -146,7 +146,6 @@ public:
 	const string &getSerialPortShort(void) const { return _serialPortShort; }
 	void setConfig(Config config);
 	void setSerialPort(string port);
-	void setLogFd(FILE *);
 	Erc serialConnect();
 	void serialDisconnect();
 	void serialRxd();

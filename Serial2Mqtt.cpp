@@ -96,8 +96,6 @@ void Serial2Mqtt::setSerialPort(string port)
 	}
 }
 
-void Serial2Mqtt::setLogFd(FILE *logFd) { _logFd = logFd; }
-
 static bool mqttFilterValidate(const char *filter)
 {
 	switch (filter[0])
@@ -279,30 +277,26 @@ void Serial2Mqtt::run()
 			ERROR("unable to load local persistence file %s", _mqttLocalPersistenceFile.c_str());
 		}
 	}
-	mqttConnectTimer.atInterval(_mqttReconnectInterval).doThis([this]()
-	{
+	mqttConnectTimer.atInterval(_mqttReconnectInterval).doThis([this]() {
 		if (_mqttConnectionState != MS_CONNECTING)
 		{
 			mqttConnect();
 		}
 	});
-	serialConnectTimer.atInterval(_serialReconnectInterval).doThis([this, &serialTimer]()
-	{
+	serialConnectTimer.atInterval(_serialReconnectInterval).doThis([this, &serialTimer]() {
 		if (!_serialConnected)
 		{
 			serialConnect();
 			serialTimer.atDelta(_serialIdleTimeout);
 		}
 	});
-	mqttPublishTimer.atInterval(_mqttPublishInterval).doThis([this]()
-	{
+	mqttPublishTimer.atInterval(_mqttPublishInterval).doThis([this]() {
 		std::string sUpTime = std::to_string((Sys::millis() - _startTime) / 1000);
 		mqttPublish("src/" + _serial2mqttDevice + "/serial2mqtt/alive", "true", 0, 0);
 		mqttPublish("src/" + _serial2mqttDevice + "/system/upTime", sUpTime, 0, 0);
 		mqttPublish("src/" + _serial2mqttDevice + "/serial2mqtt/device", _mqttDevice, 0, 0);
 	});
-	serialTimer.atDelta(_serialIdleTimeout).doThis([this, &serialTimer]()
-	{
+	serialTimer.atDelta(_serialIdleTimeout).doThis([this, &serialTimer]() {
 		if (_serialConnected)
 		{
 			WARN("disconnecting serial no new data received in %d msec", _serialIdleTimeout);
@@ -587,7 +581,7 @@ Erc Serial2Mqtt::serialConnect()
 		options.c_cc[VEOL] = '\n'; // add an additional EOL symbol
 		options.c_cc[VTIME] = 0;
 		options.c_cc[VMIN] = 1;
-		options.c_iflag |= IGNCR; // ignore carriage return
+		options.c_iflag |= IGNCR;							  // ignore carriage return
 		options.c_oflag &= ~(ONLCR | OCRNL | ONOCR | ONLRET); // our output is CR-LF terminated properly
 		//    cfmakeraw(&options);
 		if (cfsetispeed(&options, baudSymbol(_serialBaudrate)) < 0)
@@ -654,7 +648,7 @@ void Serial2Mqtt::serialRxd()
 	size_t space;
 	char buffer[1024];
 	int erc;
-	while (_serialBuffer.size() < 1024 ) // just a magic limit to avoid memory overflow for nonsense
+	while (_serialBuffer.size() < 1024) // just a magic limit to avoid memory overflow for nonsense
 	{
 		erc = read(_serialFd, buffer, min(space, sizeof(buffer)));
 		if (erc > 0)
@@ -851,11 +845,10 @@ void Serial2Mqtt::serialHandleLine(string &line)
 		}
 	}
 	if (_logDebug)
-		fprintf(stdout, "%s\n", (_colorDebug + line + _colorDefault).c_str());
-	if (_logFd != NULL)
 	{
-		fprintf(_logFd, "%s\n", line.c_str());
-		fflush(_logFd);
+		std::string line;
+		string_format(line, "%s\n", (_colorDebug + line + _colorDefault).c_str());
+		logger.writer()((char*)line.c_str(),line.size());
 	}
 	if (_logMqtt)
 		mqttPublish("src/" + _serial2mqttDevice + "/serial2mqtt/log", line, 0, false);
@@ -908,8 +901,8 @@ void Serial2Mqtt::serialPublish(CMD command, string topic, Bytes message, int qo
 
 void Serial2Mqtt::serialTxd(const string &line)
 {
-	const char	*buf;
-	size_t		len;
+	const char *buf;
+	size_t len;
 
 	if (_logProtocol)
 	{
@@ -1074,8 +1067,8 @@ void Serial2Mqtt::mqttSubscribe(string topic)
 	}
 	else
 	{
-		if ( _logMqtt )
-		INFO("subscribe send");
+		if (_logMqtt)
+			INFO("subscribe send");
 	}
 }
 
@@ -1092,8 +1085,8 @@ int Serial2Mqtt::onMessage(void *context, char *topicName, int topicLen, MQTTAsy
 	Bytes msg((uint8_t *)message->payload, message->payloadlen);
 	string topic(topicName, topicLen);
 	string m((char *)message->payload, message->payloadlen);
-	if ( me->_logMqtt )
-	INFO("MQTT RXD %s : %s", topic.c_str(), m.c_str());
+	if (me->_logMqtt)
+		INFO("MQTT RXD %s : %s", topic.c_str(), m.c_str());
 
 	if (topic.compare(me->_mqttProgrammerTopic) == 0)
 	{
@@ -1198,7 +1191,8 @@ void Serial2Mqtt::onSubscribeFailure(void *context, MQTTAsync_failureData *respo
 void Serial2Mqtt::mqttPublish(string topic, string message, int qos, bool retained)
 {
 	Bytes msg(1024);
-	if ( _logMqtt ) INFO("MQTT TXD : %s = %s", topic.c_str(), message.c_str());
+	if (_logMqtt)
+		INFO("MQTT TXD : %s = %s", topic.c_str(), message.c_str());
 	msg = message.c_str();
 	mqttPublish(topic, msg, qos, retained);
 }
