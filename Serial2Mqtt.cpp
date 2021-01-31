@@ -151,9 +151,9 @@ void Serial2Mqtt::init()
 	_protocol = JSON_OBJECT;
 	if (protocol == "jsonObject")
 		_protocol = JSON_OBJECT;
-	if (protocol == "jsonArray")
+	else if (protocol == "jsonArray")
 		_protocol = JSON_ARRAY;
-	if (protocol == "protobuf")
+	else if (protocol == "protobuf")
 		_protocol = PROTOBUF;
 
 	JsonObject conf = _config.root();
@@ -165,18 +165,18 @@ void Serial2Mqtt::init()
 
 	if (_logUseColors == false)
 	{
+		_colorTxd = "";
+		_colorRxd = "";
 		_colorDebug = "";
 		_colorDefault = "";
-		_colorDebug = "";
-		_colorTxd = "";
 	}
 
 	std::string crc;
-	_config.get("protocol", crc, "off");
+	_config.get("crc", crc, "off");
 	_crc = CRC_OFF;
 	if (crc == "on")
 		_crc = CRC_ON;
-	if (crc == "off")
+	else if (crc == "off")
 		_crc = CRC_OFF;
 	_config.get("reconnectInterval", _serialReconnectInterval, 5000);
 	_config.get("idleTimeout", _serialIdleTimeout, 5000);
