@@ -5,7 +5,7 @@
     "serial": {
         "baudrate": 115200,
         "ports": [
-            "/dev/rfcomm0"
+            "/dev/ttyUSB0"
         ],
         "protocol": "jsonArray"
     },
@@ -17,6 +17,6 @@
         "program": false,
         "level": "I",
         "file": "log.serial2mqtt.",
-        "console": true
+        "console": false
     }
 }
