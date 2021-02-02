@@ -352,6 +352,7 @@ void Serial2Mqtt::run()
 			}
 			case SERIAL_ERROR:
 			{
+				INFO(" Serial error occured, disconnecting ");
 				serialDisconnect();
 				break;
 			}
@@ -635,6 +636,7 @@ Erc Serial2Mqtt::serialConnect()
 
 void Serial2Mqtt::serialDisconnect()
 {
+	INFO(" serial close(%d)",_serialFd);
 	close(_serialFd);
 	_serialFd = 0;
 	_serialConnected = false;
@@ -670,9 +672,9 @@ void Serial2Mqtt::serialRxd()
 			signal(SERIAL_ERROR);
 		}
 		else
-		{
-			DEBUG("EOF received on the serial connection");
-			signal(SERIAL_ERROR);
+		{ // no data
+//			DEBUG("EOF received on the serial connection");
+//			signal(SERIAL_ERROR);
 			return;
 		}
 	}
@@ -777,7 +779,7 @@ void Serial2Mqtt::serialHandleLine(string &line)
 		{
 			if (_logProtocol)
 			{
-				logRaw (_colorRxd + line + _colorDefault);
+				logRaw(_colorRxd + line + _colorDefault);
 			}
 			JsonArray array = _jsonDocument.as<JsonArray>();
 			int cmd = array[0];
@@ -806,7 +808,7 @@ void Serial2Mqtt::serialHandleLine(string &line)
 	{
 		if (_logProtocol)
 		{
-			logRaw (_colorRxd + line + _colorDefault);
+			logRaw(_colorRxd + line + _colorDefault);
 		};
 		deserializeJson(_jsonDocument, line);
 		if (_jsonDocument.is<JsonObject>())
@@ -922,7 +924,8 @@ void Serial2Mqtt::serialTxd(const string &line)
 		}
 		else
 		{
-			INFO("write() failed '%s' errno : %d : %s", _serialPort.c_str(), errno, strerror(errno));
+			WARN("write(%d,.,%d) failed '%s' errno : %d : %s", _serialFd, len, _serialPort.c_str(), errno, strerror(errno));
+			break;
 		}
 	}
 	fsync(_serialFd);

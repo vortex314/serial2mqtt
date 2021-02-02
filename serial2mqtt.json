@@ -1,12 +1,11 @@
 {
     "mqtt": {
-        "connection": "tcp://localhost:1883"
+        "connection": "tcp://limero.ddns.net:1883"
     },
     "serial": {
         "baudrate": 115200,
         "ports": [
-            "/dev/ttyUSB0",
-            "/dev/ttyUSB1"
+            "/dev/rfcomm0"
         ],
         "protocol": "jsonArray"
     },
