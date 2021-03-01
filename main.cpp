@@ -110,7 +110,8 @@ void commandArguments(JsonObject config, int argc, char **argv) {
         config["configFile"] = optarg;
         break;
       case 'v': {
-        char logLevel = optarg[0];
+        std::string logLevel;
+        logLevel += optarg[0];
         config["log"]["level"] = logLevel;
         break;
       }
