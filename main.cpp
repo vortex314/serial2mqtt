@@ -62,7 +62,7 @@ int main(int argc, char **argv)
             logFile.console(consoleOn);
         }
     }
-    INFO(" joystick2mqtt started. Build : %s ", __DATE__ " " __TIME__);
+    INFO("serial2mqtt started. Build : %s ", __DATE__ " " __TIME__);
 
     config.setNameSpace("serial");
     JsonArray ports = config.root()["serial"]["ports"].as<JsonArray>();
