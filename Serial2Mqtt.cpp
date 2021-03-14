@@ -352,7 +352,7 @@ void Serial2Mqtt::run()
 			}
 			case SERIAL_ERROR:
 			{
-				INFO(" Serial error occured, disconnecting ");
+				INFO("Serial error occured, disconnecting");
 				serialDisconnect();
 				break;
 			}
@@ -636,7 +636,7 @@ Erc Serial2Mqtt::serialConnect()
 
 void Serial2Mqtt::serialDisconnect()
 {
-	INFO(" serial close(%d)",_serialFd);
+	INFO("serial close(%d)", _serialFd);
 	close(_serialFd);
 	_serialFd = 0;
 	_serialConnected = false;

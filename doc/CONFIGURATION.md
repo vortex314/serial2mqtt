@@ -69,6 +69,5 @@ The log group configures how to handle logging:
 * `mqtt` controls whether MQTT related logging is enabled or disabled, default value is `false`.
 * `program` controls whether the MCU firmware programming logging is enabled or disabled, default value is `false`.
 * `useColors` controls whether the logging messages are colored or not. Default value is `true`.
-* `console` log to stdout 
+* `console` log to stdout
 * `file` file prefix for rotating logs 5 of each 2MB
-* 
