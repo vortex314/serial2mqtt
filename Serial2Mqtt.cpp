@@ -671,10 +671,16 @@ void Serial2Mqtt::serialRxd()
 			DEBUG("read returns %d => errno : %d = %s", erc, errno, strerror(errno));
 			signal(SERIAL_ERROR);
 		}
+		else if (isatty(_serialFd))
+		{
+			// serial devices could return 0 upon no data available
+			return;
+		}
 		else
-		{ // no data
-//			DEBUG("EOF received on the serial connection");
-//			signal(SERIAL_ERROR);
+		{
+			// sockets return 0 upon reading from a closed connection
+			DEBUG("EOF received on the serial connection");
+			signal(SERIAL_ERROR);
 			return;
 		}
 	}
@@ -896,7 +902,7 @@ void Serial2Mqtt::serialPublish(CMD command, string topic, Bytes message, int qo
 	{
 		WARN("invalid protocol found.");
 	}
-	serialTxd(line + "\n");
+	serialTxd(line + "\r\n");
 	DEBUG("To Serial %s : %s", _serialPort.c_str(), line.c_str());
 }
 
@@ -906,7 +912,14 @@ void Serial2Mqtt::serialTxd(const string &line)
 	size_t len;
 
 	if (_logProtocol)
-		logRaw(_colorTxd + line + _colorDefault);
+	{
+		std::string str = _colorTxd;
+		for (std::string::const_iterator it = line.cbegin(); it != line.cend(); ++it)
+			if (*it != '\r')
+				str.push_back(*it);
+		str += _colorDefault;
+		logRaw(str);
+	}
 
 	buf = line.c_str();
 	len = line.length();
@@ -925,6 +938,7 @@ void Serial2Mqtt::serialTxd(const string &line)
 		else
 		{
 			WARN("write(%d,.,%d) failed '%s' errno : %d : %s", _serialFd, len, _serialPort.c_str(), errno, strerror(errno));
+			signal(SERIAL_ERROR);
 			break;
 		}
 	}
