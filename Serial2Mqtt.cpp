@@ -300,6 +300,7 @@ void Serial2Mqtt::run()
 		mqttPublish("src/" + _serial2mqttDevice + "/serial2mqtt/alive", "true", 0, 0);
 		mqttPublish("src/" + _serial2mqttDevice + "/system/upTime", sUpTime, 0, 0);
 		mqttPublish("src/" + _serial2mqttDevice + "/serial2mqtt/device", _mqttDevice, 0, 0);
+		reportStatus("src/" + _serial2mqttDevice + "/serial2mqtt/status");
 	});
 	serialTimer.atDelta(_serialIdleTimeout).doThis([this, &serialTimer]() {
 		if (_serialConnected)
@@ -499,11 +500,33 @@ Serial2Mqtt::Signal Serial2Mqtt::waitSignal(uint32_t timeout)
 	return (Signal)returnSignal;
 }
 
+void Serial2Mqtt::reportStatus(const std::string& topic)
+{
+	_jsonDocument.clear();
+	JsonObject msg = _jsonDocument.to<JsonObject>();
+
+	msg["Uptime"] = std::to_string((Sys::millis() - _startTime) / 1000);
+	msg["SerialIsConnected"] = _serialConnected;
+	msg["SerialConnectionCount"] = _serialConnectionCount;
+	msg["SerialConnectionErrors"] = _serialConnectionErrors;
+	msg["SerialPublishMessagesReceived"] = _serialPublishMessagesReceived;
+	msg["SerialSubscribeMessagesReceived"] = _serialSubscribeMessagesReceived;
+	msg["SerialUnknownMessagesReceived"] = _serialUnknownMessagesReceived;
+	msg["SerialLogMessagesReceived"] = _serialLogMessagesReceived;
+	msg["SerialMessagesSent"] = _serialMessagesSent;
+
+	std::string s;
+	serializeJson(msg, s);
+	mqttPublish("src/" + _serial2mqttDevice + "/serial2mqtt/status", s, 0, 0);
+}
+
 Erc Serial2Mqtt::serialConnect()
 {
 	struct termios options;
 
 	INFO("Connecting to '%s' ....", _serialPort.c_str());
+	++_serialConnectionCount;
+	++_serialConnectionErrors;
 
 	if (_serialPort.find("tcp://") == 0)
 	{
@@ -620,6 +643,7 @@ Erc Serial2Mqtt::serialConnect()
 		}
 	}
 	_serialConnected = true;
+	--_serialConnectionErrors;
 
 	if (_mqttConnectionState == MS_CONNECTED)
 	{
@@ -800,13 +824,20 @@ void Serial2Mqtt::serialHandleLine(string &line)
 				if (array.size() > 4)
 					retained = array[4];
 				mqttPublish(topic, message, qos, retained);
+				++_serialPublishMessagesReceived;
 				return;
 			}
 			else if (cmd == SUBSCRIBE)
 			{
 				std::string topic = array[1];
 				mqttSubscribe(topic);
+				++_serialSubscribeMessagesReceived;
 				return;
+			}
+			else
+			{
+				WARN("invalid command from device : %d", cmd);
+				++_serialUnknownMessagesReceived;
 			}
 		}
 	}
@@ -840,17 +871,20 @@ void Serial2Mqtt::serialHandleLine(string &line)
 					/*                    Bytes msg(1024);
 					                    msg.append((uint8_t*)message.c_str(),message.length());*/
 					mqttPublish(topic, message, qos, retained);
+					++_serialPublishMessagesReceived;
 					return;
 				}
 				else if (cmd.compare("MQTT-SUB") == 0 && json.containsKey("topic"))
 				{
 					string topic = json["topic"];
 					mqttSubscribe(topic);
+					++_serialSubscribeMessagesReceived;
 					return;
 				}
 				else
 				{
 					WARN("invalid command from device : %s", line.c_str());
+					++_serialUnknownMessagesReceived;
 				}
 			}
 		}
@@ -858,7 +892,10 @@ void Serial2Mqtt::serialHandleLine(string &line)
 	if (_logDebug)
 		logRaw(_colorDebug + line + _colorDefault);
 	if (_logMqtt)
+	{
 		mqttPublish("src/" + _serial2mqttDevice + "/serial2mqtt/log", line, 0, false);
+		++_serialLogMessagesReceived;
+	}
 }
 
 void Serial2Mqtt::serialPublish(CMD command, string topic, Bytes message, int qos, bool retained)
@@ -943,6 +980,7 @@ void Serial2Mqtt::serialTxd(const string &line)
 		}
 	}
 	fsync(_serialFd);
+	++_serialMessagesSent;
 }
 
 /*

@@ -44,6 +44,13 @@ class Serial2Mqtt
 	uint64_t _serialReconnectInterval;
 	uint64_t _serialIdleTimeout;
 	uint32_t _serialSilentInterval;
+	uint64_t _serialConnectionCount = 0ULL;
+	uint64_t _serialConnectionErrors = 0ULL;
+	uint64_t _serialPublishMessagesReceived = 0ULL;
+	uint64_t _serialSubscribeMessagesReceived = 0ULL;
+	uint64_t _serialUnknownMessagesReceived = 0ULL;
+	uint64_t _serialLogMessagesReceived = 0ULL;
+	uint64_t _serialMessagesSent = 0ULL;
 	// MQTT
 	StaticJsonDocument<2048> _jsonDocument;
 
@@ -142,6 +149,7 @@ public:
 	void threadFunction(void *);
 	void signal(uint8_t s);
 	Signal waitSignal(uint32_t timeout);
+	void reportStatus(const std::string& topic);
 
 	const string &getSerialPortShort(void) const { return _serialPortShort; }
 	void setConfig(Config config);
