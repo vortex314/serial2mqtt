@@ -189,8 +189,8 @@ void Serial2Mqtt::init()
 	_config.get("connection", _mqttConnection, "tcp://test.mosquitto.org:1883");
 	_config.get("keepAliveInterval", _mqttKeepAliveInterval, 5);
 	_config.get("willMessage", _mqttWillMessage, "false");
-	_mqttWillQos = 0;
-	_mqttWillRetained = false;
+	_config.get("willQos", _mqttWillQos, 0);
+	_config.get("willRetained", _mqttWillRetained, false);
 	_serial2mqttDevice = Sys::hostname();
 	_serial2mqttDevice += "." + _serialPortShort;
 	_mqttDevice = _serial2mqttDevice;
