@@ -32,6 +32,8 @@ The mqtt group configures how to connect to the MQTT broker, and the extra funct
 * `keepAliveInterval` is the MQTT keepalive interval parameter in seconds, default value is `5`.
 * `willTopic` is the MQTT topic where the LWT message will be sent. Default value is `src/<hostname>.<serialPortShort>/serial2mqtt/alive`.
 * `willMessage` is the message body of the LWT message sent to `willTopic`. Default value is `false`.
+* `willQos` is the QoS of the LWT message. Default value is `0`.
+* `willRetained` is the retained flag of the LWT message. Default value is `false`.
 * `clientId` is the MQTT client identifier, must be unique on the broker. Default value is `<hostname>.<serialPortShort><process-id>`.
 * `user` is the user for MQTT authentication. Default value is an empty string, which means no authentication.
 * `password` is the password for MQTT authentication. Default value is an empty string.
