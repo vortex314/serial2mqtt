@@ -59,6 +59,15 @@ void logRaw(const std::string line)
 	logger.writer()((char *)line.c_str(), line.size());
 }
 
+std::string stringify(std::string s)
+{
+	std::string result;
+	result += '"';
+	result += s;
+	result += '"';
+	return result;
+}
+
 #define USB() logger.application(_serialPort.c_str())
 
 Serial2Mqtt::Serial2Mqtt()
@@ -298,8 +307,8 @@ void Serial2Mqtt::run()
 	mqttPublishTimer.atInterval(_mqttPublishInterval).doThis([this]() {
 		std::string sUpTime = std::to_string((Sys::millis() - _startTime) / 1000);
 		mqttPublish("src/" + _serial2mqttDevice + "/serial2mqtt/alive", "true", 0, 0);
-		mqttPublish("src/" + _serial2mqttDevice + "/system/upTime", sUpTime, 0, 0);
-		mqttPublish("src/" + _serial2mqttDevice + "/serial2mqtt/device", _mqttDevice, 0, 0);
+		mqttPublish("src/" + _serial2mqttDevice + "/system/upTime", stringify(sUpTime), 0, 0);
+		mqttPublish("src/" + _serial2mqttDevice + "/serial2mqtt/device", stringify(_mqttDevice), 0, 0);
 		reportStatus("src/" + _serial2mqttDevice + "/serial2mqtt/status");
 	});
 	serialTimer.atDelta(_serialIdleTimeout).doThis([this, &serialTimer]() {
@@ -500,7 +509,7 @@ Serial2Mqtt::Signal Serial2Mqtt::waitSignal(uint32_t timeout)
 	return (Signal)returnSignal;
 }
 
-void Serial2Mqtt::reportStatus(const std::string& topic)
+void Serial2Mqtt::reportStatus(const std::string &topic)
 {
 	_jsonDocument.clear();
 	JsonObject msg = _jsonDocument.to<JsonObject>();
