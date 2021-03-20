@@ -177,8 +177,8 @@ void Serial2Mqtt::init()
 
 	if (_logUseColors == false)
 	{
-		_colorTxd = "";
-		_colorRxd = "";
+		_colorTxd = "S-TX: ";
+		_colorRxd = "S-RX: ";
 		_colorDebug = "";
 		_colorDefault = "";
 	}
