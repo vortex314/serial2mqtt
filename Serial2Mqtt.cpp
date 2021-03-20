@@ -514,7 +514,7 @@ void Serial2Mqtt::reportStatus(const std::string &topic)
 	_jsonDocument.clear();
 	JsonObject msg = _jsonDocument.to<JsonObject>();
 
-	msg["Uptime"] = std::to_string((Sys::millis() - _startTime) / 1000);
+	msg["Uptime"] = (Sys::millis() - _startTime) / 1000;
 	msg["SerialIsConnected"] = _serialConnected;
 	msg["SerialConnectionCount"] = _serialConnectionCount;
 	msg["SerialConnectionErrors"] = _serialConnectionErrors;
@@ -526,7 +526,7 @@ void Serial2Mqtt::reportStatus(const std::string &topic)
 
 	std::string s;
 	serializeJson(msg, s);
-	mqttPublish("src/" + _serial2mqttDevice + "/serial2mqtt/status", s, 0, 0);
+	mqttPublish(topic, s, 0, 0);
 }
 
 Erc Serial2Mqtt::serialConnect()
