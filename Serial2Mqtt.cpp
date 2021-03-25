@@ -177,8 +177,8 @@ void Serial2Mqtt::init()
 
 	if (_logUseColors == false)
 	{
-		_colorTxd = "";
-		_colorRxd = "";
+		_colorTxd = "S-TX: ";
+		_colorRxd = "S-RX: ";
 		_colorDebug = "";
 		_colorDefault = "";
 	}
@@ -514,7 +514,7 @@ void Serial2Mqtt::reportStatus(const std::string &topic)
 	_jsonDocument.clear();
 	JsonObject msg = _jsonDocument.to<JsonObject>();
 
-	msg["Uptime"] = std::to_string((Sys::millis() - _startTime) / 1000);
+	msg["Uptime"] = (Sys::millis() - _startTime) / 1000;
 	msg["SerialIsConnected"] = _serialConnected;
 	msg["SerialConnectionCount"] = _serialConnectionCount;
 	msg["SerialConnectionErrors"] = _serialConnectionErrors;
@@ -526,7 +526,7 @@ void Serial2Mqtt::reportStatus(const std::string &topic)
 
 	std::string s;
 	serializeJson(msg, s);
-	mqttPublish("src/" + _serial2mqttDevice + "/serial2mqtt/status", s, 0, 0);
+	mqttPublish(topic, s, 0, 0);
 }
 
 Erc Serial2Mqtt::serialConnect()
@@ -688,7 +688,7 @@ void Serial2Mqtt::serialRxd()
 	size_t space;
 	char buffer[1024];
 	int erc;
-	while (_serialBuffer.size() < 1024) // just a magic limit to avoid memory overflow for nonsense
+	while ((space = _serialBuffer.space()) > 0)
 	{
 		erc = read(_serialFd, buffer, min(space, sizeof(buffer)));
 		if (erc > 0)
