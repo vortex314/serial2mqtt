@@ -542,7 +542,7 @@ Erc Serial2Mqtt::serialConnect()
 		char host[_serialPort.length()];
 		char port[_serialPort.length()];
 		char term;
-		struct addrinfo hints = {.ai_family = AF_UNSPEC, .ai_socktype = SOCK_STREAM}, *addresses, *ai;
+		struct addrinfo hints = {}, *addresses, *ai;
 		int err;
 
 		if (sscanf(_serialPort.c_str() + 6, "[%[^]]]:%s %c", host, port, &term) == 2)
@@ -558,6 +558,8 @@ Erc Serial2Mqtt::serialConnect()
 			ERROR("unable to parse tcp address '%s'", _serialPort.c_str());
 			return EINVAL;
 		}
+		hints.ai_family = AF_UNSPEC;
+		hints.ai_socktype = SOCK_STREAM;
 		if ((err = getaddrinfo(host, port, &hints, &addresses)) != 0)
 		{
 			ERROR("unable to resolve tcp address '%s': %s", _serialPort.c_str(), gai_strerror(err));

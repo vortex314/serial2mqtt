@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #include <poll.h>
 #include <linux/serial.h>
+#include <sys/select.h>
 #include <termios.h>
 #include <asm-generic/ioctls.h>
 #include <sys/ioctl.h>
