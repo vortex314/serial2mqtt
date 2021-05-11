@@ -671,10 +671,13 @@ Erc Serial2Mqtt::serialConnect()
 
 void Serial2Mqtt::serialDisconnect()
 {
-	INFO("serial close(%d)", _serialFd);
-	close(_serialFd);
-	_serialFd = 0;
-	_serialConnected = false;
+	if (_serialConnected)
+	{
+		INFO("serial close(%d)", _serialFd);
+		close(_serialFd);
+		_serialFd = 0;
+		_serialConnected = false;
+	}
 
 	if (_serialReconnectInterval < 1)
 	{
