@@ -52,6 +52,15 @@ class Serial2Mqtt
 	uint64_t _serialUnknownMessagesReceived = 0ULL;
 	uint64_t _serialLogMessagesReceived = 0ULL;
 	uint64_t _serialMessagesSent = 0ULL;
+	typedef enum
+	{
+		DTR_LOWER_ON_CLOSE_NEVER,
+		DTR_LOWER_ON_CLOSE_ALWAYS,
+		DTR_LOWER_ON_CLOSE_IF_IDLE,
+	} DTRPolicy;
+	DTRPolicy _serialLowerDTROnClose = DTR_LOWER_ON_CLOSE_NEVER;
+	bool _serialDataReceived;
+
 	// MQTT
 	StaticJsonDocument<2048> _jsonDocument;
 

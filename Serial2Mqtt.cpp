@@ -193,6 +193,18 @@ void Serial2Mqtt::init()
 	_config.get("reconnectInterval", _serialReconnectInterval, 5000);
 	_config.get("idleTimeout", _serialIdleTimeout, 5000);
 	_config.get("silentInterval", _serialSilentInterval, 0);
+	std::string lowerDTR;
+	_config.get("lowerDTROnClose", lowerDTR, "never");
+	if (lowerDTR == "never")
+		_serialLowerDTROnClose = DTR_LOWER_ON_CLOSE_NEVER;
+	else if (lowerDTR == "always")
+		_serialLowerDTROnClose = DTR_LOWER_ON_CLOSE_ALWAYS;
+	else if (lowerDTR == "ifIdle")
+		_serialLowerDTROnClose = DTR_LOWER_ON_CLOSE_IF_IDLE;
+	else {
+		WARN("lowerDTROnClose %s invalid, using never", lowerDTR.c_str());
+		_serialLowerDTROnClose = DTR_LOWER_ON_CLOSE_NEVER;
+	}
 
 	_config.setNameSpace("mqtt");
 	_config.get("connection", _mqttConnection, "tcp://test.mosquitto.org:1883");
@@ -588,6 +600,8 @@ Erc Serial2Mqtt::serialConnect()
 			ERROR("connect: '%s' errno : %d : %s", _serialPort.c_str(), err, strerror(err));
 			return err;
 		}
+
+		_serialDataReceived = true;
 	}
 	else
 	{
@@ -612,7 +626,16 @@ Erc Serial2Mqtt::serialConnect()
 		options.c_cflag &= ~PARENB;
 		options.c_cflag &= ~CSTOPB;
 		options.c_cflag &= ~CSIZE;
-		options.c_cflag &= ~HUPCL; // avoid DTR drop at close time
+		switch (_serialLowerDTROnClose)
+		{
+		case DTR_LOWER_ON_CLOSE_NEVER:
+		case DTR_LOWER_ON_CLOSE_IF_IDLE:
+			options.c_cflag &= ~HUPCL; // avoid DTR drop at close time
+			break;
+		case DTR_LOWER_ON_CLOSE_ALWAYS:
+			options.c_cflag |= HUPCL;
+			break;
+		}
 		options.c_cflag |= CS8;
 		options.c_cflag &= ~CRTSCTS; /* Disable hardware flow control */
 
@@ -652,6 +675,8 @@ Erc Serial2Mqtt::serialConnect()
 			Sys::delay(_serialSilentInterval);
 			tcflush(_serialFd, TCIOFLUSH);
 		}
+
+		_serialDataReceived = false;
 	}
 	_serialConnected = true;
 	--_serialConnectionErrors;
@@ -673,6 +698,16 @@ void Serial2Mqtt::serialDisconnect()
 {
 	if (_serialConnected)
 	{
+		if (!_serialDataReceived && _serialLowerDTROnClose == DTR_LOWER_ON_CLOSE_IF_IDLE)
+		{
+			struct termios options;
+			if (tcgetattr(_serialFd, &options) == 0)
+			{
+				options.c_cflag |= HUPCL;
+				tcsetattr(_serialFd, TCSANOW, &options);
+				WARN("HUPCL activated due to inactivity");
+			}
+		}
 		INFO("serial close(%d)", _serialFd);
 		close(_serialFd);
 		_serialFd = 0;
@@ -839,6 +874,7 @@ void Serial2Mqtt::serialHandleLine(string &line)
 					retained = array[4];
 				mqttPublish(topic, message, qos, retained);
 				++_serialPublishMessagesReceived;
+				_serialDataReceived = true;
 				return;
 			}
 			else if (cmd == SUBSCRIBE)
@@ -846,6 +882,7 @@ void Serial2Mqtt::serialHandleLine(string &line)
 				std::string topic = array[1];
 				mqttSubscribe(topic);
 				++_serialSubscribeMessagesReceived;
+				_serialDataReceived = true;
 				return;
 			}
 			else
@@ -886,6 +923,7 @@ void Serial2Mqtt::serialHandleLine(string &line)
 					                    msg.append((uint8_t*)message.c_str(),message.length());*/
 					mqttPublish(topic, message, qos, retained);
 					++_serialPublishMessagesReceived;
+					_serialDataReceived = true;
 					return;
 				}
 				else if (cmd.compare("MQTT-SUB") == 0 && json.containsKey("topic"))
@@ -893,6 +931,7 @@ void Serial2Mqtt::serialHandleLine(string &line)
 					string topic = json["topic"];
 					mqttSubscribe(topic);
 					++_serialSubscribeMessagesReceived;
+					_serialDataReceived = true;
 					return;
 				}
 				else
