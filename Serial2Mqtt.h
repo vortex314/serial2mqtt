@@ -54,11 +54,17 @@ class Serial2Mqtt
 	uint64_t _serialMessagesSent = 0ULL;
 	typedef enum
 	{
+		DTR_LOWER_ON_OPEN_NEVER,
+		DTR_LOWER_ON_OPEN_ALWAYS
+	} DTROnOpenPolicy;
+	DTROnOpenPolicy _serialLowerDTROnOpen = DTR_LOWER_ON_OPEN_NEVER;
+	typedef enum
+	{
 		DTR_LOWER_ON_CLOSE_NEVER,
 		DTR_LOWER_ON_CLOSE_ALWAYS,
 		DTR_LOWER_ON_CLOSE_IF_IDLE,
-	} DTRPolicy;
-	DTRPolicy _serialLowerDTROnClose = DTR_LOWER_ON_CLOSE_NEVER;
+	} DTROnClosePolicy;
+	DTROnClosePolicy _serialLowerDTROnClose = DTR_LOWER_ON_CLOSE_NEVER;
 	bool _serialDataReceived;
 
 	// MQTT
