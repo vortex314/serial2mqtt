@@ -193,16 +193,28 @@ void Serial2Mqtt::init()
 	_config.get("reconnectInterval", _serialReconnectInterval, 5000);
 	_config.get("idleTimeout", _serialIdleTimeout, 5000);
 	_config.get("silentInterval", _serialSilentInterval, 0);
-	std::string lowerDTR;
-	_config.get("lowerDTROnClose", lowerDTR, "never");
-	if (lowerDTR == "never")
+
+        std::string lowerDTROnOpen;
+        _config.get("lowerDTROnOpen", lowerDTROnOpen, "never");
+        if (lowerDTROnOpen == "never")
+                _serialLowerDTROnOpen = DTR_LOWER_ON_OPEN_NEVER;
+        else if (lowerDTROnOpen == "always")
+                _serialLowerDTROnOpen = DTR_LOWER_ON_OPEN_ALWAYS;
+        else {
+                WARN("lowerDTROnOpen %s invalid, using never", lowerDTROnOpen.c_str());
+                _serialLowerDTROnOpen = DTR_LOWER_ON_OPEN_NEVER;
+        }
+
+	std::string lowerDTROnClose;
+	_config.get("lowerDTROnClose", lowerDTROnClose, "never");
+	if (lowerDTROnClose == "never")
 		_serialLowerDTROnClose = DTR_LOWER_ON_CLOSE_NEVER;
-	else if (lowerDTR == "always")
+	else if (lowerDTROnClose == "always")
 		_serialLowerDTROnClose = DTR_LOWER_ON_CLOSE_ALWAYS;
-	else if (lowerDTR == "ifIdle")
+	else if (lowerDTROnClose == "ifIdle")
 		_serialLowerDTROnClose = DTR_LOWER_ON_CLOSE_IF_IDLE;
 	else {
-		WARN("lowerDTROnClose %s invalid, using never", lowerDTR.c_str());
+		WARN("lowerDTROnClose %s invalid, using never", lowerDTROnClose.c_str());
 		_serialLowerDTROnClose = DTR_LOWER_ON_CLOSE_NEVER;
 	}
 
@@ -668,6 +680,14 @@ Erc Serial2Mqtt::serialConnect()
 		    if ( ioctl( _serialFd, TIOCMSET, &status )<0)
 			ERROR("ioctl()<0 '%s' errno : %d : %s",_serialPort.c_str(), errno, strerror(errno));
 		*/
+
+
+		if (_serialLowerDTROnOpen == DTR_LOWER_ON_OPEN_ALWAYS)
+		{
+			int dtrflag = TIOCM_DTR;
+			ioctl(_serialFd, TIOCMBIC, &dtrflag); // Clear DTR pin
+			ioctl(_serialFd, TIOCMBIS, &dtrflag); // Set DTR pin
+		}
 
 		if (_serialSilentInterval > 0)
 		{
