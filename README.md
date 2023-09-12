@@ -113,7 +113,7 @@ Note right of µC: serial2mqtt disconnects serial port and tries to reconnect. M
 serial2mqtt-->>µC: close serial port tty
 serial2mqtt-->>µC: open serial port
 
-when serial2mqtt gets diconnected from the MQTT broker:
+Note right of µC: when serial2mqtt gets diconnected from the MQTT broker:
 MQTT Broker-->>serial2mqtt: disconnects
 serial2mqtt-->>µC: [3,"",""]
 serial2mqtt-->>MQTT Broker: connect(broker,port)
