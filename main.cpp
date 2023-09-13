@@ -92,7 +92,10 @@ int main(int argc, char **argv)
         SetThreadName(&threads[i], serial2mqtt[i].getSerialPortShort().c_str());
     }
 
-    sleep(UINT32_MAX); // UINT32_MAX to sleep 'forever'
+    for (;;)
+    {
+	sleep(INT32_MAX);
+    }
     exit(0);
 
     return 0;
