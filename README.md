@@ -143,21 +143,13 @@ deactivate serial2mqtt
 # Logging through serial2mqtt
 Everything that serial2mqtt receives on the serial port is also send on a topic.The micrcontroller will also log to the central logging system 
 # Build instructions
- - use Codelite ( optional )
- - clone eclipse/paho.mqtt.c
- - clone bblanchon/Arduinojson
- - clone vortex314/Common 
- - install libssl-dev ( apt-get  install libssl-dev )
- - build static library in paho.mqtt.c by using makePaho.sh
- - build libCommon.a via "make -f Common.mk"
- - build serial2mqtt via "make -f serial2mqtt.mk" 
+- install libssl-dev ( apt-get  install libssl-dev )
+- git clone --recurse-submodules https://github.com/vortex314/serial2mqtt.git
+- cd serial2mqtt
+- cd paho.mqtt.c &&  cmake -DPAHO_BUILD_STATIC=true && make && cd ..
+- in serial2mqtt folder : mkdir build && cd build && cmake .. && make
+- install libssl-dev ( apt-get  install libssl-dev )
 
-**Or just deploy the pre-build versions** from the Debug directory , 2 versions available : Linux 64bits Intel and Raspberry Pi ARM. The armv6l also runs on raspberry pi 3. Watch out for the arch command below. 
-
-    wget https://github.com/vortex314/serial2mqtt/raw/master/Debug/serial2mqtt.`arch`.zip
-    wget https://github.com/vortex314/serial2mqtt/raw/master/serial2mqtt.json
-    unzip serial2mqtt.`arch`.zip
-    mv Debug/serial2mqtt.`arch` serial2mqtt
     
 There's an [experimental OpenWrt package](https://github.com/halfbakery/serial2mqtt-openwrt),
 you can build az ipk package from the git head tailored to your system in

@@ -1,0 +1,6 @@
+[submodule "ArduinoJson"]
+	path = ArduinoJson
+	url = https://github.com/bblanchon/ArduinoJson.git
+[submodule "paho.mqtt.c"]
+	path = paho.mqtt.c
+	url = https://github.com/eclipse/paho.mqtt.c.git
