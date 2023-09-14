@@ -148,7 +148,6 @@ Everything that serial2mqtt receives on the serial port is also send on a topic.
 - cd serial2mqtt
 - cd paho.mqtt.c &&  cmake -DPAHO_BUILD_STATIC=true && make && cd ..
 - in serial2mqtt folder : mkdir build && cd build && cmake .. && make
-- install libssl-dev ( apt-get  install libssl-dev )
 
     
 There's an [experimental OpenWrt package](https://github.com/halfbakery/serial2mqtt-openwrt),
