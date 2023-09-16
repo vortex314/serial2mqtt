@@ -193,6 +193,29 @@ The mqtt event of received message is handled directly by writing the message on
 As it it is difficult to debug your implementation of the prorocol on the Arduino, hereby a view what is on the serial line.
 ![Alt text](doc/colorLogs.png?raw=true "Title")
 
+## conan package manager
+The project uses conan package manager to install dependencies.
+To install conan on Ubuntu 20.04 :
+```
+sudo apt-get install python3-pip
+pip3 install conan
+conan profile detect
+```
+To install dependencies :
+```
+conan install .
+```
+To build :
+```
+mkdir build
+cd build
+cmake ..
+make
+```
+To run :
+```
+./serial2mqtt
+```
 <!--stackedit_data:
 eyJoaXN0b3J5IjpbNTUzNjc2MDc0XX0=
 -->

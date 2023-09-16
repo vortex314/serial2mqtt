@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 3.13.0)
 project(serial2mqtt VERSION 0.1.0)
-
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g ")
 set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -g ")
+find_package(eclipse-paho-mqtt-c REQUIRED)
 add_definitions(-DLINUX -std=c++11)
-
 add_executable(serial2mqtt)
 
 target_sources(serial2mqtt PRIVATE 
@@ -21,24 +20,17 @@ target_sources(serial2mqtt PRIVATE
     src/CircBuf.cpp 
     src/Sema.cpp 
     ) 
-
-
-set(GCC_FLAGS "-DLINUX")
-    
-add_definitions(${GCC_FLAGS})
     
 include_directories(src  
-      ArduinoJson/src 
-      paho.mqtt.c/src  
-      )
+    ArduinoJson/src 
+    )
 
 target_link_libraries(serial2mqtt 
-	    -L../paho.mqtt.c/src
-            -l:libpaho-mqtt3a.a
-            -lpthread 
-            -lrt 
-            -pthread 
-            -latomic )
+    eclipse-paho-mqtt-c::paho-mqtt3as-static
+    -lpthread 
+    -lrt 
+    -pthread 
+    -latomic )
     
  
     

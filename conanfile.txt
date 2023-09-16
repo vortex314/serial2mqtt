@@ -1,0 +1,7 @@
+[requires]
+paho-mqtt-c/1.3.12
+[generators]
+CMakeDeps
+CMakeToolchain
+[layout]
+cmake_layout
