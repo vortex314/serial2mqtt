@@ -45,6 +45,8 @@ const char *signalString[] = {"PIPE_ERROR",
 							  "MQTT_CONNECT_FAIL",
 							  "MQTT_SUBSCRIBE_SUCCESS",
 							  "MQTT_SUBSCRIBE_FAIL",
+							  "MQTT_UNSUBSCRIBE_SUCCESS",
+							  "MQTT_UNSUBSCRIBE_FAIL",
 							  "MQTT_PUBLISH_SUCCESS",
 							  "MQTT_PUBLISH_FAIL",
 							  "MQTT_DISCONNECTED",
@@ -423,6 +425,17 @@ void Serial2Mqtt::run()
 				mqttDisconnect();
 				break;
 			}
+			case MQTT_UNSUBSCRIBE_SUCCESS:
+			{
+				INFO("MQTT_UNSUBSCRIBE_SUCCESS");
+				break;
+			}
+			case MQTT_UNSUBSCRIBE_FAIL:
+			{
+				WARN("MQTT_UNSUBSCRIBE_FAIL");
+				mqttDisconnect();
+				break;
+			}
 			case MQTT_ERROR:
 			{
 				WARN("MQTT_ERROR");
@@ -544,6 +557,7 @@ void Serial2Mqtt::reportStatus(const std::string &topic)
 	msg["SerialConnectionErrors"] = _serialConnectionErrors;
 	msg["SerialPublishMessagesReceived"] = _serialPublishMessagesReceived;
 	msg["SerialSubscribeMessagesReceived"] = _serialSubscribeMessagesReceived;
+	msg["SerialUnsubscribeMessagesReceived"] = _serialUnsubscribeMessagesReceived;
 	msg["SerialUnknownMessagesReceived"] = _serialUnknownMessagesReceived;
 	msg["SerialLogMessagesReceived"] = _serialLogMessagesReceived;
 	msg["SerialMessagesSent"] = _serialMessagesSent;
@@ -859,11 +873,12 @@ void Serial2Mqtt::genCrc(std::string &line)
 
 /*
  * JSON protocol : [CMD,TOPIC,MESSAGE,QOS,RETAIN,CRC]
- * CMD : 0:SUBSCRIBE,1:PUBLISH,2:CONNECT,3:DISCONNECT
+ * CMD : 0:SUBSCRIBE,1:PUBLISH,2:CONNECT,3:DISCONNECT,4:UNSUBSCRIBE
  * subscribe : [0,"dst/myTopic","ABCD"]
  * publish : [1,"dst/topic1","message1",0,0,"ABCD"]
  * connect : [2,"device","","ABCD"]
  * disconnect : [3,"","","ABCD"]
+ * unsubscribe : [4,"dst/myTopic","ABCD"]
  */
 
 void Serial2Mqtt::serialHandleLine(string &line)
@@ -902,6 +917,14 @@ void Serial2Mqtt::serialHandleLine(string &line)
 				std::string topic = array[1];
 				mqttSubscribe(topic);
 				++_serialSubscribeMessagesReceived;
+				_serialDataReceived = true;
+				return;
+			}
+			else if (cmd == UNSUBSCRIBE)
+			{
+				std::string topic = array[1];
+				mqttUnsubscribe(topic);
+				++_serialUnsubscribeMessagesReceived;
 				_serialDataReceived = true;
 				return;
 			}
@@ -1196,6 +1219,38 @@ void Serial2Mqtt::mqttSubscribe(string topic)
 	}
 }
 
+void Serial2Mqtt::mqttUnsubscribe(string topic)
+{
+	for (map<string, Bytes>::iterator lpmi = _mqttLocalPersistenceMessages.begin(); lpmi != _mqttLocalPersistenceMessages.end(); ++lpmi)
+	{
+		if (mqttTopicMatch(topic, lpmi->first))
+		{
+			serialPublish(PUBLISH, lpmi->first, lpmi->second, 0, true);
+		}
+	}
+	if (_mqttConnectionState != MS_CONNECTED)
+		return;
+	MQTTAsync_responseOptions opts = MQTTAsync_responseOptions_initializer;	
+	INFO("Unsubscribing to topic %s for client %s", topic.c_str(), _mqttClientId.c_str());
+	opts.onSuccess = onUnsubscribeSuccess;
+	opts.onFailure = onUnsubscribeFailure;
+	opts.context = this;
+	int rc = E_OK;
+
+	if ((rc = MQTTAsync_unsubscribe(_client, topic.c_str(), &opts)) != MQTTASYNC_SUCCESS)
+	{
+		ERROR("Failed to start unsubscribe, return code %d", rc);
+		signal(MQTT_UNSUBSCRIBE_FAIL);
+	}
+	else
+	{
+		if (_logMqtt)
+			INFO("unsubscribe send");
+	}
+}
+
+
+
 void Serial2Mqtt::onConnectionLost(void *context, char *cause)
 {
 	Serial2Mqtt *me = (Serial2Mqtt *)context;
@@ -1310,6 +1365,17 @@ void Serial2Mqtt::onSubscribeFailure(void *context, MQTTAsync_failureData *respo
 {
 	Serial2Mqtt *me = (Serial2Mqtt *)context;
 	me->signal(MQTT_SUBSCRIBE_FAIL);
+}
+void Serial2Mqtt::onUnsubscribeSuccess(void *context, MQTTAsync_successData *response)
+{
+	Serial2Mqtt *me = (Serial2Mqtt *)context;
+	me->signal(MQTT_UNSUBSCRIBE_SUCCESS);
+}
+
+void Serial2Mqtt::onUnsubscribeFailure(void *context, MQTTAsync_failureData *response)
+{
+	Serial2Mqtt *me = (Serial2Mqtt *)context;
+	me->signal(MQTT_UNSUBSCRIBE_FAIL);
 }
 
 void Serial2Mqtt::mqttPublish(string topic, string message, int qos, bool retained)
