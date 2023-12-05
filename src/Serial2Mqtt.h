@@ -49,6 +49,7 @@ class Serial2Mqtt
 	uint64_t _serialConnectionErrors = 0ULL;
 	uint64_t _serialPublishMessagesReceived = 0ULL;
 	uint64_t _serialSubscribeMessagesReceived = 0ULL;
+	uint64_t _serialUnsubscribeMessagesReceived = 0ULL;
 	uint64_t _serialUnknownMessagesReceived = 0ULL;
 	uint64_t _serialLogMessagesReceived = 0ULL;
 	uint64_t _serialMessagesSent = 0ULL;
@@ -142,6 +143,8 @@ public:
 		MQTT_CONNECT_FAIL,
 		MQTT_SUBSCRIBE_SUCCESS,
 		MQTT_SUBSCRIBE_FAIL,
+		MQTT_UNSUBSCRIBE_SUCCESS,
+		MQTT_UNSUBSCRIBE_FAIL,
 		MQTT_PUBLISH_SUCCESS,
 		MQTT_PUBLISH_FAIL,
 		MQTT_DISCONNECTED,
@@ -155,7 +158,8 @@ public:
 		SUBSCRIBE = 0,
 		PUBLISH,
 		CONNECT,
-		DISCONNECT
+		DISCONNECT,
+		UNSUBSCRIBE
 	} CMD;
 
 	Serial2Mqtt();
@@ -185,6 +189,7 @@ public:
 	void mqttPublish(string topic, Bytes message, int qos, bool retained);
 	void mqttPublish(string topic, string message, int qos, bool retained);
 	void mqttSubscribe(string topic);
+	void mqttUnsubscribe(string topic);
 
 	static void onConnectionLost(void *context, char *cause);
 	static int onMessage(void *context, char *topicName, int topicLen, MQTTAsync_message *message);
@@ -193,6 +198,8 @@ public:
 	static void onConnectSuccess(void *context, MQTTAsync_successData *response);
 	static void onSubscribeSuccess(void *context, MQTTAsync_successData *response);
 	static void onSubscribeFailure(void *context, MQTTAsync_failureData *response);
+	static void onUnsubscribeSuccess(void *context, MQTTAsync_successData *response);
+	static void onUnsubscribeFailure(void *context, MQTTAsync_failureData *response);
 	static void onPublishSuccess(void *context, MQTTAsync_successData *response);
 	static void onPublishFailure(void *context, MQTTAsync_failureData *response);
 	static void onDeliveryComplete(void *context, MQTTAsync_token response);
