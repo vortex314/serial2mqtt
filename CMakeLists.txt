@@ -9,6 +9,7 @@ if(PAHO_BUILD_STATIC)
     set(_PAHO_MQTT_C_LIB_NAME ${_PAHO_MQTT_C_LIB_NAME}-static)
 endif()
 find_package(eclipse-paho-mqtt-c REQUIRED)
+find_package(OpenSSL REQUIRED)
 add_definitions(-DLINUX -std=c++11)
 add_executable(serial2mqtt)
 
