@@ -141,14 +141,30 @@ MQTT Broker ->> programmer CLI : logs
 deactivate serial2mqtt
 ```
 # Logging through serial2mqtt
-Everything that serial2mqtt receives on the serial port is also send on a topic.The micrcontroller will also log to the central logging system 
-# Build instructions
-- install libssl-dev ( apt-get  install libssl-dev )
-- git clone --recurse-submodules https://github.com/vortex314/serial2mqtt.git
-- cd serial2mqtt
-- cd paho.mqtt.c &&  cmake -DPAHO_BUILD_STATIC=true && make && cd ..
-- in serial2mqtt folder : mkdir build && cd build && cmake .. && make
+Everything that serial2mqtt receives on the serial port is also send on a topic. The micrcontroller will also log to the central logging system 
 
+# Build instructions
+Tested with Ubuntu 22.04.4 LTS Desktop 64 bits and Ubuntu 22.04.4 LTS Server 64 bits.
+
+These instructions should fit any Linux distribution, suh as Debian (including Raspberry Pi) and Ubuntu distribution.
+
+`serial2mqtt` is leveraging `paho-mqtt-c` library in secure mode, therefore it requires OpenSSL and crypto library.
+
+Here are the build commands:
+```
+sudo apt-get  install libssl-dev
+git clone --recurse-submodules https://github.com/vortex314/serial2mqtt.git
+cd serial2mqtt
+cd paho.mqtt.c
+cmake -DPAHO_BUILD_STATIC=true -DPAHO_WITH_SSL=true
+cmake --build .
+make
+cd ..
+mkdir build
+cd build
+cmake ..
+make
+```
     
 There's an [experimental OpenWrt package](https://github.com/halfbakery/serial2mqtt-openwrt),
 you can build az ipk package from the git head tailored to your system in
