@@ -3,12 +3,7 @@ project(serial2mqtt VERSION 0.1.0)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g ")
 set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -g ")
-set(PAHO_MQTT_C_LIBRARIES paho.mqtt.c) 
-# add suffix when using static Paho MQTT C library variant
-if(PAHO_BUILD_STATIC)
-    set(_PAHO_MQTT_C_LIB_NAME ${_PAHO_MQTT_C_LIB_NAME}-static)
-endif()
-find_package(eclipse-paho-mqtt-c REQUIRED)
+
 find_package(OpenSSL REQUIRED)
 add_definitions(-DLINUX -std=c++11)
 add_executable(serial2mqtt)
@@ -26,17 +21,22 @@ target_sources(serial2mqtt PRIVATE
     src/CircBuf.cpp 
     src/Sema.cpp 
     ) 
-    
+
+# added paho.mqtt.c/src for paho-mqtt-c header files
 include_directories(src  
     ArduinoJson/src 
+    paho.mqtt.c/src
     )
 
+#Where to find the lib "libpaho-mqtt3as.a", libssl and libcrypto
+link_directories(${CMAKE_SOURCE_DIR}/paho.mqtt.c/src /usr/local/lib)
+
+# added libpaho-mqtt3as.a, libssl.a and libcrypto.a as we build in static mode
 target_link_libraries(serial2mqtt 
-    eclipse-paho-mqtt-c::paho-mqtt3as-static
+    libpaho-mqtt3as.a
+    -l:libssl.a
+    -l:libcrypto.a
     -lpthread 
     -lrt 
     -pthread 
     -latomic )
-    
- 
-    
