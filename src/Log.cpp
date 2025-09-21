@@ -9,6 +9,7 @@ extern "C" {
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 }
 
 char Log::_logLevel[7] = {'T', 'D', 'I', 'W', 'E', 'F', 'N'};
